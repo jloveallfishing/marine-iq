@@ -3,7 +3,7 @@
 ## 2.2.0
 
 - Added separate sustained wind heatmap and gust overlays with MPH legends. Forecast samples use NWS grid data around the selected location. The map leaves unavailable samples blank.
-- Expanded the NOAA tidal and current station search to 100 miles and up to 12 separated stations. Forecast playback and source-specific station labels remain available.
+- Expanded the NOAA tidal and current station search to 100 miles and up to 12 separated stations. Event-only current stations display the nearest flood, ebb, or slack prediction and its actual Pacific time.
 - Added automated tests, a GitHub Pages workflow with live verification, and a rollback procedure.
 - Updated map control sizing and the offline cache version.
 

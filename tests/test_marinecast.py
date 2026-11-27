@@ -46,6 +46,7 @@ class MarineCastTests(unittest.TestCase):
         self.addCleanup(self.context.close)
         self.page = self.context.new_page()
         self.requests = []
+        self.event_only = False
         self.page.route("https://**/*", self.mock_provider)
 
     def mock_provider(self, route):
@@ -78,6 +79,11 @@ class MarineCastTests(unittest.TestCase):
         if host == "api.tidesandcurrents.noaa.gov" and params.get("type") == ["currentpredictions"]:
             return route.fulfill(json={"stations": [STATION]})
         if host == "api.tidesandcurrents.noaa.gov" and params.get("product") == ["currents_predictions"]:
+            if self.event_only:
+                return route.fulfill(json={"current_predictions": {"cp": [
+                    {"Time": DAY + " 07:54", "Velocity_Major": 2, "meanFloodDir": 90, "Type": "flood"},
+                    {"Time": DAY + " 12:05", "Velocity_Major": 0, "Type": "slack"},
+                ]}})
             return route.fulfill(json={"current_predictions": {"cp": [
                 {"Time": DAY + " 07:00:00", "Velocity_Major": 2, "meanFloodDir": 90},
                 {"Time": DAY + " 08:00:00", "Velocity_Major": -1, "meanEbbDir": 270},
@@ -129,6 +135,17 @@ class MarineCastTests(unittest.TestCase):
         expect(self.page.locator(".marine-pin")).to_have_count(0)
         self.assertTrue(any(params.get("time_zone") == ["gmt"]
                             for _, _, params in self.requests))
+
+    def test_event_only_station_shows_timestamp(self):
+        self.event_only = True
+        self.open_map()
+        self.page.locator("#marineLayer").select_option("Currents")
+        pin = self.page.locator(".marine-pin").first
+        expect(pin).to_contain_text("Event · 2.30 mph")
+        self.set_hour(1)
+        expect(self.page.locator("#marineStatus")).to_contain_text("0 of 1 loaded points")
+        pin.click()
+        expect(self.page.locator(".leaflet-popup-content")).to_contain_text("12:54 AM PT")
 
     def test_saved_data_and_branding(self):
         saved = {"marinecastFishingLog": "[]", "marinecastAppearance": "light"}
