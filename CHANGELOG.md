@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.3.0
+
+- Added continuous wind particles and a smooth MPH wind heatmap using bounded interpolation of NWS forecast samples. Missing inputs leave gaps. Gust sample symbols and the forecast timeline remain available.
+- Added directional flow near NOAA current stations that return a usable bearing. Station predictions and event times stay distinct from the interpolated wind layers.
+- Updated coverage after map pans and zooms. Added request cancellation, bounded concurrency, shared forecast caching, and animation limits for mobile browsers.
+- Added an animation toggle and automatic pause when the map is offscreen, a tab is backgrounded, or reduced motion is requested.
+- Documented commercial reuse options and operating considerations for GFS, HRRR, and satellite imagery. No new providers are active in the app.
+- Updated the deployment verifier and offline cache for the map renderer.
+
 ## 2.2.0
 
 - Added separate sustained wind heatmap and gust overlays with MPH legends. Forecast samples use NWS grid data around the selected location. The map leaves unavailable samples blank.

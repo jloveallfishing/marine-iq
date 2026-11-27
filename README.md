@@ -44,9 +44,31 @@ the same production URL to preserve storage and installed app identity.
 ### Map data
 
 The wind overlays use [NWS grid forecasts](https://www.weather.gov/documentation/services-web-api).
-NWS makes its API data open and free to use. The zoomable map displays discrete
-samples so missing readings remain visible as gaps. Gust readings are independent
-of sustained wind readings. NOAA [CO-OPS](https://tidesandcurrents.noaa.gov/api/)
+NWS makes its API data open and free to use. The map updates its sample area after panning or zooming. The wind flow and speed
+shading interpolate only within cells where all four surrounding samples have the
+required values for the selected Pacific forecast time. The point labels show
+source samples. Wide views show a limited region around the center, and areas
+outside NWS coverage stay blank. Gust readings are independent of sustained wind
+readings and appear as discrete samples. NOAA [CO-OPS](https://tidesandcurrents.noaa.gov/api/)
 supplies station-based tide and current predictions. Official NWS advisories stay
 freely accessible. The existing basemap uses OpenStreetMap with attribution and
 is subject to its [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
+
+The **Animate flow** control pauses wind and current motion. The map respects
+reduced-motion settings and suspends animation when offscreen or in a background
+tab. NOAA current streaks indicate only the supplied direction near the station.
+The nearest-event markers show their prediction time in the station popup.
+
+### Model and satellite source investigation
+
+| Source | Potential use | Integration requirements |
+| --- | --- | --- |
+| [NOAA GFS via NODD](https://registry.opendata.aws/noaa-gfs-bdp-pds/) | Global model comparison, including offshore coverage. The public 0.25° product includes 10 m wind components. | Fetch indexed GRIB2 ranges or subset upstream, then decode and publish compact, cacheable comparison data. Show model run and valid time. |
+| [NOAA HRRR via NODD](https://registry.opendata.aws/noaa-hrrr-pds/) | Higher-resolution, short-range comparison over the U.S. and nearby waters covered by the model domain. | Process on the same valid times, levels and units as GFS. Preserve domain gaps and distinguish each model from the NWS forecast. |
+| [NOAA NOMADS](https://nomads.ncep.noaa.gov/info.php?page=gribfilter) | Regional and variable subsets for testing or a low-frequency shared ingest. | NOAA asks automated loops to wait at least 10 seconds between requests. Avoid a separate ingest for each browser or map gesture. |
+| [Copernicus Sentinel-2](https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2) | Commercially reusable optical data for a detailed coastal imagery layer. | Verify service quotas and dataset attribution, or generate cached regional tiles from open Sentinel scenes. Imagery can be cloud-obscured or outdated. [Data Space terms](https://dataspace.copernicus.eu/terms-and-conditions) |
+| [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/access-basics/) | Public Web Mercator imagery for regional context. NASA-produced public imagery such as a VIIRS true-color product is a candidate. | Verify the selected product's metadata, attribution, cloud cover, dates and native zoom. Regional imagery is too coarse for dock-level mapping. [NASA data licensing](https://science.data.nasa.gov/about/license) |
+
+NOAA’s public model data can be reused commercially. Hosting, processing and
+redistribution costs depend on the implementation and traffic. No model ingest,
+imagery tiles, credentials, or new hosted services are active in this release.
