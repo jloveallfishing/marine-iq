@@ -1,0 +1,74 @@
+name: MarineCast
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Browser tests (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r tests/requirements.txt
+      - run: python -m playwright install --with-deps ${{ matrix.browser }}
+      - run: python -m unittest discover -s tests -v
+        env:
+          MARINECAST_BROWSER: ${{ matrix.browser }}
+
+  publish:
+    name: Publish GitHub Pages
+    if: github.ref == 'refs/heads/main' && vars.MARINECAST_PAGES_MODE == 'actions'
+    needs: test
+    runs-on: ubuntu-latest
+    concurrency:
+      group: marinecast-pages-publish
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    outputs:
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage app shell
+        run: |
+          mkdir site
+          cp index.html sw.js manifest.webmanifest icon-192.png icon-512.png brand.jpg brand-light.jpg site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
+        id: deploy
+
+  verify:
+    name: Verify live deployment
+    if: >-
+      ${{ !cancelled() && github.ref == 'refs/heads/main' &&
+          needs.test.result == 'success' &&
+          (needs.publish.result == 'success' || needs.publish.result == 'skipped') }}
+    needs: [test, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify published app shell
+        env:
+          MARINECAST_URL: ${{ vars.MARINECAST_URL || needs.publish.outputs.url || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
+        run: python tests/verify_deployment.py
