@@ -55,9 +55,17 @@ window.MarineMotion = (() => {
       if (heat) context.drawImage(raster, 0, 0, width, height);
     }
 
-    function stop() {
+    function cancel() {
       if (frame !== null) cancelAnimationFrame(frame);
       frame = last = null;
+    }
+
+    function clear() {
+      cancel();
+      heat = false;
+      particles = [];
+      currents = [];
+      sample = null;
       paint();
     }
 
@@ -112,12 +120,13 @@ window.MarineMotion = (() => {
     }
 
     function configure({ sample: nextSample = null, heatmap = false, stations = [] } = {}) {
-      stop();
+      cancel();
       width = container.clientWidth;
       height = container.clientHeight;
       scale = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width = Math.ceil(width * scale);
-      canvas.height = Math.ceil(height * scale);
+      const pixelWidth = Math.ceil(width * scale), pixelHeight = Math.ceil(height * scale);
+      if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+      if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
       context.setTransform(scale, 0, 0, scale, 0, 0);
       context.imageSmoothingEnabled = false;
       sample = nextSample;
@@ -148,13 +157,16 @@ window.MarineMotion = (() => {
 
     function setActive(active) {
       if (!active) {
-        if (frame !== null) stop();
+        if (frame !== null) {
+          cancel();
+          paint();
+        }
       } else if (frame === null && (particles.length || currents.length)) {
         frame = requestAnimationFrame(animate);
       }
     }
 
-    return { configure, setActive };
+    return { clear, configure, setActive };
   }
 
   return { color, field, create, gradient, stops };

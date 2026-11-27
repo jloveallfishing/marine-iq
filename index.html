@@ -81,7 +81,7 @@ $('placesearch').onclick=searchPlaces;$('spotsearch').addEventListener('keydown'
  const cache=new Map(),sourceCache=new Map(),pendingRequests=new WeakMap(),motionControl=el('marineMotion');
  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
  const motion=map&&window.MarineMotion?MarineMotion.create(map.getContainer()):null;
- let overlay=null,request=null,rows=[],grid=null,timer=null,loadedKey='',busy=false,moving=false,inView=true;
+ let overlay=null,request=null,rows=[],grid=null,timer=null,loadedKey='',mapDay='',busy=false,moving=false,inView=true;
  const kind=()=>el('marineLayer').value, day=()=>el('day').value;
  const isWind=k=>['Wind','Wind heatmap','Gusts'].includes(k);
  const heatLayer=k=>k==='Wind heatmap';
@@ -145,9 +145,18 @@ $('placesearch').onclick=searchPlaces;$('spotsearch').addEventListener('keydown'
  }
  const num=v=>v!==null&&v!==''&&v!==undefined&&Number.isFinite(Number(v))?Number(v):null;
  const minutes=t=>{const m=String(t).match(/(\d{2}):(\d{2})/);return m?+m[1]*60+ +m[2]:NaN};
- const dateTime=t=>new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(t));
+ const clockPT=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+ const dateTime=t=>clockPT.format(new Date(t));
+ function syncTimeDay(){
+   if(mapDay===day())return;
+   mapDay=day();
+   const now=new Date();
+   const minute=dateKey(now)===mapDay?Math.floor(minutes(dateTime(now))/60)*60:0;
+   el('marineTime').value=minute;
+   el('marineTimeLabel').textContent=minuteLabel(minute)+' PT';
+ }
  function stop(){clearInterval(timer);timer=null;el('marinePlay').textContent='Play forecast';}
- function clear(){if(overlay)overlay.clearLayers();motion?.configure();}
+ function clear(){if(overlay)overlay.clearLayers();motion?.clear();}
  function windMPH(f,v){v=num(v);if(v===null)return null;const u=f?.uom||'';return /:(mi_h-1|mph)$/.test(u)?v:u.endsWith('km_h-1')?v*.621371:u.endsWith('m_s-1')?v*2.236936:/:(kt|kn)$/.test(u)?v*1.150779448:null;}
  function gridAt(f,t){for(const r of f?.values||[]){const [a,b]=r.validTime.split('/'),m=b.match(/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/);if(!m)continue;const start=Date.parse(a),end=start+((+m[1]||0)*86400+(+m[2]||0)*3600+(+m[3]||0)*60+(+m[4]||0))*1000;if(t>=start&&t<end)return num(r.value);}return null;}
  async function windPoint(p,d,signal){
@@ -188,7 +197,7 @@ $('placesearch').onclick=searchPlaces;$('spotsearch').addEventListener('keydown'
  const timestamps=cp.map(r=>Date.parse(String(r.Time).replace(' ','T')+'Z'));
  if(cp.length&&cp.every(r=>/^(ebb|flood|slack)$/i.test(r.Type))&&
     !timestamps.some((time,i)=>time-timestamps[i-1]===360000))event=true;
- data=cp.map(r=>{const v=num(r.Velocity_Major??r.Velocity);const dir=num(r.Direction??(v>0?r.meanFloodDir:r.meanEbbDir));return {m:pacificMinute(r.Time),speed:v===null?null:v*1.150779448,dir:dir!==null&&dir>=0&&dir<=360?dir:null,event:r.Type||''}}).filter(r=>r.speed!==null&&Number.isFinite(r.m));}else{let pred=[];try{pred=(await q({datum:'MLLW',interval:'6'})).predictions||[]}catch{}if(!pred.length){event=true;pred=(await q({datum:'MLLW',interval:'hilo'})).predictions||[]}data=pred.map(r=>({m:pacificMinute(r.t),height:num(r.v),event:r.type})).filter(r=>r.height!==null&&Number.isFinite(r.m));if(!event)data.forEach((r,i)=>{const b=data[i+1]||data[i-1];if(b&&Math.abs(b.m-r.m)<=12){const delta=i===data.length-1?r.height-b.height:b.height-r.height;r.trend=Math.abs(delta)<.001?'Steady':delta>0?'Rising':'Falling'}});}return {name:a.name+' ('+a.id+')',lat:+a.lat,lon:+a.lng,data,source:'NOAA station prediction'+(event?' · events only':''),tol:event?3:6,showNearestEvent:k==='Currents'&&event};}
+ data=cp.map(r=>{const v=num(r.Velocity_Major??r.Velocity);const dir=num(v>0?r.meanFloodDir:r.meanEbbDir);return {m:pacificMinute(r.Time),speed:v===null?null:v*1.150779448,dir:dir!==null&&dir>=0&&dir<=360?dir:null,event:r.Type||''}}).filter(r=>r.speed!==null&&Number.isFinite(r.m));}else{let pred=[];try{pred=(await q({datum:'MLLW',interval:'6'})).predictions||[]}catch{}if(!pred.length){event=true;pred=(await q({datum:'MLLW',interval:'hilo'})).predictions||[]}data=pred.map(r=>({m:pacificMinute(r.t),height:num(r.v),event:r.type})).filter(r=>r.height!==null&&Number.isFinite(r.m));if(!event)data.forEach((r,i)=>{const b=data[i+1]||data[i-1];if(b&&Math.abs(b.m-r.m)<=12){const delta=i===data.length-1?r.height-b.height:b.height-r.height;r.trend=Math.abs(delta)<.001?'Steady':delta>0?'Rising':'Falling'}});}return {name:a.name+' ('+a.id+')',lat:+a.lat,lon:+a.lng,data,source:'NOAA station prediction'+(event?' · events only':''),tol:event?3:6,showNearestEvent:k==='Currents'&&event};}
  async function pool(items,fn,signal){let out=[],i=0;await Promise.all(Array.from({length:3},async()=>{while(!signal.aborted&&i<items.length){const p=items[i++];try{out.push(await fn(p))}catch{}}}));return out;}
  function draw(){const m=Number(el('marineTime').value);el('marineTimeLabel').textContent=minuteLabel(m)+' PT';clear();if(!map||moving||loadedKey!==key())return;
  if(!overlay)overlay=L.layerGroup().addTo(map);
@@ -227,6 +236,7 @@ $('placesearch').onclick=searchPlaces;$('spotsearch').addEventListener('keydown'
 
  async function refresh({force=false}={}){
    stop();
+   syncTimeDay();
    syncPins();
    if(!map){el('marineStatus').textContent='Map unavailable. Reload the app to retry.';return;}
    request?.abort();
