@@ -205,9 +205,11 @@ window.MarineCatch = (() => {
       const warning = blocked || (numeric && (intake>cap || (cap>0 && intake===cap)));
       if (numeric && intake>cap) messages.push('Limit exceeded · '+intake+' / '+cap);
       else if (numeric && cap>0 && !ambiguous) {
-        const remaining = (cap-intake)+' under '+(row.groundfish?'sublimit':'bag cap');
-        messages.push((row.groundfish?'Sublimit · '+intake+' / '+cap+' · ':'')+remaining);
-        if (intake===cap) messages.push(row.groundfish?'Sublimit reached':'Bag limit reached');
+        if (intake===cap) messages.push((row.groundfish?'Sublimit':'Bag limit')+' reached · '+intake+' / '+cap);
+        else {
+          const remaining = (cap-intake)+' under '+(row.groundfish?'sublimit':'bag cap');
+          messages.push((row.groundfish?'Sublimit · '+intake+' / '+cap+' · ':'')+remaining);
+        }
       } else if (!blocked && (!row.groundfish || ambiguous)) messages.push('Verified allowance unavailable');
       if (ambiguous && numeric && cap>0 && intake===cap) messages.push('Known catches reach the sublimit');
       setText(view.limit,messages.join(' · '));

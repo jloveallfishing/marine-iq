@@ -971,7 +971,7 @@ class MarineCastTests(unittest.TestCase):
         page.get_by_label("Target species").select_option("vermilion-rockfish")
         page.get_by_role("button", name="Add species").click()
         vermilion = page.locator('[data-catch-species="vermilion-rockfish"]')
-        expect(vermilion).to_contain_text("Sublimit · 2 / 2 · 0 under sublimit")
+        expect(vermilion).to_contain_text("Sublimit reached · 2 / 2")
         vermilion.get_by_role("button", name="Add retained Vermilion rockfish").click()
         expect(vermilion).to_contain_text("Limit exceeded · 3 / 2")
 
