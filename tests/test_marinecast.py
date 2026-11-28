@@ -865,7 +865,7 @@ class MarineCastTests(unittest.TestCase):
         })()""")
         self.open_map()
         self.page.wait_for_function(self.heat_has_color)
-        count = self.page.evaluate("window.heatRasters")
+        count = self.page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(window.heatRasters))))")
         self.assertGreater(count, 0)
         self.page.evaluate("map.panBy([18, 0], {animate:false})")
         self.page.wait_for_timeout(350)

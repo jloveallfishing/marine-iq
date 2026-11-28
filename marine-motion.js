@@ -185,7 +185,10 @@ window.MarineMotion = (() => {
     let view = {x: 0, y: 0, scale: 1};
 
     function paintHeat() {
-      heatContext.clearRect(0, 0, width, height);
+      heatContext.save();
+      heatContext.setTransform(1,0,0,1,0,0);
+      heatContext.clearRect(0,0,heatCanvas.width,heatCanvas.height);
+      heatContext.restore();
       if (!extent) return;
       const {x, y, scale} = view;
       heatContext.save();
