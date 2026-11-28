@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.1';
+  const release = '3.0.2';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -50,10 +50,6 @@ window.MarineRules = (() => {
     return details;
   }
 
-  function paragraphs(...text) {
-    return text.map(value => node('p',value));
-  }
-
   function addPhoto(details, asset) {
     const image = node('img');
     image.alt = asset.alt;
@@ -69,142 +65,146 @@ window.MarineRules = (() => {
     details.append(image, credit);
   }
 
-  function addGroundfish(details, info, data, region, tripDate, today, method) {
-    const dated = tripDate >= info.from && tripDate <= info.through &&
+  function groundfishContext(info, region, tripDate, today, method) {
+    const current = info.regions.includes(region) && tripDate >= info.from && tripDate <= info.through &&
       today >= info.verified && today <= info.reviewBy;
-    const context = info.regions.includes(region);
-    const holding = dated && context;
-    const split = region === 'north' ? 'Northern area' : 'outside Northern area';
-    const southernBoatClosure = holding && region === 'south' && method === 'boat';
-    const pending = 'Status unavailable for the selected date or area. Use the current official rules.';
-    details.append(group('Combined daily bag limit', ...paragraphs(holding
-      ? 'Up to 10 rockfish, cabezon and eligible greenlings combined per person where retention is allowed. Each retained fish counts toward those 10. For example, one copper rockfish leaves up to nine spots for other eligible fish, subject to their own sublimits.'
-      : 'Published reference: CDFW lists a 10-fish combined limit for the 2026 complex. ' + pending)));
+    return {current, southernBoat:current && region === 'south' && method === 'boat'};
+  }
+
+  function addGroundfish(details, extra, info, data, region, method, context) {
+    const {current,southernBoat} = context;
     const limits = node('dl');
     for (const fish of info.limits) {
       const limit = fish.limit ?? (region === 'north' ? fish.north : fish.other);
-      const value = southernBoatClosure && fish.class.startsWith('Nearshore')
-        ? 'No boat retention during the Southern closure'
-        : holding && limit ? limit + ' per person where retained' + (fish.north ? ' · ' + split : '') : '';
-      limits.append(node('dt',fish.name),node('dd',[value,fish.class,fish.note].filter(Boolean).join(' · ')));
+      const value = !current ? 'Current limit unverified' :
+        southernBoat && fish.class.startsWith('Nearshore') ? 'No boat retention during the Southern closure' :
+        limit ? limit + ' per person' + (fish.north ? (region === 'north' ? ' · Northern area' : ' · outside Northern area') : '') :
+        'Counts toward the combined limit';
+      limits.append(node('dt',fish.name));
+      const detail = node('dd',value);
+      if (fish.image) {
+        const photo = group('Photo · '+fish.name);
+        addPhoto(photo,fish.image);
+        detail.append(photo);
+      }
+      limits.append(detail);
     }
-    details.append(group('Individual species bag limits', ...(holding ? [] : paragraphs(pending)), limits));
-    const banned = info.prohibited.map(fish => fish.name).join(' · ');
-    details.append(group('Prohibited species and retention', ...paragraphs(
-      (holding ? 'Zero retention: ' : '2026 published no-retention list: ') + banned + '. These fish do not belong in a retained bag.')));
-    const coast = info.areas[region];
-    let season = pending;
-    if (holding && coast && method !== 'shore' && method !== 'dive') {
-      season = region === 'south'
-        ? 'Published June schedule for October 1–December 31: nearshore rockfish, cabezon and greenlings closed to boat-based take and possession throughout the area. Shelf and slope rockfish are restricted to seaward of the 50-fathom line. Check CDFW in-season notices and Groundfish Exclusion Areas for changes.'
-        : 'Published April 1–December 31 boat season allows all depths in this management area. Local area closures, including Rockfish Conservation Areas and MPAs where applicable, still control.';
-    } else if (holding && (method === 'shore' || method === 'dive')) {
-      season = 'CDFW’s shore and spearfishing exemptions generally apply year-round. The retained species and method conditions below still apply.';
-    } else if (holding && region === 'bay') {
-      season = 'The Bay summary directs anglers to the San Francisco Management Area table. Confirm the exact Bay water and any local restrictions before fishing.';
+    details.append(group('Individual species bag limits',limits));
+    const prohibited = node('div','','rule-prohibited');
+    prohibited.append(node('h3', current ? 'Prohibited retention' : '2026 reference · prohibited retention'));
+    for (const fish of info.prohibited) {
+      if (fish.image) {
+        const photo = group(fish.name);
+        addPhoto(photo,fish.image);
+        prohibited.append(photo);
+      } else prohibited.append(node('p',fish.name));
     }
-    const calendar = holding && coast && method === 'boat'
-      ? region === 'south'
-        ? '2026 published boat calendar: January–March closed; April–June all depths; July–September shoreward of the 50-fathom line. The October–December restrictions are above.'
-        : '2026 published boat calendar: January 1–March 31 closed.'
-      : '';
-    details.append(group('Regional fishing seasons', ...paragraphs(season,
-      ...[calendar].filter(Boolean),
-      coast ? 'Management area: ' + coast + '.' : 'Choose an ocean management area to see its boundary.',
-      'Summary verified ' + dateLabel(info.verified) + ' (Pacific).')));
-    details.append(group('Boat versus shore fishing', ...paragraphs(
-      holding ? 'Boat regulations depend on the management area. Shore-based anglers may use the shore exemption only without a vessel assisting take, transport or possession. When boat groundfish fishing is closed, a vessel used for the diving exemption may carry only spearfishing gear.' : pending)));
-    details.append(group('Depth restrictions and regulatory boundary lines', ...paragraphs(
-      'A 50-fathom Rockfish Conservation Area line means 300 feet in the regulation’s name. Its connected federal waypoints define the boundary, so a depth sounder reading alone does not establish which side you are on.'),
-      link(...data.sources.groundfishBoundaries)));
-    details.append(group('Fishing gear and hook restrictions', ...paragraphs(holding
-      ? 'When angling for these fish, use one line with at most two hooks. In ocean waters a boat taking or possessing covered groundfish must have a descending device immediately available. Additional local gear restrictions can apply.' : pending)));
-    details.append(group('Transit restrictions', ...paragraphs(holding
-      ? 'Section 27.20 has a transit and possession exception for some area closures. It does not allow possession in a management area where that species is prohibited in all its waters or above that area’s bag limit. Gear generally must be undeployed, subject to the specified hoop net, crab trap and dip-net exceptions.' : pending)));
-    const photos = [...info.prohibited,...info.limits].filter(fish=>fish.image).map(fish=>{
-      const photo = group(fish.name);
-      addPhoto(photo,fish.image);
-      return photo;
-    });
-    details.append(group('Fish identification guide', ...paragraphs(
-      'Check multiple identifying features in the official comparison guides. If identification is uncertain, avoid keeping the fish.'),
-      ...['rockfishID','copperID','noaaRockfishID','noaaBocaccioID'].map(id=>{
-        const item = node('p');
-        item.append(link(...data.sources[id]));
-        return item;
-      }),...photos));
+    details.append(prohibited);
+    if (current) {
+      let season = 'Check local closures and the applicable depth boundary.';
+      if (southernBoat) {
+        season = 'October 1–December 31 · Nearshore rockfish, cabezon and greenlings: no boat retention. Shelf and slope rockfish: seaward of the 50-fathom boundary. Groundfish Exclusion Areas still apply.';
+      } else if (method === 'shore') {
+        season = 'Shore exemption · Year-round for otherwise eligible fish. A vessel cannot assist take, transport or possession.';
+      } else if (method === 'dive') {
+        season = 'Spearfishing exemption · Year-round for otherwise eligible fish. During boat closures, only spearfishing gear may be aboard under this exemption.';
+      } else if (region === 'bay') {
+        season = 'Bay waters refer to the San Francisco management table. Verify the applicable water and local boundary.';
+      } else if (info.areas[region]) {
+        season = 'April 1–December 31 · Published boat season at all depths, subject to local closures.';
+      }
+      details.append(node('p',season,'rule-retention'));
+      if (method !== 'dive') details.append(node('p',method === 'boat'
+        ? 'One line, two hooks maximum. Carry a descending device in ocean waters.'
+        : 'One line, two hooks maximum when angling for these fish.','rule-retention'));
+      else details.append(node('p','Have a descending device available when taking or possessing covered groundfish from a vessel in ocean waters.','rule-retention'));
+    }
+    extra.append(
+      node('p','Example: one retained copper rockfish leaves at most nine slots for other eligible fish.'),
+      node('p','Transit exceptions are limited. Possession remains prohibited where a species is prohibited throughout the management area or exceeds its bag limit. Keep gear undeployed unless a specific exception applies.'),
+      node('p','The federal waypoints define the 50-fathom (300-foot) boundary. A depth sounder alone cannot determine which side applies.'),
+      link(...data.sources.groundfishBoundaries),
+      node('p','Groundfish details verified '+dateLabel(info.verified)+' (Pacific).'));
+    for (const id of ['rockfishID','copperID','noaaRockfishID','noaaBocaccioID']) {
+      const row = node('p');
+      row.append(link(...data.sources[id]));
+      extra.append(row);
+    }
   }
 
   function ruleCard(species, entries, region, tripDate, today, data, favorites, method) {
     const details = node('details', '', 'rule-card');
     const summary = node('summary', species.name);
     details.append(summary);
-    if (species.scientific) details.append(node('p', species.scientific, 'muted'));
-    if (species.image) addPhoto(details,species.image);
+    const extra = group('Additional Regulations');
+    if (species.scientific) extra.append(node('p',species.scientific,'muted'));
+    if (species.image) addPhoto(extra,species.image);
     const regional = entries.filter(entry => entry.regions.includes(region));
     const inDate = entry => tripDate >= entry.from && tripDate <= entry.through &&
       today >= entry.verified && today <= entry.reviewBy;
     const current = regional.filter(inDate);
-    if (current.length) summary.after(node('p', 'Verified summary for the selected date · check local exceptions', 'muted'));
     const reference = regional.filter(entry => entry.kind === 'reference' && !inDate(entry));
     const restrictions = Object.assign({}, ...current.map(entry => entry.rules));
     const published = Object.assign({}, ...reference.map(entry => entry.rules));
-    const preview = [
-      restrictions.minimum?.length <= 40 && 'Min ' + restrictions.minimum,
-      restrictions.bag?.length <= 40 && 'Bag ' + restrictions.bag,
-      restrictions.possession?.length <= 40 && 'Possession ' + restrictions.possession
-    ].filter(Boolean).join(' · ');
-    summary.append(node('span', preview || (current.length ? 'See restrictions' :
-      reference.length ? 'Published reference only' : 'No verified rules for this region/date'), 'muted rule-preview'));
-    if (!current.length || regional.some(entry => entry.kind !== 'reference' && !inDate(entry))) {
-      details.append(node('p', reference.length
-        ? 'Some information is published reference only. Fishing status for the selected date is unverified.'
-        : 'Some rules are unverified for this date or region. Check current official notices.', 'warn'));
+    const groundfish = data.groundfish.species.includes(species.id);
+    const context = groundfishContext(data.groundfish,region,tripDate,today,method);
+    const statuses = current.map(entry=>entry.status);
+    let status = ['closed','retention','conditional','open'].find(key=>statuses.includes(key)) || 'unverified';
+    if (groundfish) {
+      status = !context.current ? 'unverified' :
+        context.southernBoat && species.id !== 'rockfish' ? 'closed' : 'conditional';
     }
-    function ruleRows(values, keys, historical = false) {
-      const rows = node('dl');
-      for (const key of keys) {
-        if (values[key] && (!historical || !restrictions[key])) rows.append(node('dt', fields[key]), node('dd', values[key]));
-      }
-      return rows;
+    const labels = {closed:'Closed',retention:'No retention',conditional:'Conditional',open:'Season open',unverified:'Unverified'};
+    summary.append(node('span',labels[status], 'rule-status rule-status-'+status));
+    const ordinaryCount = value => value?.match(/^(\d+) (?:fish|crabs)(?: combined)?(?: under the (?:ordinary|standard) limit)?$/)?.[1];
+    const limits = {...restrictions};
+    if (groundfish) {
+      limits.bag = context.current ? (status === 'closed' ? '0 fish' : '10 fish combined') : null;
+      limits.possession = null;
     }
-    if (species.groups) {
-      for (const [label,keys] of [
-        ['Size, bag and possession limits',['minimum','maximum','bag','possession']],
-        ['Season and closure details',['season','depth','special']],
-        ['Fishing methods and permits',['methods','permits']]
-      ]) {
-        const rows = ruleRows(restrictions,keys);
-        if (rows.childElementCount) details.append(group(label,rows));
-      }
-      const rows = ruleRows(published,Object.keys(fields),true);
-      if (rows.childElementCount) details.append(group('Published reference · verify before use',rows));
+    if (limits.bag === limits.possession || (ordinaryCount(limits.bag) && ordinaryCount(limits.bag) === ordinaryCount(limits.possession))) {
+      limits.possession = null;
+    }
+    const metrics = node('span','','rule-quick-limits');
+    for (const key of ['minimum','maximum','bag','possession']) {
+      if (limits[key]) metrics.append(node('span',fields[key],'rule-quick-label'),node('strong',limits[key]));
+    }
+    if (metrics.childElementCount) summary.append(metrics);
+    if (groundfish) {
+      if (context.current && status !== 'closed') details.append(node('p','Each retained fish counts toward the 10-fish rockfish, cabezon and greenling limit.','rule-retention'));
+      addGroundfish(details,extra,data.groundfish,data,region,method,context);
     } else {
-      const rows = ruleRows(restrictions,Object.keys(fields));
-      if (rows.childElementCount) details.append(rows);
-      const historical = ruleRows(published,Object.keys(fields),true);
-      if (historical.childElementCount) details.append(node('h3','Published reference · verify before use'),historical);
+      for (const key of ['season','depth','special','methods']) {
+        if (restrictions[key] && (key === 'season' || restrictions[key] !== restrictions.season)) {
+          details.append(node('p',restrictions[key],'rule-retention'));
+        }
+      }
     }
-    if (current.length < regional.length || ['minimum','maximum','bag','possession','season'].some(key => !restrictions[key])) {
-      details.append(node('p', 'Unlisted limits or conditions need official confirmation. Check local boundaries and closures.', 'muted'));
+    if ((status === 'unverified' || regional.some(entry=>entry.kind !== 'reference'&&!inDate(entry))) && regional.length) {
+      details.append(node('p',reference.length ? 'Published reference available below. Fishing status is unverified.'
+        : 'Some rules are unverified for this date or region. Check current official notices.','warn'));
     }
-    const dates = new Set([...current, ...reference].map(entry => [
-        entry.effective && `Effective ${dateLabel(entry.effective)}`,
-        `Last verified ${dateLabel(entry.verified)}`
+    if (restrictions.permits) extra.append(node('p',restrictions.permits));
+    const historical = node('dl');
+    for (const [key,label] of Object.entries(fields)) {
+      if (published[key] && !restrictions[key]) historical.append(node('dt',label),node('dd',published[key]));
+    }
+    if (historical.childElementCount) extra.append(node('h3','Published reference · verify before use'),historical);
+    const dates = new Set([...current,...reference].map(entry=>[
+      entry.effective && 'Effective '+dateLabel(entry.effective),
+      'Last verified '+dateLabel(entry.verified)
     ].filter(Boolean).join(' · ')));
-    for (const date of dates) details.append(node('p', date, 'muted'));
-    const sources = new Set([data.regions[region]?.source, ...species.sources,
-      ...regional.flatMap(entry => entry.sources)].filter(Boolean));
-    const list = node('ul', '', 'rules-links');
+    for (const date of dates) extra.append(node('p',date,'muted'));
+    const sources = new Set([data.regions[region]?.source,...species.sources,
+      ...regional.flatMap(entry=>entry.sources)].filter(Boolean));
+    const links = node('ul','','rules-links');
     for (const id of sources) {
       const item = node('li');
       item.append(link(...data.sources[id]));
-      list.append(item);
+      links.append(item);
     }
-    if (data.groundfish.species.includes(species.id)) {
-      addGroundfish(details,data.groundfish,data,region,tripDate,today,method);
-    }
-    details.append(species.groups ? group('Official regulatory sources',list) : list);
+    extra.append(node('h3','Official regulatory sources'),links);
+    details.append(extra);
     const wrapper = node('section', '', 'rule-section');
     const favorite = node('button', favorites.has(species.id) ? '★' : '☆', 'rule-star');
     favorite.type = 'button';
@@ -277,7 +277,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=301').then(response => {
+      pending = fetch('./fishing-rules.json?v=302').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {

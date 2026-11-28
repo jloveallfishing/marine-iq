@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.2
+
+- Render and reuse published NWS grid-cell footprints, with continuous wind shading and fresh directional particles plus supported interpolation. Make heat shading the default for Wind while preserving saved preferences.
+- Simplify Rules cards around retention status, readable limits and visible primary restrictions. Group sources, licensing and historical reference under Additional Regulations.
+- Keep the rockfish combined limit, regional sublimits and prohibited species separate. Add a verified NOAA canary photo alongside its sublimit.
+- Prevent the Change location/date action from clipping on narrow screens. Retain app updates at the permanent URL.
+- Document NDFD, HRRR and GFS regional feed options and estimated infrastructure costs.
+
 ## 3.0.1
 
 - Repair the Home GPS status markup and restore success and permission-denied feedback. Add compact trip names, US-style dates in the trip header and Rules, and icons in More.
