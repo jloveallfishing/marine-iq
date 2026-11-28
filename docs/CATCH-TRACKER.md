@@ -1,6 +1,6 @@
 # Personal Catch Tracker
 
-Open Catch Tracker from Home or More. Set the trip location and Pacific date, choose the applicable waters and groundfish method, then add the species you want to count. Retained counts are prominent. Expand Released to record releases separately. Complete the trip and save it to the fishing log when ready. A completed trip can still be resumed before saving.
+Open Catch Tracker from Home or More. Set the trip location and Pacific date, choose the applicable waters and groundfish method, then add the species you want to count. Retained counts are prominent. The trip totals and any tracked combined groundfish cap stay visible while scrolling. Expand Released to record releases separately or remove a species. Removing recorded catches requires confirmation. Complete the trip and save it to the fishing log when ready. A completed trip can still be resumed before saving.
 
 MarineCast stores one active or completed draft on the device. A completed trip becomes one fishing-log entry with species-level counts and a stable trip ID. Retrying the same save reuses that ID. Existing log entries and backups still work. Backups include completed trips saved in the log. The active draft stays in this browser and persists through app updates and offline reloads.
 

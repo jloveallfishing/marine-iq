@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.1
+
+- Keep Catch Tracker photos and controls in place during count changes, with compact cards, sticky totals, and immediate verified limit warnings.
+- Allow anglers to remove a species from an active trip, with confirmation when it already has recorded catches.
+
 ## 3.1.0
 
 - Add an offline-capable personal Catch Tracker on Home and More with separate retained and released counts, verification-dated limit checks, groundfish caps and completed trip saving in the fishing log.
