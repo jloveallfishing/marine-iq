@@ -713,7 +713,7 @@ MarineRules.install({
  };
  motion?.configure({sample,bearings:isWind(k)&&k!=='Gusts'&&freshSamples.some(field=>field.flow.length)?freshBearing:null,heatmap:extent,wind:isWind(k)&&k!=='Gusts'&&flowEnabled,stations,shapes:flowCells});
  syncMotion();
- const source=k==='Wind'||heatLayer(k)?'NWS grid forecast. Small colored arrows show interpolated wind direction and speed within supported coverage. ':k==='Gusts'?'NWS grid forecast samples. ':'NOAA station predictions. ';
+ const source=k==='Wind'||heatLayer(k)?'NWS grid forecast. Small colored arrows show direction and speed, interpolated only between available samples. ':k==='Gusts'?'NWS grid forecast samples. ':'NOAA station predictions. ';
  const loading=metadataLoading||[...wanted].some(([id])=>running.has(id)||needsData(id,plan.k));
  const failed=[...wanted].some(([id])=>predictions.get(id)?.failed);
  const message=source+(count+events||sample?count+' loaded points have a reading at this time. ':
