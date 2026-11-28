@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.4';
+  const release = '3.0.5';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -50,11 +50,13 @@ window.MarineRules = (() => {
     return details;
   }
 
-  function photoCredit(asset, tag) {
+  function photoCredit(asset, tag, compact = false) {
     const credit = node(tag,'','rule-photo-credit');
     if (asset.label) credit.append(asset.label+' · ');
-    credit.append(link(asset.credit,asset.source));
-    if (asset.license) credit.append(' · ',link(asset.license[0],asset.license[1]));
+    const source = link(compact ? 'Credits' : asset.credit,asset.source);
+    if (compact) source.setAttribute('aria-label',asset.credit);
+    credit.append(source);
+    if (!compact && asset.license) credit.append(' · ',link(asset.license[0],asset.license[1]));
     return credit;
   }
 
@@ -123,7 +125,7 @@ window.MarineRules = (() => {
       enlarge.hidden = true;
       unavailable.hidden = false;
     });
-    container.append(enlarge,unavailable,photoCredit(asset,inline ? 'span' : 'figcaption'));
+    container.append(enlarge,unavailable,photoCredit(asset,inline ? 'span' : 'figcaption',true));
     return container;
   }
 
@@ -303,6 +305,49 @@ window.MarineRules = (() => {
     return wrapper;
   }
 
+  function installComparisons(panel, data) {
+    const {guides,groups,labels,species} = data.comparisons;
+    const photos = new Map([...data.groundfish.limits,...data.groundfish.prohibited]
+      .map(row=>[row.name,row.images || [row.image]]));
+    const select = node('select');
+    select.id = 'rule-comparison-group';
+    const label = node('label','Rockfish group');
+    label.htmlFor = select.id;
+    const results = node('div','','rule-comparison-grid');
+    const source = node('p','','muted');
+    for (const id of Object.keys(groups)) select.append(new Option(labels[id],id));
+    const references = node('ul','','rules-links');
+    for (const [label,url] of Object.values(guides)) {
+      const row = node('li');
+      row.append(link(label,url));
+      references.append(row);
+    }
+    panel.append(label,select,results,source,group('Identification guides',references));
+
+    function render() {
+      if (!panel.open) return;
+      const guide = guides[select.value];
+      results.replaceChildren(...groups[select.value].map(name=>{
+        const entry = species[name];
+        const card = node('article','','rule-comparison-species');
+        const tip = {text:entry.tip,source:guide[1]};
+        card.append(node('h3',name));
+        const images = entry.images || photos.get(entry.groundfish) || [];
+        if (!images.length) card.append(node('p','Verified photo pending','rule-photo-missing'));
+        for (const asset of images) card.append(photo(asset,name+' rockfish',tip));
+        card.append(node('p',entry.tip));
+        return card;
+      }));
+      source.replaceChildren(link('Open the identification guide',guide[1]));
+    }
+
+    select.addEventListener('change',render);
+    panel.addEventListener('toggle',()=>{
+      if (panel.open && !results.childElementCount) render();
+    });
+    panel.hidden = false;
+  }
+
   function install({getTrip, today}) {
     const page = document.getElementById('page-rules');
     page.append(photoViewer);
@@ -451,7 +496,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=304').then(response => {
+      pending = fetch('./fishing-rules.json?v=305').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {
@@ -470,6 +515,7 @@ window.MarineRules = (() => {
           if (Object.hasOwn(snapshot.regions, saved)) select.value = saved;
         } catch {}
         data = snapshot;
+        installComparisons(document.getElementById('rule-comparisons'),data);
         render();
       }).catch(() => {
         cards.textContent = 'Regulations unavailable. Use the official links above.';

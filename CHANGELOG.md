@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.5
+
+- Add expandable side-by-side rockfish comparisons with distinguishing traits, credited photos where available, and links to CDFW, RecFIN, ODFW and NOAA identification guides.
+- Remove black bass, sunfish, bluegill and crappie from Rules. Keep saved fishing logs and the California regulatory snapshot for remaining species.
+- Shorten photo credit labels while preserving full attribution in the viewer. Adjust Rules layout on narrow screens.
+
 ## 3.0.4
 
 - Add a tap-to-enlarge identification viewer with uncropped photos, source credits, keyboard dismissal and light and dark styling.

@@ -1,5 +1,5 @@
 {
-  "release": "3.0.4",
+  "release": "3.0.5",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -487,26 +487,6 @@
       }
     },
     {
-      "id": "black-bass",
-      "name": "Black bass",
-      "scientific": "Micropterus spp.",
-      "aliases": [
-        "largemouth",
-        "smallmouth",
-        "spotted bass"
-      ],
-      "sources": [
-        "freshwater"
-      ],
-      "image": {
-        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2022-02/adult%20largemouth%20bass%20at%20gavins%20point%20nfh%20by%20sam%20stukel-usfws.jpg?itok=x2m1Pz5V",
-        "alt": "Adult largemouth bass, one species in the black bass group",
-        "credit": "Photo: Sam Stukel/USFWS",
-        "source": "https://www.fws.gov/media/adult-largemouth-bass",
-        "reuse": "https://www.fws.gov/media/adult-largemouth-bass"
-      }
-    },
-    {
       "id": "greenling",
       "name": "Kelp and rock greenlings",
       "scientific": "Hexagrammos spp.",
@@ -521,50 +501,6 @@
         "inseason"
       ],
       "groups": true
-    },
-    {
-      "id": "sunfish-crappie",
-      "name": "Sunfish and crappie",
-      "aliases": [
-        "bluegill",
-        "redear",
-        "black crappie",
-        "white crappie"
-      ],
-      "sources": [
-        "freshwater",
-        "brannan"
-      ],
-      "images": [
-        {
-          "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/images/2018-02/31861.jpg?itok=0XPvUw51",
-          "alt": "Bluegill",
-          "credit": "Photo: Sam Stukel / USFWS",
-          "source": "https://www.fws.gov/media/bluegill-8",
-          "reuse": "https://www.fws.gov/media/bluegill-8",
-          "label": "Bluegill"
-        },
-        {
-          "label": "Black crappie",
-          "alt": "Black crappie at Gavins Point National Fish Hatchery",
-          "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2023-08/53084649608_2204342f63_o.jpg?itok=AC58Bw9c",
-          "credit": "Photo: Sam Stukel / USFWS",
-          "source": "https://www.fws.gov/media/black-crappie-7",
-          "reuse": "https://www.fws.gov/media/black-crappie-7"
-        },
-        {
-          "label": "White crappie",
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Pomoxis_annularis_453185302.jpg/330px-Pomoxis_annularis_453185302.jpg",
-          "alt": "White crappie (Pomoxis annularis)",
-          "credit": "Photo: Fishes of Texas team",
-          "source": "https://commons.wikimedia.org/wiki/File:Pomoxis_annularis_453185302.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Pomoxis_annularis_453185302.jpg",
-          "license": [
-            "CC BY-SA 4.0",
-            "https://creativecommons.org/licenses/by-sa/4.0/"
-          ]
-        }
-      ]
     }
   ],
   "entries": {
@@ -1138,52 +1074,6 @@
         "status": "retention"
       }
     ],
-    "black-bass": [
-      {
-        "regions": [
-          "delta"
-        ],
-        "through": "2026-12-31",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-31",
-        "sources": [
-          "freshwater",
-          "possession"
-        ],
-        "rules": {
-          "minimum": "12 inches total length",
-          "bag": "5 fish combined",
-          "possession": "5 fish combined under the ordinary limit",
-          "season": "Year-round under the Delta baseline. Check special waterbody closures under §§ 7.40 and 7.50."
-        },
-        "kind": "reference",
-        "from": "2026-11-28",
-        "status": "conditional"
-      }
-    ],
-    "sunfish-crappie": [
-      {
-        "kind": "reference",
-        "regions": [
-          "delta"
-        ],
-        "rules": {
-          "minimum": "No minimum size under the Delta baseline",
-          "bag": "25 sunfish and crappie combined",
-          "possession": "25 combined under the ordinary possession rule",
-          "season": "Published year-round baseline, subject to district and waterbody closures (§§ 5.82, 7.40 and 7.50)."
-        },
-        "sources": [
-          "freshwater",
-          "possession"
-        ],
-        "from": "2026-11-28",
-        "through": "2026-12-31",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-31",
-        "status": "conditional"
-      }
-    ],
     "coho": [
       {
         "regions": [
@@ -1693,6 +1583,236 @@
     "Vermilion and sunset rockfish": {
       "text": "Vermilion and sunset are a cryptic species pair. External features alone cannot reliably distinguish them. The guide compares the group with canary and yelloweye.",
       "source": "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=138378&inline="
+    }
+  },
+  "comparisons": {
+    "guides": {
+      "nearshore": [
+        "Nearshore Rockfish of California",
+        "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=36305&inline="
+      ],
+      "north": [
+        "Common Groundfish of Northern California",
+        "https://www.recfin.org/wp-content/uploads/2025/04/IDENTIFICATION-OF-COMMON-GROUNDFISH-SPECIES-of-Northern-California.pdf"
+      ],
+      "south": [
+        "Common Groundfish of Central and Southern California",
+        "https://www.recfin.org/wp-content/uploads/2025/04/IDENTIFICATION-OF-COMMON-GROUNDFISH-SPECIES-of-central-and-Southern-California.pdf"
+      ],
+      "red": [
+        "Yelloweye, Vermilion/Sunset and Canary",
+        "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=138378&inline="
+      ],
+      "copper": [
+        "Copper, Canary and Gopher",
+        "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=197164&inline="
+      ],
+      "dark": [
+        "Quillback, China and Black-and-Yellow",
+        "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=197176&inline="
+      ],
+      "black": [
+        "Black versus Blue",
+        "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=95080&inline="
+      ],
+      "deacon": [
+        "Blue versus Deacon · ODFW identification",
+        "https://myodfw.com/articles/rockfish-identification-tips"
+      ],
+      "tail": [
+        "Yellowtail, Olive and Widow",
+        "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=213022&inline="
+      ],
+      "juvenile": [
+        "NOAA juvenile rockfish photo guide",
+        "https://repository.library.noaa.gov/view/noaa/4460"
+      ],
+      "yelloweye-stages": [
+        "NOAA yelloweye age-class photo gallery",
+        "https://repository.library.noaa.gov/view/noaa/50443/noaa_50443_DS1.pdf"
+      ],
+      "portal": [
+        "California Marine Species Portal",
+        "https://marinespecies.wildlife.ca.gov/"
+      ]
+    },
+    "groups": {
+      "red": [
+        "Yelloweye",
+        "Vermilion/Sunset",
+        "Canary"
+      ],
+      "copper": [
+        "Copper",
+        "Canary",
+        "Gopher"
+      ],
+      "dark": [
+        "Quillback",
+        "China",
+        "Black-and-Yellow"
+      ],
+      "black": [
+        "Black",
+        "Blue"
+      ],
+      "deacon": [
+        "Blue",
+        "Deacon"
+      ],
+      "tail": [
+        "Yellowtail",
+        "Olive",
+        "Widow"
+      ]
+    },
+    "species": {
+      "Yelloweye": {
+        "tip": "Adults have a yellow iris, a smooth chin and dark fin edges. Juveniles typically have two pale stripes along the side.",
+        "groundfish": "Yelloweye rockfish"
+      },
+      "Vermilion/Sunset": {
+        "tip": "Look for a rough chin and upper jaw. Vermilion and sunset cannot reliably be separated by appearance alone.",
+        "groundfish": "Vermilion and sunset rockfish"
+      },
+      "Canary": {
+        "tip": "Look for a continuous gray band along the lateral line, a smooth chin and a slanted anal fin.",
+        "groundfish": "Canary rockfish"
+      },
+      "Copper": {
+        "tip": "The rear two-thirds of the lateral line is generally pale. Body color varies from copper to dark brown.",
+        "groundfish": "Copper rockfish"
+      },
+      "Gopher": {
+        "tip": "Look for pink or gray blotches on a dark body, with irregular color along the lateral line.",
+        "images": [
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg/330px-Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
+            "alt": "Gopher rockfish on a reef at Point Lobos",
+            "credit": "Photo: Lt. John Crofts / NOAA Corps",
+            "source": "https://commons.wikimedia.org/wiki/File:Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
+            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg/960px-Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
+            "label": "Gopher rockfish",
+            "license": [
+              "CC BY 2.0",
+              "https://creativecommons.org/licenses/by/2.0/"
+            ]
+          },
+          {
+            "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Sebastes_carnatus_%28juvenile%29.jpg",
+            "alt": "Juvenile gopher rockfish",
+            "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
+            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_carnatus_%28juvenile%29.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_carnatus_%28juvenile%29.jpg",
+            "label": "Juvenile gopher rockfish"
+          }
+        ]
+      },
+      "Quillback": {
+        "tip": "Look for tall dorsal spines and light freckles near the head. The lighter markings generally do not reach the tail.",
+        "groundfish": "Quillback rockfish"
+      },
+      "China": {
+        "tip": "A broad yellow band runs back along the lateral line on the dark body.",
+        "images": [
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/China_rockfish.jpg/250px-China_rockfish.jpg",
+            "alt": "China rockfish showing the yellow side band",
+            "credit": "Photo: Gpbodi",
+            "source": "https://commons.wikimedia.org/wiki/File:China_rockfish.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:China_rockfish.jpg",
+            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/China_rockfish.jpg/500px-China_rockfish.jpg"
+          }
+        ]
+      },
+      "Black-and-Yellow": {
+        "tip": "Look for scattered yellow blotches against a dark body. The blotches do not form the China rockfish’s continuous band.",
+        "images": [
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Black_and_yellow_rockfish_%2816607872560%29.jpg/330px-Black_and_yellow_rockfish_%2816607872560%29.jpg",
+            "alt": "Black-and-yellow rockfish documented by the California Department of Fish and Wildlife",
+            "credit": "Photo: California Department of Fish and Wildlife",
+            "source": "https://commons.wikimedia.org/wiki/File:Black_and_yellow_rockfish_%2816607872560%29.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Black_and_yellow_rockfish_%2816607872560%29.jpg",
+            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Black_and_yellow_rockfish_%2816607872560%29.jpg/960px-Black_and_yellow_rockfish_%2816607872560%29.jpg",
+            "license": [
+              "CC BY 2.0",
+              "https://creativecommons.org/licenses/by/2.0/"
+            ]
+          }
+        ]
+      },
+      "Black": {
+        "tip": "A relatively large mouth helps distinguish it from blue rockfish. Look for mottled dark sides and a pale belly.",
+        "groundfish": "Black rockfish"
+      },
+      "Blue": {
+        "tip": "Look for dark blotches on the sides. Unlike deacon, the upper and lower jaws meet when closed.",
+        "groundfish": "Blue rockfish"
+      },
+      "Deacon": {
+        "tip": "The lower jaw protrudes when the mouth is closed. The sides are generally more uniform than those of blue rockfish.",
+        "images": [
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Sebastes_mystinus_2.jpg/330px-Sebastes_mystinus_2.jpg",
+            "alt": "Deacon rockfish at Vancouver Aquarium",
+            "credit": "Photo: Stan Shebs",
+            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_mystinus_2.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_mystinus_2.jpg",
+            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Sebastes_mystinus_2.jpg/960px-Sebastes_mystinus_2.jpg",
+            "license": [
+              "CC BY-SA 3.0",
+              "https://creativecommons.org/licenses/by-sa/3.0/"
+            ]
+          }
+        ]
+      },
+      "Yellowtail": {
+        "tip": "Look for brown flecks along the sides and a yellow tail.",
+        "images": [
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Sebastes_flavidus_582767978.jpg/330px-Sebastes_flavidus_582767978.jpg",
+            "alt": "Yellowtail rockfish photographed off central California",
+            "credit": "Photo: Matthew Inabinett",
+            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_flavidus_582767978.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_flavidus_582767978.jpg",
+            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Sebastes_flavidus_582767978.jpg/960px-Sebastes_flavidus_582767978.jpg",
+            "license": [
+              "CC BY 4.0",
+              "https://creativecommons.org/licenses/by/4.0/"
+            ]
+          }
+        ]
+      },
+      "Olive": {
+        "tip": "Look for drab olive sides and a deeper body at the tail base than on widow rockfish.",
+        "images": [
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Sebastes_serranoides_50393887.jpg/330px-Sebastes_serranoides_50393887.jpg",
+            "alt": "Olive rockfish photographed off central California",
+            "credit": "Photo: Henrik Kibak",
+            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_serranoides_50393887.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_serranoides_50393887.jpg",
+            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Sebastes_serranoides_50393887.jpg/960px-Sebastes_serranoides_50393887.jpg",
+            "license": [
+              "CC BY 4.0",
+              "https://creativecommons.org/licenses/by/4.0/"
+            ]
+          }
+        ]
+      },
+      "Widow": {
+        "tip": "Look for dark fin membranes and a slender body where the tail attaches."
+      }
+    },
+    "labels": {
+      "red": "Yelloweye and lookalikes",
+      "copper": "Copper and lookalikes",
+      "dark": "Quillback and lookalikes",
+      "black": "Black vs. Blue",
+      "deacon": "Blue vs. Deacon",
+      "tail": "Yellowtail, Olive and Widow"
     }
   }
 }
