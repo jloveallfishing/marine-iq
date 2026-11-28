@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.1.2
+
+- Select exact fishing coordinates with a fixed map crosshair, optional nearby place naming and a Favorites shortcut.
+- Organize Catch Tracker selection by species category and group active rockfish without replacing photos during count changes.
+- Apply the verified combined groundfish cap to eligible San Francisco Bay boat trips. Use distinct colors for below-cap, reached, exceeded and unverified conditions.
+- Keep the external professional weather forecast link text-only.
+
 ## 3.1.1
 
 - Keep Catch Tracker photos and controls in place during count changes, with compact cards, sticky totals, and immediate verified limit warnings.
