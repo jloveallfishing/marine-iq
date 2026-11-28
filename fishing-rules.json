@@ -1,5 +1,5 @@
 {
-  "release": "3.0.3",
+  "release": "3.0.4",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -255,11 +255,12 @@
         "inland"
       ],
       "image": {
-        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2021-07/Striped%20bass%20Ryan%20Hagerty.jpg?itok=76f6St_4",
-        "alt": "Adult striped bass with horizontal stripes",
-        "credit": "Photo: Ryan Hagerty/USFWS",
-        "source": "https://www.fws.gov/media/striped-bass",
-        "reuse": "https://www.fws.gov/media/striped-bass"
+        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2021-11/Tagged%20SB.jpg?itok=Pi2_rgxv",
+        "full": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/2021-11/Tagged%20SB.jpg?itok=Ju5ejXjV",
+        "source": "https://www.fws.gov/media/usfws-tagged-striped-bassjpg",
+        "reuse": "https://www.fws.gov/media/usfws-tagged-striped-bassjpg",
+        "alt": "Striped bass photographed during USFWS tagging fieldwork",
+        "credit": "Photo: USFWS"
       }
     },
     {
@@ -277,11 +278,12 @@
       ],
       "groups": true,
       "image": {
-        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/images/2024-07/c88a7466.jpg?itok=IA2o7e3G",
-        "alt": "White sturgeon",
-        "credit": "Photo: Ryan Hagerty / USFWS",
-        "source": "https://www.fws.gov/media/white-sturgeon",
-        "reuse": "https://www.fws.gov/media/white-sturgeon"
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/White_sturgeon_%2852085116356%29.png/330px-White_sturgeon_%2852085116356%29.png",
+        "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/White_sturgeon_%2852085116356%29.png/960px-White_sturgeon_%2852085116356%29.png",
+        "alt": "White sturgeon held by a biologist during fieldwork",
+        "credit": "Photo: Justin Dummit / USFWS",
+        "source": "https://commons.wikimedia.org/wiki/File:White_sturgeon_%2852085116356%29.png",
+        "reuse": "https://commons.wikimedia.org/wiki/File:White_sturgeon_%2852085116356%29.png"
       }
     },
     {
@@ -307,7 +309,15 @@
         "source": "https://www.fws.gov/media/chinook",
         "reuse": "https://www.fws.gov/media/chinook"
       },
-      "groups": true
+      "groups": true,
+      "riverImage": {
+        "url": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/2021-08/brandon-pasley-with-2019-entiat-national-fish-hatchery-summer-chinook-chris-pasley.jpg?itok=xOxaEJUl",
+        "source": "https://www.fws.gov/media/catching-summer-chinook",
+        "reuse": "https://www.fws.gov/media/catching-summer-chinook",
+        "alt": "Adult summer Chinook held above the Columbia River near Entiat",
+        "credit": "Photo: Chris Pasley / USFWS",
+        "label": "River Chinook"
+      }
     },
     {
       "id": "coho",
@@ -324,11 +334,12 @@
         "oceanSalmonFederal"
       ],
       "image": {
-        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2021-12/Coho%20salmon%20Quilcene%20R%20Aug%202020%20C_Roger%20Tabor_cropped.jpg?itok=C9Ccu_sp",
-        "alt": "Adult Coho salmon (Silver Salmon)",
-        "credit": "Photo: Roger Tabor / USFWS",
-        "source": "https://www.fws.gov/media/coho-salmon-2",
-        "reuse": "https://www.fws.gov/media/coho-salmon-2"
+        "url": "https://www.fws.gov/sites/default/files/2023-10/Jon%20Rather_edited.jpg",
+        "source": "https://www.fws.gov/media/jon-rather-coho-eagle-creek-nfh",
+        "reuse": "https://www.fws.gov/media/jon-rather-coho-eagle-creek-nfh",
+        "alt": "Adult Coho held at Eagle Creek National Fish Hatchery",
+        "credit": "Photo: Jon Rather / USFWS",
+        "label": "Coho Salmon (Silver Salmon)"
       }
     },
     {
@@ -471,7 +482,8 @@
         "alt": "Juvenile green sturgeon from the Sacramento River",
         "credit": "Photo: Steve Martarano / USFWS",
         "source": "https://commons.wikimedia.org/wiki/File:Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg",
-        "reuse": "https://commons.wikimedia.org/wiki/File:Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg"
+        "reuse": "https://commons.wikimedia.org/wiki/File:Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg",
+        "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg/960px-Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg"
       }
     },
     {
@@ -1233,21 +1245,15 @@
         "north": 4,
         "other": 2,
         "note": "Combined across the two species. Compare coloring and anatomy with CDFW’s identification guide.",
-        "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Sebastes_miniatus.jpg/330px-Sebastes_miniatus.jpg",
-          "alt": "Vermilion rockfish",
-          "credit": "Photo: Chad King / SIMoN / MBNMS",
-          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg"
-        },
         "images": [
           {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Sebastes_miniatus.jpg/330px-Sebastes_miniatus.jpg",
-            "alt": "Vermilion rockfish",
-            "credit": "Photo: Chad King / SIMoN / MBNMS",
-            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg",
-            "label": "Vermilion"
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Sebastes_miniatus_NOAA.jpg/250px-Sebastes_miniatus_NOAA.jpg",
+            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Sebastes_miniatus_NOAA.jpg/960px-Sebastes_miniatus_NOAA.jpg",
+            "alt": "Vermilion rockfish aboard a NOAA fisheries survey vessel",
+            "credit": "Photo: Victor Simon / NOAA Fisheries",
+            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus_NOAA.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus_NOAA.jpg",
+            "label": "Vermilion rockfish"
           },
           {
             "label": "Sunset rockfish"
@@ -1273,10 +1279,12 @@
         "limit": 2,
         "note": "Use the yelloweye–vermilion–canary comparison guide.",
         "image": {
-          "url": "https://www.fisheries.noaa.gov/s3/styles/full_width/s3/dam-migration/canary-rockfish-noaa-750x500.jpg?itok=Um0uUcT0",
-          "alt": "Two canary rockfish photographed at Cordell Bank",
-          "credit": "Photo: NOAA Fisheries",
-          "source": "https://www.fisheries.noaa.gov/species/canary-rockfish"
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Sebastes_pinniger.jpg/330px-Sebastes_pinniger.jpg",
+          "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Sebastes_pinniger.jpg/960px-Sebastes_pinniger.jpg",
+          "alt": "Canary rockfish caught during a NOAA survey",
+          "credit": "Photo: David Csepp / NOAA Fisheries",
+          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_pinniger.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_pinniger.jpg"
         }
       },
       {
@@ -1648,5 +1656,43 @@
         "reviewBy": "2026-12-05"
       }
     ]
+  },
+  "identification": {
+    "chinook": {
+      "text": "King salmon usually have black gums at the base of the lower teeth and spots on both tail lobes. Silver salmon have pale gums and usually lack spots on the lower tail lobe.",
+      "source": "https://www.adfg.alaska.gov/index.cfm?adfg=cohosalmon.main"
+    },
+    "coho": {
+      "text": "Silver salmon have pale gums at the base of the lower teeth and usually have spots only on the upper tail lobe. King salmon have dark gums and spots on both lobes.",
+      "source": "https://www.adfg.alaska.gov/index.cfm?adfg=cohosalmon.main"
+    },
+    "white-sturgeon": {
+      "text": "White sturgeon have barbels closer to the snout tip and at least 36 blunt scutes along the side. Green sturgeon have barbels closer to the mouth and 33 or fewer sharp side scutes.",
+      "source": "https://wildlife.ca.gov/Conservation/Fishes/Sturgeon/Report-Card#sturgeon-identification-tips"
+    },
+    "green-sturgeon": {
+      "text": "Look for barbels nearer the mouth, 33 or fewer sharp side scutes and scutes behind the vent. White sturgeon have more side scutes and barbels nearer the snout tip.",
+      "source": "https://wildlife.ca.gov/Conservation/Fishes/Sturgeon/Report-Card#sturgeon-identification-tips"
+    },
+    "rockfish": {
+      "text": "Compare the lateral line, fin colors and head shape. Similar rockfish can vary in color, especially by age.",
+      "source": "https://wildlife.ca.gov/fishing/ocean/fish-id/sportfish/rockfish"
+    },
+    "Copper rockfish": {
+      "text": "Look for a pale stripe along the rear portion of the lateral line. Use the guide to compare copper, gopher and canary rockfish.",
+      "source": "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=197164&inline="
+    },
+    "Canary rockfish": {
+      "text": "Look for a pale lateral line and orange patches against a gray body. Compare the head and fin colors with yelloweye.",
+      "source": "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=138378&inline="
+    },
+    "Yelloweye rockfish": {
+      "text": "Adults have a conspicuous yellow iris. Juveniles can have pale stripes along the side. Use several features before identifying a fish.",
+      "source": "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=138378&inline="
+    },
+    "Vermilion and sunset rockfish": {
+      "text": "Vermilion and sunset are a cryptic species pair. External features alone cannot reliably distinguish them. The guide compares the group with canary and yelloweye.",
+      "source": "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=138378&inline="
+    }
   }
 }

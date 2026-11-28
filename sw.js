@@ -1,8 +1,8 @@
-const RELEASE = '3.0.3';
-const CACHE = 'marine-iq-v303';
-const INDEX = './index.html?v=303';
-const RULES_SCRIPT = './marine-rules.js?v=303';
-const RULES_DATA = './fishing-rules.json?v=303';
+const RELEASE = '3.0.4';
+const CACHE = 'marine-iq-v304';
+const INDEX = './index.html?v=304';
+const RULES_SCRIPT = './marine-rules.js?v=304';
+const RULES_DATA = './fishing-rules.json?v=304';
 const SHELL = [INDEX, './marine-motion.js?v=302', './marine-tiles.js?v=300', './marine-mpa.js?v=300',
   RULES_SCRIPT, RULES_DATA,
   './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css',
