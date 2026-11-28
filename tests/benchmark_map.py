@@ -15,6 +15,7 @@ def run():
     try:
         case.setUp()
         case.show_tiles = True
+        case.published_geometry = os.environ.get("MARINECAST_BENCH_CELL") == "1"
         case.page.add_init_script(suite.SLOW_PROVIDER)
         case.page.add_init_script("""(() => {
             window.rasterWrites = 0;
@@ -75,6 +76,12 @@ def run():
             )
             result["date_format_calls"] = case.page.evaluate("window.datePartsCalls") - format_calls
             return result
+
+        if case.published_geometry:
+            print(json.dumps({
+                "edge_zoom": move("map.setView([37.928,-122.38],16,{animate:false})"),
+            }, indent=2))
+            return
 
         results = {
             "tile_requests_before_opening_map": before_map,
