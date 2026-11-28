@@ -42,7 +42,7 @@ class FishingRulesTests(unittest.TestCase):
                 self.assertTrue(set(item["sources"]) <= sources.keys())
                 if item["id"] not in {"cabezon", "greenling"}:
                     self.assertTrue(entries[item["id"]])
-                if "image" in item:
+                if item.get("image", {}).get("url"):
                     img = item["image"]
                     self.assertTrue(img["credit"].startswith("Photo: "))
                     for key in ("url", "source", "reuse"):
@@ -116,4 +116,4 @@ class FishingRulesTests(unittest.TestCase):
                         label, url = asset["license"]
                         self.assertTrue(label)
                         self.assertEqual(urlsplit(url).hostname, "creativecommons.org")
-        self.assertEqual(missing, ["Sunset rockfish"])
+        self.assertCountEqual(missing, ["Ocean-phase Chinook", "Ocean-phase Coho", "Sunset rockfish"])

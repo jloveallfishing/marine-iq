@@ -11,14 +11,14 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     ("index.html", ""),
-    ("index.html", "index.html?v=305"),
+    ("index.html", "index.html?v=306"),
     ("sw.js", "sw.js"),
     ("release.json", "release.json"),
     ("marine-motion.js", "marine-motion.js?v=302"),
     ("marine-tiles.js", "marine-tiles.js?v=300"),
     ("marine-mpa.js", "marine-mpa.js?v=300"),
-    ("marine-rules.js", "marine-rules.js?v=305"),
-    ("fishing-rules.json", "fishing-rules.json?v=305"),
+    ("marine-rules.js", "marine-rules.js?v=306"),
+    ("fishing-rules.json", "fishing-rules.json?v=306"),
     ("mpa-boundaries.geojson", "mpa-boundaries.geojson?v=28"),
     ("vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.js"),
     ("vendor/leaflet/leaflet.css", "vendor/leaflet/leaflet.css"),
@@ -80,6 +80,11 @@ def main():
         ("sw.js?" + urlencode({"release": release}), (ROOT / "sw.js").read_bytes()),
         ("release.json?check=" + str(time.time_ns()), (ROOT / "release.json").read_bytes()),
     ])
+    # Existing installed clients may be registered at the previous worker URL.
+    major, minor, patch = map(int, release.split("."))
+    if patch:
+        previous = f"{major}.{minor}.{patch - 1}"
+        expected.append(("sw.js?" + urlencode({"release": previous}), (ROOT / "sw.js").read_bytes()))
     deadline = time.monotonic() + 540
     while True:
         failures = []
