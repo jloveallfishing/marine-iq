@@ -43,11 +43,11 @@ class Handler(SimpleHTTPRequestHandler):
         stale_worker = getattr(self.server, "stale_worker", False)
         stale_marker = getattr(self.server, "stale_marker", False) and route == "/release.json"
         if stale_marker or (stale_worker and self.path == "/sw.js") or (legacy and route in legacy_assets) or (stale_navigation and route == "/") or (
-            mixed and self.path == "/fishing-rules.json?v=311"
+            mixed and self.path == "/fishing-rules.json?v=3100"
         ):
             file = ROOT / legacy_assets[route]
-            content = (file.read_bytes().replace(b"3.0.11", b"3.0.10")
-                       .replace(b"marine-iq-v311", b"marine-iq-v310").replace(b"v=311", b"v=310"))
+            content = (file.read_bytes().replace(b"3.1.0", b"3.0.11")
+                       .replace(b"marine-iq-v3100", b"marine-iq-v311").replace(b"v=3100", b"v=311"))
             content_type = {".js": "text/javascript", ".json": "application/json", ".html": "text/html"}
             self.send_response(200)
             self.send_header("Content-Type", content_type[file.suffix])
@@ -411,7 +411,7 @@ class MarineCastTests(unittest.TestCase):
         page.route("https://**/*", self.mock_provider)
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        self.assertIn("Version 3.0.10", page.locator("#page-home > p").first.text_content())
+        self.assertIn("Version 3.0.11", page.locator("#page-home > p").first.text_content())
         page.evaluate("""() => {
             window.openPageFixture = true;
             window.upgradeActivated = false;
@@ -426,8 +426,8 @@ class MarineCastTests(unittest.TestCase):
         }""")
         self.assertTrue(page.evaluate("""async () => {
             for (let i = 0; i < 120; i++) {
-                const response = await caches.match('./index.html?v=311', {cacheName: 'marine-iq-v311'});
-                if (window.upgradeActivated && response && (await response.text()).includes('Version 3.0.11')) {
+                const response = await caches.match('./index.html?v=3100', {cacheName: 'marine-iq-v3100'});
+                if (window.upgradeActivated && response && (await response.text()).includes('Version 3.1.0')) {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -435,15 +435,15 @@ class MarineCastTests(unittest.TestCase):
             return false;
         }"""))
         expect(page.locator("#updateNotice")).to_be_visible()
-        expect(page.locator("#updateNotice")).to_contain_text("3.0.11 is ready")
+        expect(page.locator("#updateNotice")).to_contain_text("3.1.0 is ready")
         self.assertTrue(page.evaluate("window.openPageFixture"))
-        self.assertIn("Version 3.0.10", page.locator("#page-home > p").first.text_content())
-        self.assertTrue(page.goto(self.url + "offline-check").ok)
         self.assertIn("Version 3.0.11", page.locator("#page-home > p").first.text_content())
+        self.assertTrue(page.goto(self.url + "offline-check").ok)
+        self.assertIn("Version 3.1.0", page.locator("#page-home > p").first.text_content())
         expect(page.locator("body")).to_have_class("light")
         self.server.stale_navigation = True
         page.goto(self.url)
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.11")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.1.0")
 
     def test_manual_update_applies_active_shell_at_permanent_url(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
@@ -461,9 +461,9 @@ class MarineCastTests(unittest.TestCase):
         self.server.legacy_shell = False
         self.server.stale_navigation = True
         page.get_by_role("button", name="Check for Updates").click()
-        expect(page.locator("#updateStatus")).to_contain_text("3.0.11 is ready", timeout=16000)
+        expect(page.locator("#updateStatus")).to_contain_text("3.1.0 is ready", timeout=16000)
         page.locator("#applyNoticeUpdate").click()
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.11")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.1.0")
         expect(page).to_have_url(self.url + "#settings")
         for key, value in saved.items():
             self.assertEqual(page.evaluate("key => localStorage.getItem(key)", key), value)
@@ -596,7 +596,7 @@ class MarineCastTests(unittest.TestCase):
         expect(status).to_contain_text("The update could not be installed", timeout=16000)
         expect(page.locator("#updateNotice")).to_be_hidden()
         page.reload(wait_until="domcontentloaded")
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.10")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.11")
         self.server.mixed_rules_release = False
         page.get_by_role("button", name="Check for Updates").click()
         expect(page.locator("#updateNotice")).to_be_visible(timeout=16000)
@@ -611,15 +611,15 @@ class MarineCastTests(unittest.TestCase):
         page.route("https://**/*", self.mock_provider)
         page.goto(self.url + "#settings")
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.10")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.11")
         self.server.legacy_shell = False
         self.server.stale_worker = True
         page.get_by_role("button", name="Check for Updates").click()
-        expect(page.locator("#updateNotice")).to_contain_text("3.0.11 is ready", timeout=18000)
-        self.assertTrue(page.evaluate("navigator.serviceWorker.controller.scriptURL.endsWith('?release=3.0.11')"))
+        expect(page.locator("#updateNotice")).to_contain_text("3.1.0 is ready", timeout=18000)
+        self.assertTrue(page.evaluate("navigator.serviceWorker.controller.scriptURL.endsWith('?release=3.1.0')"))
         page.locator("#applyNoticeUpdate").click()
         expect(page).to_have_url(self.url + "#settings")
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.11")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.1.0")
 
     def test_qualified_old_worker_updates_even_when_release_marker_is_stale(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
@@ -633,15 +633,15 @@ class MarineCastTests(unittest.TestCase):
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         page.evaluate("""async () => {
             localStorage.setItem('marinecastAppearance','light');
-            await navigator.serviceWorker.register('./sw.js?release=3.0.10', {updateViaCache:'none'});
+            await navigator.serviceWorker.register('./sw.js?release=3.0.11', {updateViaCache:'none'});
         }""")
-        page.wait_for_function("navigator.serviceWorker.controller.scriptURL.endsWith('?release=3.0.10')")
+        page.wait_for_function("navigator.serviceWorker.controller.scriptURL.endsWith('?release=3.0.11')")
         self.server.legacy_shell = False
         self.server.stale_marker = True
         page.get_by_role("button", name="Check for Updates").click()
-        expect(page.locator("#updateNotice")).to_contain_text("3.0.11 is ready", timeout=18000)
+        expect(page.locator("#updateNotice")).to_contain_text("3.1.0 is ready", timeout=18000)
         page.locator("#applyNoticeUpdate").click()
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.11")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.1.0")
         expect(page).to_have_url(self.url + "#settings")
         self.assertEqual(page.evaluate("localStorage.getItem('marinecastAppearance')"), "light")
 
@@ -666,7 +666,7 @@ class MarineCastTests(unittest.TestCase):
         page = self.page
         page.set_viewport_size({"width": 320, "height": 725})
         page.goto(self.url + "#feedback")
-        expect(page.locator(".beta-label")).to_have_text("Beta · 3.0.11")
+        expect(page.locator(".beta-label")).to_have_text("Beta · 3.1.0")
         action = page.get_by_role("link", name="Change location/date", exact=True)
         box = action.bounding_box()
         self.assertLessEqual(box["x"] + box["width"], 320)
@@ -675,7 +675,7 @@ class MarineCastTests(unittest.TestCase):
             page.get_by_role("button", name="Download report").click()
         path = download.value.path()
         self.assertEqual(json.loads(path.read_text()), {
-            "version": "3.0.11", "type": "Bug", "description": "The map was blank."
+            "version": "3.1.0", "type": "Bug", "description": "The map was blank."
         })
         self.assertFalse(self.requests)
         for route, heading in [
@@ -916,6 +916,95 @@ class MarineCastTests(unittest.TestCase):
         comparison.get_by_label("Rockfish group").select_option("copper")
         check_photo(comparison, "Gopher rockfish", "Photo: Konshau Duman", "CC BY 4.0")
         self.assertTrue(page.evaluate("document.documentElement.scrollWidth === innerWidth"))
+
+    def test_catch_tracker_caps_warnings_and_stale_rules(self):
+        page = self.page
+        page.add_init_script("""window.catchNow=Date.parse('2026-11-28T20:00:00Z');
+            Date.now=()=>window.catchNow;""")
+        page.goto(self.url)
+        page.get_by_role("link", name="Catch Tracker").click()
+        page.get_by_label("Trip location").select_option("2")
+        page.get_by_label("Trip date (Pacific)").fill("2026-11-28")
+        page.get_by_label("Regulatory waters").select_option("sf")
+        page.get_by_label("Trip groundfish method").select_option("boat")
+        page.get_by_role("button", name="Start trip").click()
+
+        for species in ("copper-rockfish","blue-rockfish","quillback-rockfish","chinook"):
+            page.get_by_label("Target species").select_option(species)
+            page.get_by_role("button", name="Add species").click()
+        copper = page.locator('[data-catch-species="copper-rockfish"]')
+        expect(copper).to_contain_text("1 under sublimit")
+        add_copper = copper.get_by_role("button", name="Add retained Copper rockfish")
+        add_copper.click()
+        add_copper.click()
+        expect(copper).to_contain_text("Limit exceeded · 2 / 1")
+        for _ in range(9):
+            page.get_by_role("button", name="Add retained Blue rockfish").click()
+        expect(page.locator("#catch-combined")).to_contain_text("11 / 10 · Limit exceeded")
+        blue = page.locator('[data-catch-species="blue-rockfish"]')
+        blue.get_by_role("button", name="Enlarge Blue rockfish photo").click()
+        expect(page.get_by_role("dialog", name="Blue rockfish")).to_be_visible()
+        page.get_by_role("button", name="Close photo").click()
+        quillback = page.locator('[data-catch-species="quillback-rockfish"]')
+        expect(quillback).to_contain_text("Retention prohibited")
+        quillback.get_by_role("button", name="Add retained Quillback rockfish").click()
+        expect(quillback).to_contain_text("Limit exceeded · 1 / 0")
+        expect(page.locator('[data-catch-species="chinook"]')).to_contain_text("Season closed")
+        copper.get_by_text("Released · 0", exact=True).click()
+        copper.get_by_role("button", name="Add released Copper rockfish").click()
+        expect(copper.get_by_text("Released · 1", exact=True)).to_be_visible()
+        expect(page.locator("#catch-combined")).to_contain_text("12 / 10")
+        page.evaluate("window.catchNow=Date.parse('2026-12-08T20:00:00Z')")
+        copper.get_by_role("button", name="Remove retained Copper rockfish").click()
+        expect(page.locator("#catch-combined")).to_contain_text("Verified allowance unavailable")
+        expect(copper).not_to_contain_text("sublimit")
+        page.evaluate("""() => {
+            window.catchNow=Date.parse('2026-11-28T20:00:00Z');
+            localStorage.setItem('marinecastFishingLog',JSON.stringify([
+                {tripId:'previous',date:'2026-11-28',location:'Pier',species:'Sunset rockfish',count:2,
+                 catches:[{id:'sunset-rockfish',name:'Sunset rockfish',groundfish:'Vermilion and sunset rockfish',retained:2,released:0}]}
+            ]));
+        }""")
+        page.get_by_label("Target species").select_option("vermilion-rockfish")
+        page.get_by_role("button", name="Add species").click()
+        vermilion = page.locator('[data-catch-species="vermilion-rockfish"]')
+        expect(vermilion).to_contain_text("Sublimit · 2 / 2 · 0 under sublimit")
+        vermilion.get_by_role("button", name="Add retained Vermilion rockfish").click()
+        expect(vermilion).to_contain_text("Limit exceeded · 3 / 2")
+
+    def test_catch_tracker_persists_offline_and_log_save_is_idempotent(self):
+        context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
+        self.addCleanup(context.close)
+        page = context.new_page()
+        page.route("https://**/*", self.mock_provider)
+        page.add_init_script("""if (!localStorage.getItem('marinecastFishingLog')) {
+            localStorage.setItem('marinecastFishingLog',JSON.stringify([
+              {date:'2026-11-27',location:'Saved spot',species:'Halibut',count:2}
+            ]));
+        }""")
+        page.goto(self.url+"#more")
+        page.wait_for_function("Boolean(navigator.serviceWorker.controller)")
+        page.get_by_role("link", name="Catch Tracker").click()
+        page.get_by_role("button", name="Start trip").click()
+        page.get_by_label("Target species").select_option("white-sturgeon")
+        page.get_by_role("button", name="Add species").click()
+        context.set_offline(True)
+        page.get_by_role("button", name="Add retained White sturgeon").click()
+        page.reload(wait_until="domcontentloaded")
+        page.get_by_role("button", name="Add retained White sturgeon").click()
+        expect(page.get_by_label("White sturgeon retained count")).to_have_text("2")
+        page.get_by_role("button", name="Complete trip").click()
+        receipt = page.evaluate("localStorage.marinecastCatchTrip")
+        page.get_by_role("button", name="Save trip to fishing log").click()
+        expect(page.get_by_role("status").filter(has_text="Trip saved to your fishing log")).to_be_visible()
+        # Reproduce the retry after the log was saved but the draft cleanup did not finish.
+        page.evaluate("trip=>localStorage.setItem('marinecastCatchTrip',trip)", receipt)
+        page.reload(wait_until="domcontentloaded")
+        page.get_by_role("button", name="Save trip to fishing log").click()
+        page.goto(self.url+"#log")
+        expect(page.locator("#logentries")).to_contain_text("White sturgeon · 2 retained, 0 released")
+        expect(page.locator("#logentries")).to_contain_text("Saved spot")
+        self.assertEqual(page.evaluate("JSON.parse(localStorage.marinecastFishingLog).length"),2)
 
     def test_species_photo_remains_tappable_for_all_season_statuses(self):
         # Exercise rendering with a controlled status matrix. Production rules stay unchanged.
@@ -1299,11 +1388,11 @@ class MarineCastTests(unittest.TestCase):
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         self.assertTrue(page.evaluate("""async () => {
-            const cache = await caches.open('marine-iq-v311');
+            const cache = await caches.open('marine-iq-v3100');
             return Boolean(await cache.match('./marine-motion.js?v=309')) &&
                 Boolean(await cache.match('./marine-tiles.js?v=309')) &&
-                Boolean(await cache.match('./marine-rules.js?v=311')) &&
-                Boolean(await cache.match('./fishing-rules.json?v=311'));
+                Boolean(await cache.match('./marine-rules.js?v=3100')) &&
+                Boolean(await cache.match('./fishing-rules.json?v=3100'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
         response = page.goto(self.url + "offline-check")

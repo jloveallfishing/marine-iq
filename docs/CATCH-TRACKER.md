@@ -1,0 +1,9 @@
+# Personal Catch Tracker
+
+Open Catch Tracker from Home or More. Set the trip location and Pacific date, choose the applicable waters and groundfish method, then add the species you want to count. Retained counts are prominent. Expand Released to record releases separately. Complete the trip and save it to the fishing log when ready. A completed trip can still be resumed before saving.
+
+MarineCast stores one active or completed draft on the device. A completed trip becomes one fishing-log entry with species-level counts and a stable trip ID. Retrying the same save reuses that ID. Existing log entries and backups still work. Backups include completed trips saved in the log. The active draft stays in this browser and persists through app updates and offline reloads.
+
+The tracker reuses the Rules snapshot and its scope, valid dates and verification window. A current numeric cap is not a determination that retention is legal. The tracker counts same-date retained fish from saved tracker trips, including other locations, against displayed caps. Untracked catches and manual log entries need to be considered separately. Released fish do not count against retained limits. Unidentified rockfish count toward the combined cap and suppress potentially misleading individual allowances.
+
+The current snapshot covers only the species, regions and dates published in Rules. Published reference text, ambiguous numeric limits and expired rules cannot produce remaining counts. River salmon require reach-specific rules and have no computed allowances in this tracker. Groundfish combined counts require a method and a supported regulatory area. Fish photos come from the existing Rules catalog and may require a connection to load.
