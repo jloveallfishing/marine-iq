@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.8.0
+
+- Add a free MPA tab with all 155 CDFW ds582 records, a restriction legend, area search and official regulation links. Add an optional overlay to the weather map.
+- Add on-device GPS positioning, approximate boundary distances and optional foreground proximity and entry alerts that account for uncertainty and stale fixes.
+- Bundle the attributed CDFW snapshot and local Leaflet renderer. Cache boundary data after first use for offline viewing without basemap tiles.
+- Preserve the production URL, automatic updates, fishing data and existing forecast workflows.
+
 ## 2.7.0
 
 - Show aligned previews from already-loaded basemap tiles while replacements load or fail. Keep normal browser HTTP caching and visible-area requests.
