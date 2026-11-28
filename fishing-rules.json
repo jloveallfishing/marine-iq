@@ -1,5 +1,5 @@
 {
-  "release": "3.0.1",
+  "release": "3.0.2",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -428,7 +428,8 @@
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
         },
         "from": "2026-11-28",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -522,7 +523,8 @@
           "special": "The California limits differ from other federal Area 2A subareas."
         },
         "from": "2026-11-28",
-        "kind": "schedule"
+        "kind": "schedule",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -539,7 +541,8 @@
           "possession": "0 fish taken in the closed northern fishery."
         },
         "from": "2026-11-28",
-        "kind": "schedule"
+        "kind": "schedule",
+        "status": "closed"
       }
     ],
     "striped-bass": [
@@ -564,7 +567,8 @@
           "special": "No sinker weighing over four pounds; no powered gurdy or winch."
         },
         "from": "2026-11-28",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -584,7 +588,8 @@
           "special": "Check Title 14 § 5.75 and the rules of the exact waterbody before fishing."
         },
         "from": "2026-11-28",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -607,7 +612,8 @@
           "methods": "In the Delta, § 2.10(c) limits hook gaps to 1 inch for single hooks or ¾ inch for multiple hooks. Check waterbody and species-specific restrictions."
         },
         "kind": "reference",
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "status": "conditional"
       }
     ],
     "white-sturgeon": [
@@ -631,7 +637,8 @@
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide. Sturgeon Fishing Report Card required."
         },
         "from": "2026-10-01",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "retention"
       },
       {
         "regions": [
@@ -653,7 +660,8 @@
           "special": "Release promptly. Fish over 60 inches fork length must remain in the water. The area described in § 27.90(i) is closed January 1 through March 15."
         },
         "from": "2026-11-28",
-        "kind": "schedule"
+        "kind": "schedule",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -675,7 +683,8 @@
           "special": "Special closures apply, including the Yolo Bypass above Lisbon Weir. Check §§ 5.80 and 1.74."
         },
         "kind": "reference",
-        "from": "2026-10-01"
+        "from": "2026-10-01",
+        "status": "retention"
       },
       {
         "regions": [
@@ -693,7 +702,8 @@
         },
         "kind": "schedule",
         "from": "2026-10-01",
-        "effective": "2026-10-01"
+        "effective": "2026-10-01",
+        "status": "conditional"
       }
     ],
     "chinook": [
@@ -716,7 +726,8 @@
           "possession": "0 fish taken in the closed ocean fishery."
         },
         "from": "2026-11-28",
-        "kind": "schedule"
+        "kind": "schedule",
+        "status": "closed"
       }
     ],
     "rockfish": [
@@ -796,7 +807,8 @@
           "special": "No retention of bronzespotted rockfish, cowcod, quillback rockfish or yelloweye rockfish. Check current regional and species-specific sublimits."
         },
         "from": "2026-11-28",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "conditional"
       }
     ],
     "lingcod": [
@@ -838,7 +850,8 @@
           "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits."
         },
         "from": "2026-11-28",
-        "kind": "schedule"
+        "kind": "schedule",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -945,7 +958,8 @@
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
         },
         "from": "2026-11-28",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "conditional"
       }
     ],
     "dungeness-crab": [
@@ -992,7 +1006,8 @@
           "methods": "In open waters under the recreational trap restriction, use hoop nets, loop traps or hand take. Verify the current order for the exact fishing zone."
         },
         "from": "2026-11-28",
-        "kind": "schedule"
+        "kind": "schedule",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -1010,7 +1025,8 @@
           "special": "Emergency health delay applies from the southern boundary of the Reading Rock MPAs to the southern boundary of Ten Mile State Marine Reserve. Check the current CDFW order for exact boundaries and any changes."
         },
         "from": "2026-11-28",
-        "kind": "emergency"
+        "kind": "emergency",
+        "status": "conditional"
       },
       {
         "regions": [
@@ -1027,7 +1043,8 @@
           "special": "Dungeness crab take is prohibited in San Francisco and San Pablo bays; consult the official rule for the exact line."
         },
         "from": "2026-11-28",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "closed"
       }
     ],
     "green-sturgeon": [
@@ -1051,7 +1068,8 @@
           "methods": "Release immediately without removing the fish from the water."
         },
         "from": "2026-11-28",
-        "kind": "reference"
+        "kind": "reference",
+        "status": "retention"
       },
       {
         "regions": [
@@ -1073,7 +1091,8 @@
           "special": "Report incidental catch when fishing for white sturgeon."
         },
         "kind": "reference",
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "status": "retention"
       }
     ],
     "black-bass": [
@@ -1095,7 +1114,8 @@
           "season": "Year-round under the Delta baseline. Check special waterbody closures under §§ 7.40 and 7.50."
         },
         "kind": "reference",
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "status": "conditional"
       }
     ],
     "greenling": [
@@ -1142,7 +1162,8 @@
         "from": "2026-11-28",
         "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-31"
+        "reviewBy": "2026-12-31",
+        "status": "conditional"
       }
     ]
   },
@@ -1190,7 +1211,13 @@
         "name": "Canary rockfish",
         "class": "Shelf",
         "limit": 2,
-        "note": "Use the yelloweye–vermilion–canary comparison guide."
+        "note": "Use the yelloweye–vermilion–canary comparison guide.",
+        "image": {
+          "url": "https://www.fisheries.noaa.gov/s3/styles/full_width/s3/dam-migration/canary-rockfish-noaa-750x500.jpg?itok=Um0uUcT0",
+          "alt": "Two canary rockfish photographed at Cordell Bank",
+          "credit": "Photo: NOAA Fisheries",
+          "source": "https://www.fisheries.noaa.gov/species/canary-rockfish"
+        }
       },
       {
         "name": "Bocaccio",

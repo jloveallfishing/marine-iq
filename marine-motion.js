@@ -1,4 +1,4 @@
-/* Regional NWS forecasts are interpolated only inside a cell with four valid corners. */
+/* Forecasts stay inside supported interpolation polygons or published NWS grid cells. */
 window.MarineMotion = (() => {
   const palette = [[36, 111, 196], [24, 173, 154], [239, 210, 71], [237, 105, 61], [172, 63, 177]];
   const stops = [0, 10, 20, 30, 40];
@@ -76,6 +76,52 @@ window.MarineMotion = (() => {
     return sample;
   }
 
+  function publishedCell(geometry, project) {
+    const ring = geometry?.type === 'Polygon' && geometry.coordinates?.length === 1
+      ? geometry.coordinates[0] : null;
+    if (!Array.isArray(ring) || ring.length < 4 || ring.length > 32 || ring.some(point =>
+      !Array.isArray(point) || !Number.isFinite(point[0]) || !Number.isFinite(point[1]) ||
+      Math.abs(point[0]) > 180 || Math.abs(point[1]) > 85)) return null;
+    const [lon, lat] = ring[0];
+    const last = ring[ring.length - 1];
+    if (last[0] !== lon || last[1] !== lat ||
+        ring.some(([x,y]) => Math.abs(x-lon) > .12 || Math.abs(y-lat) > .12)) return null;
+    const boundary = ring.map(([x,y]) => {
+      const point = project([y,x]);
+      return [point.x,point.y];
+    });
+    const signedArea=boundary.slice(1).reduce((area,[px,py],i)=>{
+      const [qx,qy]=boundary[i];
+      return area+(qx-boundary[0][0])*(py-boundary[0][1])-(px-boundary[0][0])*(qy-boundary[0][1]);
+    },0);
+    if (!signedArea) return null;
+    if (signedArea<0) boundary.reverse();
+    const x = Math.min(...boundary.map(point=>point[0])), y = Math.min(...boundary.map(point=>point[1]));
+    const width = Math.max(...boundary.map(point=>point[0]))-x;
+    const height = Math.max(...boundary.map(point=>point[1]))-y;
+    if (width <= 0 || height <= 0) return null;
+    return {x,y,width,height,boundary};
+  }
+
+  function cellField(cells) {
+    const sample = (x,y,vector=false) => {
+      for (const {shape,speed,velocity} of cells) {
+        if (vector && velocity === null) continue;
+        if (x < shape.x || y < shape.y || x > shape.x+shape.width || y > shape.y+shape.height) continue;
+        let inside = false;
+        for (let i=1; i<shape.boundary.length; i++) {
+          const [ax,ay]=shape.boundary[i-1], [bx,by]=shape.boundary[i];
+          if ((ay>y)!==(by>y) && x<(bx-ax)*(y-ay)/(by-ay)+ax) inside=!inside;
+        }
+        if (inside) return vector ? velocity : speed;
+      }
+      return null;
+    };
+    sample.heat=cells.map(cell=>cell.shape);
+    sample.flow=cells.filter(cell=>cell.velocity!==null).map(cell=>cell.shape);
+    return sample;
+  }
+
   function create(container) {
     const canvas = document.createElement('canvas');
     canvas.className = 'marine-flow leaflet-zoom-animated';
@@ -103,7 +149,7 @@ window.MarineMotion = (() => {
     }
     let width = 0, height = 0, frame = null, last = null, active = false;
     let flowCells = [], spawnCells = null, rasterKey = '';
-    let particles = [], currents = [], sample = null, extent = null;
+    let particles = [], currents = [], sample = null, motionSample = null, extent = null;
     let opacity = .64, cameraAt = 0, bearingSample = null, bearingTimer = null;
     function paintBearings() {
       bearingContext.clearRect(0, 0, width, height);
@@ -139,10 +185,23 @@ window.MarineMotion = (() => {
     let view = {x: 0, y: 0, scale: 1};
 
     function paintHeat() {
-      heatContext.clearRect(0, 0, width, height);
+      heatContext.save();
+      heatContext.setTransform(1,0,0,1,0,0);
+      heatContext.clearRect(0,0,heatCanvas.width,heatCanvas.height);
+      heatContext.restore();
       if (!extent) return;
       const {x, y, scale} = view;
       heatContext.save();
+      for (const {shape,speed} of extent.tiles || []) {
+        heatContext.beginPath();
+        shape.boundary.forEach(([px,py],i)=>{
+          if (i===0) heatContext.moveTo((px-x)*scale,(py-y)*scale);
+          else heatContext.lineTo((px-x)*scale,(py-y)*scale);
+        });
+        heatContext.closePath();
+        heatContext.fillStyle=rgb(color(speed));
+        heatContext.fill();
+      }
       heatContext.beginPath();
       for (const cell of extent.cells) {
         cell.boundary.forEach(([px, py], i) => {
@@ -164,7 +223,7 @@ window.MarineMotion = (() => {
 
     function clear() {
       cancel();
-      extent = sample = bearingSample = null;
+      extent = sample = bearingSample = motionSample = null;
       clearTimeout(bearingTimer);
       paintBearings();
       canvas.style.visibility = 'hidden';
@@ -192,7 +251,7 @@ window.MarineMotion = (() => {
         const cell = spawnCells[Math.floor(Math.random() * spawnCells.length)];
         const x = cell.x + Math.random() * (cell.right - cell.x);
         const y = cell.y + Math.random() * (cell.bottom - cell.y);
-        if (!sample(x, y, true)) continue;
+        if (!motionSample(x, y, true)) continue;
         particle.x = x;
         particle.y = y;
         particle.life = 15 + Math.random() * 30;
@@ -210,7 +269,7 @@ window.MarineMotion = (() => {
       context.beginPath();
       for (const particle of particles) {
         const sx = (particle.x - x) * scale, sy = (particle.y - y) * scale;
-        const velocity = particle.life > 0 ? sample(particle.x, particle.y, true) : null;
+        const velocity = particle.life > 0 ? motionSample(particle.x, particle.y, true) : null;
         if (!velocity || particle.life-- <= 0 || sx < 0 || sx > width || sy < 0 || sy > height) {
           spawn(particle);
           continue;
@@ -219,7 +278,7 @@ window.MarineMotion = (() => {
         if (speed < .2) continue;
         const step = elapsed * Math.min(Math.max(speed * .28, .8), 7) / (speed * scale);
         const nx = particle.x + velocity[0] * step, ny = particle.y + velocity[1] * step;
-        if (!sample(nx, ny, true)) {
+        if (!motionSample(nx, ny, true)) {
           spawn(particle);
           continue;
         }
@@ -289,8 +348,9 @@ window.MarineMotion = (() => {
       }
     }
 
-    function configure({ sample: nextSample = null, heatmap = null, bearings = null, wind = false, stations = [], shapes = [] } = {}) {
+    function configure({ sample: nextSample = null, flowSample = nextSample, heatmap = null, bearings = null, wind = false, stations = [], shapes = [] } = {}) {
       sample = nextSample;
+      motionSample = flowSample;
       bearingSample = bearings;
       paintBearings();
       const phases = new Map(currents.map(station => [station.id, station.phase]));
@@ -301,7 +361,7 @@ window.MarineMotion = (() => {
       heatCanvas.style.visibility = extent ? '' : 'hidden';
       flowCells = shapes;
       spawnCells = null;
-      const count = sample && wind && flowCells.length ? Math.min(88, Math.ceil(width * height / 2450)) : 0;
+      const count = motionSample && wind && flowCells.length ? Math.min(88, Math.ceil(width * height / 2450)) : 0;
       particles.length = Math.min(particles.length, count);
       while (particles.length < count) {
         const particle = {x: 0, y: 0, life: 0, trail: new Float64Array(12), trailCount: 0, trailNext: 0};
@@ -322,7 +382,7 @@ window.MarineMotion = (() => {
         }
         rasterContext.putImageData(image, 0, 0);
         paintHeat();
-      } else if (extent && !previousExtent) {
+      } else if (Boolean(extent) !== Boolean(previousExtent)) {
         paintHeat();
       }
       setActive(active);
@@ -350,5 +410,5 @@ window.MarineMotion = (() => {
     return { clear, configure, setActive, setView, setOpacity };
   }
 
-  return { color, field, create, gradient, stops };
+  return { color, field, publishedCell, cellField, create, gradient, stops };
 })();
