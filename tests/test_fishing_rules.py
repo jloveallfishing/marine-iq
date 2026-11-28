@@ -13,6 +13,9 @@ class FishingRulesTests(unittest.TestCase):
             'name="marinecast-version" content="' + snapshot["release"] + '"',
             (Path(__file__).resolve().parents[1] / "index.html").read_text(),
         )
+        release = json.loads((Path(__file__).resolve().parents[1] / "release.json").read_text())
+        self.assertEqual(snapshot["release"], release["version"])
+        date.fromisoformat(snapshot["verified"])
         sources = snapshot["sources"]
         regions = snapshot["regions"]
         species = snapshot["species"]

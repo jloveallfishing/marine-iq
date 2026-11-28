@@ -11,13 +11,14 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     ("index.html", ""),
-    ("index.html", "index.html?v=291"),
+    ("index.html", "index.html?v=300"),
     ("sw.js", "sw.js"),
-    ("marine-motion.js", "marine-motion.js?v=28"),
-    ("marine-tiles.js", "marine-tiles.js?v=28"),
-    ("marine-mpa.js", "marine-mpa.js?v=28"),
-    ("marine-rules.js", "marine-rules.js?v=291"),
-    ("fishing-rules.json", "fishing-rules.json?v=291"),
+    ("release.json", "release.json"),
+    ("marine-motion.js", "marine-motion.js?v=300"),
+    ("marine-tiles.js", "marine-tiles.js?v=300"),
+    ("marine-mpa.js", "marine-mpa.js?v=300"),
+    ("marine-rules.js", "marine-rules.js?v=300"),
+    ("fishing-rules.json", "fishing-rules.json?v=300"),
     ("mpa-boundaries.geojson", "mpa-boundaries.geojson?v=28"),
     ("vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.js"),
     ("vendor/leaflet/leaflet.css", "vendor/leaflet/leaflet.css"),
@@ -67,12 +68,18 @@ def verify_browser(base, release):
 def main():
     base = os.environ["MARINECAST_URL"].rstrip("/") + "/"
     release = json.loads((ROOT / "fishing-rules.json").read_text())["release"]
+    if json.loads((ROOT / "release.json").read_text())["version"] != release:
+        raise SystemExit("Release marker and rules snapshot differ")
     launch = json.loads((ROOT / "manifest.webmanifest").read_text())["start_url"]
     if urljoin(base, launch) != base:
         raise SystemExit("Installed launch URL changed")
     release_query = urlencode({"marinecast-release": release, "marinecast-refresh": time.time_ns()})
     expected = [(route, (ROOT / file).read_bytes()) for file, route in ASSETS]
-    expected.append(("?" + release_query, (ROOT / "index.html").read_bytes()))
+    expected.extend([
+        ("?" + release_query, (ROOT / "index.html").read_bytes()),
+        ("sw.js?" + urlencode({"release": release}), (ROOT / "sw.js").read_bytes()),
+        ("release.json?check=" + str(time.time_ns()), (ROOT / "release.json").read_bytes()),
+    ])
     deadline = time.monotonic() + 540
     while True:
         failures = []

@@ -37,14 +37,16 @@ class Handler(SimpleHTTPRequestHandler):
         stale_navigation = getattr(self.server, "stale_navigation", False)
         route = urlparse(self.path).path
         legacy_assets = {"/": "index.html", "/index.html": "index.html", "/sw.js": "sw.js",
-                         "/marine-rules.js": "marine-rules.js", "/fishing-rules.json": "fishing-rules.json"}
+                         "/marine-rules.js": "marine-rules.js", "/fishing-rules.json": "fishing-rules.json",
+                         "/release.json": "release.json"}
         mixed = getattr(self.server, "mixed_rules_release", False)
-        if (legacy and route in legacy_assets) or (stale_navigation and route == "/") or (
-            mixed and self.path == "/fishing-rules.json?v=291"
+        stale_worker = getattr(self.server, "stale_worker", False)
+        if (stale_worker and self.path == "/sw.js") or (legacy and route in legacy_assets) or (stale_navigation and route == "/") or (
+            mixed and self.path == "/fishing-rules.json?v=300"
         ):
             file = ROOT / legacy_assets[route]
-            content = (file.read_bytes().replace(b"2.9.1", b"2.9.0")
-                       .replace(b"marine-iq-v291", b"marine-iq-v29").replace(b"v=291", b"v=29"))
+            content = (file.read_bytes().replace(b"3.0.0", b"2.9.1")
+                       .replace(b"marine-iq-v300", b"marine-iq-v291").replace(b"v=300", b"v=291"))
             content_type = {".js": "text/javascript", ".json": "application/json", ".html": "text/html"}
             self.send_response(200)
             self.send_header("Content-Type", content_type[file.suffix])
@@ -398,7 +400,7 @@ class MarineCastTests(unittest.TestCase):
         page.route("https://**/*", self.mock_provider)
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        self.assertIn("Version 2.9.0", page.locator("#page-home > p").first.text_content())
+        self.assertIn("Version 2.9.1", page.locator("#page-home > p").first.text_content())
         page.evaluate("""() => {
             window.openPageFixture = true;
             window.upgradeActivated = false;
@@ -413,8 +415,8 @@ class MarineCastTests(unittest.TestCase):
         }""")
         self.assertTrue(page.evaluate("""async () => {
             for (let i = 0; i < 120; i++) {
-                const response = await caches.match('./index.html?v=291', {cacheName: 'marine-iq-v291'});
-                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.9.1')) {
+                const response = await caches.match('./index.html?v=300', {cacheName: 'marine-iq-v300'});
+                if (window.upgradeActivated && response && (await response.text()).includes('Version 3.0.0')) {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -422,15 +424,15 @@ class MarineCastTests(unittest.TestCase):
             return false;
         }"""))
         expect(page.locator("#updateNotice")).to_be_visible()
-        expect(page.locator("#updateNotice")).to_contain_text("2.9.1 is ready")
+        expect(page.locator("#updateNotice")).to_contain_text("3.0.0 is ready")
         self.assertTrue(page.evaluate("window.openPageFixture"))
-        self.assertIn("Version 2.9.0", page.locator("#page-home > p").first.text_content())
-        self.assertTrue(page.goto(self.url + "offline-check").ok)
         self.assertIn("Version 2.9.1", page.locator("#page-home > p").first.text_content())
+        self.assertTrue(page.goto(self.url + "offline-check").ok)
+        self.assertIn("Version 3.0.0", page.locator("#page-home > p").first.text_content())
         expect(page.locator("body")).to_have_class("light")
         self.server.stale_navigation = True
         page.goto(self.url)
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.9.1")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.0")
 
     def test_manual_update_applies_active_shell_at_permanent_url(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
@@ -448,9 +450,9 @@ class MarineCastTests(unittest.TestCase):
         self.server.legacy_shell = False
         self.server.stale_navigation = True
         page.get_by_role("button", name="Check for Updates").click()
-        expect(page.locator("#updateStatus")).to_contain_text("2.9.1 is ready", timeout=16000)
+        expect(page.locator("#updateStatus")).to_contain_text("3.0.0 is ready", timeout=16000)
         page.locator("#applyNoticeUpdate").click()
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.9.1")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.0")
         expect(page).to_have_url(self.url + "#settings")
         for key, value in saved.items():
             self.assertEqual(page.evaluate("key => localStorage.getItem(key)", key), value)
@@ -583,6 +585,104 @@ class MarineCastTests(unittest.TestCase):
         self.server.mixed_rules_release = False
         page.get_by_role("button", name="Check for Updates").click()
         expect(page.locator("#updateNotice")).to_be_visible(timeout=16000)
+
+    def test_stale_canonical_worker_uses_release_qualified_worker(self):
+        context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
+        self.addCleanup(context.close)
+        self.server.legacy_shell = True
+        self.addCleanup(setattr, self.server, "legacy_shell", False)
+        self.addCleanup(setattr, self.server, "stale_worker", False)
+        page = context.new_page()
+        page.route("https://**/*", self.mock_provider)
+        page.goto(self.url + "#settings")
+        page.wait_for_function("navigator.serviceWorker.controller !== null")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.9.1")
+        self.server.legacy_shell = False
+        self.server.stale_worker = True
+        page.get_by_role("button", name="Check for Updates").click()
+        expect(page.locator("#updateNotice")).to_contain_text("3.0.0 is ready", timeout=18000)
+        self.assertTrue(page.evaluate("navigator.serviceWorker.controller.scriptURL.endsWith('?release=3.0.0')"))
+        page.locator("#applyNoticeUpdate").click()
+        expect(page).to_have_url(self.url + "#settings")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "3.0.0")
+
+    def test_rules_warn_for_mismatched_region_and_skip_trip_network(self):
+        page = self.page
+        page.goto(self.url + "#rules")
+        expect(page.locator("#rules-context")).to_contain_text("San Francisco Bay")
+        self.assertFalse(self.requests)
+        region = page.get_by_label("Regulatory region")
+        region.select_option("delta")
+        expect(page.locator("#rules-context")).to_contain_text("Region mismatch")
+        expect(page.locator("#rules-context")).to_contain_text("Sacramento–San Joaquin Delta")
+        expect(page.locator("#rules-snapshot")).to_contain_text("2026-11-28")
+        region.select_option("trip")
+        expect(page.locator("#rules-context")).not_to_contain_text("Region mismatch")
+        page.get_by_role("link", name="Forecast", exact=True).click()
+        expect(page.locator("#combined svg").first).to_be_visible()
+        self.assertTrue(any(host == "api.weather.gov" for host, *_ in self.requests))
+
+    def test_beta_feedback_download_and_compact_layout(self):
+        page = self.page
+        page.set_viewport_size({"width": 320, "height": 725})
+        page.goto(self.url + "#feedback")
+        expect(page.locator(".beta-label")).to_have_text("Beta · 3.0.0")
+        page.get_by_label("What happened?").fill("The map was blank.")
+        with page.expect_download() as download:
+            page.get_by_role("button", name="Download report").click()
+        path = download.value.path()
+        self.assertEqual(json.loads(path.read_text()), {
+            "version": "3.0.0", "type": "Bug", "description": "The map was blank."
+        })
+        self.assertFalse(self.requests)
+        for route, heading in [
+            ("overview", "#page-home"), ("locations", "#page-map"), ("timeline", "#page-forecast"),
+            ("mpa", "#page-mpa"), ("rules", "#page-rules"), ("more", "#page-more")
+        ]:
+            page.evaluate("route => location.hash = route", route)
+            expect(page.locator(heading)).to_be_visible()
+            self.assertTrue(page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), route)
+        page.evaluate("location.hash = 'settings'")
+        page.get_by_label("Appearance").select_option("light")
+        expect(page.locator("body")).to_have_class("light")
+        expect(page.locator(".beta-label")).to_be_visible()
+
+    def test_offline_retains_log_favorites_and_rules(self):
+        context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
+        self.addCleanup(context.close)
+        page = context.new_page()
+        page.route("https://**/*", self.mock_provider)
+        page.goto(self.url + "#rules")
+        page.wait_for_function("navigator.serviceWorker.controller !== null")
+        expect(page.locator(".rule-card").first).to_be_visible()
+        page.evaluate("""() => {
+            localStorage.setItem('marineIQfavorites','[0]');
+            localStorage.setItem('marinecastFishingLog',JSON.stringify([
+              {species:'Lingcod',count:1,location:'Test harbor',date:'2026-11-28'}
+            ]));
+        }""")
+        context.set_offline(True)
+        page.reload()
+        expect(page.locator(".rule-card").first).to_be_visible()
+        page.evaluate("location.hash = 'log'")
+        expect(page.locator("#logentries")).to_contain_text("Lingcod")
+        page.evaluate("location.hash = 'favorites'")
+        expect(page.locator("#favorites")).to_contain_text("Richmond")
+        page.evaluate("location.hash = 'timeline'")
+        expect(page.locator("#combined")).to_contain_text("Unavailable offline")
+
+    def test_solar_times_use_pacific_time_without_sending_coordinates(self):
+        self.page.goto(self.url + "#astro")
+        readings = self.page.evaluate("""() => {
+            const times = {};
+            extraAstro(['San Francisco',37.77,-122.42], '2026-07-15',
+                (id,value) => { times[id] = value; });
+            return times;
+        }""")
+        self.assertRegex(readings["sunquick"], r"^(5:5[6-9]|6:0[0-3]) AM$")
+        self.assertRegex(readings["setquick"], r"^8:(2[8-9]|3[0-4]) PM$")
+        self.assertIn("Approximate sunrise", readings["astrodata"])
+        self.assertFalse(any("sunrise-sunset.org" in host for host, *_ in self.requests))
 
     def test_forecast_readouts_align_color_and_keep_independent_midnight_sliders(self):
         self.open_map()
@@ -809,11 +909,11 @@ class MarineCastTests(unittest.TestCase):
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         self.assertTrue(page.evaluate("""async () => {
-            const cache = await caches.open('marine-iq-v291');
-            return Boolean(await cache.match('./marine-motion.js?v=28')) &&
-                Boolean(await cache.match('./marine-tiles.js?v=28')) &&
-                Boolean(await cache.match('./marine-rules.js?v=291')) &&
-                Boolean(await cache.match('./fishing-rules.json?v=291'));
+            const cache = await caches.open('marine-iq-v300');
+            return Boolean(await cache.match('./marine-motion.js?v=300')) &&
+                Boolean(await cache.match('./marine-tiles.js?v=300')) &&
+                Boolean(await cache.match('./marine-rules.js?v=300')) &&
+                Boolean(await cache.match('./fishing-rules.json?v=300'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
         response = page.goto(self.url + "offline-check")

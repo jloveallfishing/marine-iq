@@ -1,9 +1,9 @@
-const RELEASE = '2.9.1';
-const CACHE = 'marine-iq-v291';
-const INDEX = './index.html?v=291';
-const RULES_SCRIPT = './marine-rules.js?v=291';
-const RULES_DATA = './fishing-rules.json?v=291';
-const SHELL = [INDEX, './marine-motion.js?v=28', './marine-tiles.js?v=28', './marine-mpa.js?v=28',
+const RELEASE = '3.0.0';
+const CACHE = 'marine-iq-v300';
+const INDEX = './index.html?v=300';
+const RULES_SCRIPT = './marine-rules.js?v=300';
+const RULES_DATA = './fishing-rules.json?v=300';
+const SHELL = [INDEX, './marine-motion.js?v=300', './marine-tiles.js?v=300', './marine-mpa.js?v=300',
   RULES_SCRIPT, RULES_DATA,
   './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css',
   './vendor/leaflet/images/marker-icon.png', './vendor/leaflet/images/marker-icon-2x.png',
@@ -17,6 +17,8 @@ const appRoot = new URL('./', self.location.href).pathname;
 const appIndex = new URL(INDEX, self.location.href).pathname;
 
 async function installShell() {
+  const requested = new URL(self.location.href).searchParams.get('release');
+  if (requested && requested !== RELEASE) throw Error('Worker release still propagating');
   const cache = await caches.open(CACHE);
   try {
     await cache.addAll(SHELL.map(path => new Request(path, {cache: 'reload'})));

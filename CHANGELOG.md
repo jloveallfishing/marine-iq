@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0
+
+- Add the Beta label, version and private, on-device feedback export.
+- Load trip requests only on pages that need them, retain fresh trip results across navigation and reduce weather map preview allocations and particle trail churn. Calculate approximate sun times locally with NOAA equations.
+- Add suggested-region mismatch warnings, clearer dated rules and Chinook identification media. Monitor official publications and compare CDFW geometry without automatically changing rule content.
+- Preserve saved logs, favorites and cached official references offline. Mark offline weather unavailable and preserve MPA location freshness safeguards.
+- Recover from a stale canonical worker using release discovery and the same permanent URL. Verify host assets and browser updates separately.
+- Document the beta checklist, privacy review and data licensing limits.
+
 ## 2.9.1
 
 - Keep verified standing limits available as a dated reference when a trip or review date falls outside the snapshot. Hide expired schedules and emergency orders and retain their official links.

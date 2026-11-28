@@ -1,0 +1,44 @@
+name: Official source review
+on:
+  workflow_dispatch:
+    inputs:
+      accept_baseline:
+        description: Record a new baseline after manual review
+        type: boolean
+        default: false
+  schedule:
+    - cron: '27 16 * * *'
+  pull_request:
+    paths:
+      - '.github/workflows/official-sources.yml'
+      - 'tests/check_official_sources.py'
+      - 'mpa-boundaries.geojson'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch reviewed source baseline
+        if: ${{ !inputs.accept_baseline }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p previous
+          run=$(gh run list --workflow official-sources.yml --branch main --status success --limit 10             --json databaseId --jq '.[].databaseId' || true)
+          for id in $run; do
+            if gh run download "$id" -n official-source-fingerprints -D previous; then break; fi
+          done
+      - name: Check source publications and boundary geometry
+        run: python tests/check_official_sources.py --previous previous/sources.json --output sources.json
+      - uses: actions/upload-artifact@v4
+        if: success() && hashFiles('sources.json') != ''
+        with:
+          name: official-source-fingerprints
+          path: sources.json
+          retention-days: 30

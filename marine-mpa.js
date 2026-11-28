@@ -4,10 +4,9 @@ window.MarineMPA = (() => {
   const cdfw = 'https://wildlife.ca.gov/Conservation/Marine/MPAs';
   const bay = cdfw + '/San-Francisco-Bay';
   const regulations = 'https://wildlife.ca.gov/Fishing/Ocean';
-  const section632 = 'https://wildlife.ca.gov/CCR-T14-MPAs';
   const snapshot = './mpa-boundaries.geojson?v=28';
   const snapshotCache = 'marinecast-mpa-v28';
-  const federal = 'https://channelislands.noaa.gov/management/regulations.html';
+  const federal = 'https://channelislands.noaa.gov/manage/regulations.html';
   const feetPerMeter = 3.280839895;
   const metersPerDegree = Math.PI * 6371008.8 / 180;
   const margin = 10;
@@ -173,7 +172,7 @@ window.MarineMPA = (() => {
       element('p', d.restriction), element('p', d.permitted));
     if (d.section) node.append(element('p', 'CDFW dataset reference · ' + d.section));
     node.append(link('Official area information', d.url), element('br', ''));
-    if (!d.isFederal) node.append(link('California Title 14 §632', section632), element('br', ''));
+    if (!d.isFederal) node.append(link('CDFW MPA rules and boundaries', cdfw), element('br', ''));
     node.append(link('CDFW Ocean Sport Fishing regulations', regulations));
     return node;
   }
@@ -218,11 +217,12 @@ window.MarineMPA = (() => {
 
     function render(target, registry) {
       const order = ['gray', 'orange', 'red', 'purple'];
-      const features = data.features.map(feature => ({feature, category: details(feature.properties).category}))
-        .sort((a,b) => order.indexOf(a.category) - order.indexOf(b.category)).map(item => item.feature);
+      const areas = [...index].sort((a,b) => order.indexOf(a.category) - order.indexOf(b.category));
+      const features = areas.map(area => area.feature);
+      const colors = new Map(areas.map(area => [area.id, styles[area.category][0]]));
       return L.geoJSON({...data, features}, {
         smoothFactor: 0,
-        style: feature => ({color: styles[details(feature.properties).category][0], weight: 2,
+        style: feature => ({color: colors.get(feature.properties.OBJECTID), weight: 2,
           opacity: 1, fillOpacity: .32}),
         onEachFeature(feature, path) {
           path.bindPopup(() => popup(feature.properties), {maxWidth: 275});
@@ -245,7 +245,7 @@ window.MarineMPA = (() => {
           await load();
           if (!layer) layer = render(map, featureLayers);
           status.textContent = index.length + ' mapped areas from the CDFW snapshot.';
-          if (lastFix && mpaVisible()) displayFix(lastFix);
+          if (lastFix && mpaVisible() && Date.now() - lastFix.time < maxAge) displayFix(lastFix);
         } catch { status.textContent = 'Boundary data unavailable. Use the official CDFW map below.'; }
       }
     }

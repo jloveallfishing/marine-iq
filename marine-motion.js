@@ -148,7 +148,7 @@ window.MarineMotion = (() => {
         })).filter(cell => cell.x < cell.right && cell.y < cell.bottom);
       }
       particle.life = 0;
-      particle.trail.length = 0;
+      particle.trailCount = particle.trailNext = 0;
       for (let i = 0; i < 4 && spawnCells.length; i++) {
         const cell = spawnCells[Math.floor(Math.random() * spawnCells.length)];
         const x = cell.x + Math.random() * (cell.right - cell.x);
@@ -184,12 +184,17 @@ window.MarineMotion = (() => {
           spawn(particle);
           continue;
         }
-        particle.trail.push([particle.x, particle.y]);
-        if (particle.trail.length > 6) particle.trail.shift();
         const trail = particle.trail;
-        context.moveTo((trail[0][0] - x) * scale, (trail[0][1] - y) * scale);
-        for (let i = 1; i < trail.length; i++) {
-          context.lineTo((trail[i][0] - x) * scale, (trail[i][1] - y) * scale);
+        trail[particle.trailNext * 2] = particle.x;
+        trail[particle.trailNext * 2 + 1] = particle.y;
+        particle.trailNext = (particle.trailNext + 1) % 6;
+        particle.trailCount = Math.min(6, particle.trailCount + 1);
+        const start = (particle.trailNext + 6 - particle.trailCount) % 6;
+        for (let i = 0; i < particle.trailCount; i++) {
+          const offset = ((start + i) % 6) * 2;
+          const px = (trail[offset] - x) * scale, py = (trail[offset + 1] - y) * scale;
+          if (i === 0) context.moveTo(px, py);
+          else context.lineTo(px, py);
         }
         context.lineTo((nx - x) * scale, (ny - y) * scale);
         particle.x = nx;
@@ -251,7 +256,7 @@ window.MarineMotion = (() => {
       const count = sample && wind && flowCells.length ? Math.min(72, Math.ceil(width * height / 2800)) : 0;
       particles.length = Math.min(particles.length, count);
       while (particles.length < count) {
-        const particle = {x: 0, y: 0, life: 0, trail: []};
+        const particle = {x: 0, y: 0, life: 0, trail: new Float64Array(12), trailCount: 0, trailNext: 0};
         spawn(particle);
         particles.push(particle);
       }
