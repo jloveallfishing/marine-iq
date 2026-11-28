@@ -16,6 +16,11 @@ class FishingRulesTests(unittest.TestCase):
         release = json.loads((Path(__file__).resolve().parents[1] / "release.json").read_text())
         self.assertEqual(snapshot["release"], release["version"])
         date.fromisoformat(snapshot["verified"])
+        groundfish = snapshot["groundfish"]
+        self.assertLessEqual(date.fromisoformat(groundfish["verified"]), date.fromisoformat(groundfish["reviewBy"]))
+        self.assertTrue(set(groundfish["areas"]) <= set(groundfish["regions"]))
+        self.assertEqual({fish["name"] for fish in groundfish["prohibited"]},
+                         {"Quillback rockfish", "Yelloweye rockfish", "Cowcod", "Bronzespotted rockfish"})
         sources = snapshot["sources"]
         regions = snapshot["regions"]
         species = snapshot["species"]

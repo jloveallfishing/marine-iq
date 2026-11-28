@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.1
+
+- Repair the Home GPS status markup and restore success and permission-denied feedback. Add compact trip names, US-style dates in the trip header and Rules, and icons in More.
+- Increase close-zoom wind sampling and draw speed-colored direction arrows only inside fresh, supported forecast cells. Retain reduced-motion settings, cache limits and responsive map refreshes.
+- Expand rockfish, cabezon and greenling rules with regional sublimits, prohibited retention, methods, depth lines, transit and identification guides. Add verified public-domain yelloweye and quillback imagery.
+- Add collapsible detail sections to complex regulation cards, expand Delta rules and suggest the Delta for named Brannan Island and adjacent waterways.
+- Carry the release through the same permanent URL, with separate host-asset and service-worker verification.
+
 ## 3.0.0
 
 - Add the Beta label, version and private, on-device feedback export.
