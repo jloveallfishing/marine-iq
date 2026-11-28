@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.0
+
+- Add an offline-capable personal Catch Tracker on Home and More with separate retained and released counts, verification-dated limit checks, groundfish caps and completed trip saving in the fishing log.
+
 ## 3.0.11
 
 - Add JLoveallFishing’s approved Leopard shark, ocean Chinook and White sturgeon photos with full-fish enlargement and no embedded EXIF or GPS metadata.

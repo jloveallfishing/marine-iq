@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.11';
+  const release = '3.1.0';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -221,6 +221,37 @@ window.MarineRules = (() => {
     return favorite;
   }
 
+  function applicable(entries, region, tripDate, today) {
+    const regional = entries.filter(entry => entry.regions.includes(region));
+    const inDate = entry => tripDate >= entry.from && tripDate <= entry.through &&
+      today >= entry.verified && today <= entry.reviewBy;
+    const current = regional.filter(inDate);
+    const reference = regional.filter(entry => entry.kind === 'reference' && !inDate(entry));
+    const statuses = current.map(entry => entry.status);
+    return {
+      regional, current, reference,
+      hasOutdated: regional.some(entry=>entry.kind !== 'reference' && !inDate(entry)),
+      status: ['closed','retention','conditional','open'].find(key => statuses.includes(key)) || 'unverified',
+      restrictions: Object.assign({}, ...current.map(entry => entry.rules)),
+      published: Object.assign({}, ...reference.map(entry => entry.rules))
+    };
+  }
+
+  let snapshotRequest;
+  function loadSnapshot() {
+    snapshotRequest ??= fetch('./fishing-rules.json?v=3100').then(response => {
+      if (!response.ok) throw Error('Rules download failed');
+      return response.json();
+    }).then(snapshot => {
+      if (snapshot.release !== release) throw Error('Rules are from a different release');
+      return snapshot;
+    }).catch(error => {
+      snapshotRequest = null;
+      throw error;
+    });
+    return snapshotRequest;
+  }
+
   function ruleCard(species, entries, region, tripDate, today, data, favorites, method) {
     const details = node('details', '', 'rule-card');
     const summary = node('summary');
@@ -229,17 +260,10 @@ window.MarineRules = (() => {
     const extra = group('Additional Regulations');
     if (species.scientific) extra.append(node('p',species.scientific,'muted'));
 
-    const regional = entries.filter(entry => entry.regions.includes(region));
-    const inDate = entry => tripDate >= entry.from && tripDate <= entry.through &&
-      today >= entry.verified && today <= entry.reviewBy;
-    const current = regional.filter(inDate);
-    const reference = regional.filter(entry => entry.kind === 'reference' && !inDate(entry));
-    const restrictions = Object.assign({}, ...current.map(entry => entry.rules));
-    const published = Object.assign({}, ...reference.map(entry => entry.rules));
+    const {status: currentStatus, restrictions, published, regional, current, reference, hasOutdated} = applicable(entries, region, tripDate, today);
     const groundfish = species.id === 'rockfish';
-    const context = {...groundfishContext(data.groundfish,region,tripDate,today,method),favorites};
-    const statuses = current.map(entry=>entry.status);
-    let status = ['closed','retention','conditional','open'].find(key=>statuses.includes(key)) || 'unverified';
+    const context = {...groundfishContext(data.groundfish,region,tripDate,today,method), favorites};
+    let status = currentStatus;
     if (groundfish) {
       status = !context.current ? 'unverified' :
         'conditional';
@@ -282,7 +306,7 @@ window.MarineRules = (() => {
         }
       }
     }
-    if ((status === 'unverified' || regional.some(entry=>entry.kind !== 'reference'&&!inDate(entry))) && regional.length) {
+    if ((status === 'unverified' || hasOutdated) && regional.length) {
       details.append(node('p',reference.length ? 'Published reference available below. Fishing status is unverified.'
         : 'Some rules are unverified for this date or region. Check current official notices.','warn'));
     }
@@ -358,7 +382,7 @@ window.MarineRules = (() => {
 
   function install({getTrip, today}) {
     const page = document.getElementById('page-rules');
-    page.append(photoViewer);
+    document.body.append(photoViewer);
     const select = document.getElementById('rules-region');
     const search = document.getElementById('rules-search');
     const cards = document.getElementById('rules-cards');
@@ -519,11 +543,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=311').then(response => {
-        if (!response.ok) throw Error('Rules download failed');
-        return response.json();
-      }).then(snapshot => {
-        if (snapshot.release !== release) throw Error('Rules are from a different release');
+      pending = loadSnapshot().then(snapshot => {
         for (const [label, ids] of [
           ['Bay and inland', ['bay','delta','inland']],
           ['Pacific coast', ['north','mendocino','sf','central','south']]
@@ -589,5 +609,5 @@ window.MarineRules = (() => {
     }, 60000);
     refresh();
   }
-  return {install};
+  return {install, applicable, loadSnapshot, suggestRegion, groundfishContext, photo};
 })();

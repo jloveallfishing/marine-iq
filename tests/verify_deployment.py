@@ -11,14 +11,15 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     ("index.html", ""),
-    ("index.html", "index.html?v=311"),
+    ("index.html", "index.html?v=3100"),
     ("sw.js", "sw.js"),
     ("release.json", "release.json"),
     ("marine-motion.js", "marine-motion.js?v=309"),
     ("marine-tiles.js", "marine-tiles.js?v=309"),
     ("marine-mpa.js", "marine-mpa.js?v=300"),
-    ("marine-rules.js", "marine-rules.js?v=311"),
-    ("fishing-rules.json", "fishing-rules.json?v=311"),
+    ("marine-catch.js", "marine-catch.js?v=3100"),
+    ("marine-rules.js", "marine-rules.js?v=3100"),
+    ("fishing-rules.json", "fishing-rules.json?v=3100"),
     *((path.relative_to(ROOT).as_posix(), path.relative_to(ROOT).as_posix())
       for path in sorted((ROOT / "assets/rules").glob("*.jpg"))),
     ("mpa-boundaries.geojson", "mpa-boundaries.geojson?v=28"),
@@ -84,8 +85,8 @@ def main():
     ])
     # Existing installed clients may be registered at the previous worker URL.
     major, minor, patch = map(int, release.split("."))
-    if patch:
-        previous = f"{major}.{minor}.{patch - 1}"
+    previous = f"{major}.{minor}.{patch - 1}" if patch else {"3.1.0": "3.0.11"}.get(release)
+    if previous:
         expected.append(("sw.js?" + urlencode({"release": previous}), (ROOT / "sw.js").read_bytes()))
     deadline = time.monotonic() + 540
     while True:
