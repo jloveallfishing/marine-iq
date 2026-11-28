@@ -25,11 +25,11 @@ class FishingRulesTests(unittest.TestCase):
         regions = snapshot["regions"]
         species = snapshot["species"]
         entries = snapshot["entries"]
-        self.assertCountEqual(entries, [item["id"] for item in species])
-        self.assertEqual(len(species), len(entries))
+        self.assertCountEqual(entries, [item["id"] for item in species if item["id"] not in {"cabezon", "greenling"}])
+        self.assertEqual({row["favorite"] for row in groundfish["limits"] if "favorite" in row}, {"cabezon", "greenling"})
         self.assertTrue({
             "ca-halibut", "pacific-halibut", "striped-bass", "white-sturgeon", "chinook",
-            "rockfish", "lingcod", "cabezon", "leopard-shark", "dungeness-crab"
+            "rockfish", "lingcod", "coho", "leopard-shark", "dungeness-crab"
         } <= entries.keys())
         for label, url in sources.values():
             self.assertTrue(label)
@@ -40,14 +40,16 @@ class FishingRulesTests(unittest.TestCase):
             with self.subTest(species=item["id"]):
                 self.assertTrue(item["sources"])
                 self.assertTrue(set(item["sources"]) <= sources.keys())
-                self.assertTrue(entries[item["id"]])
+                if item["id"] not in {"cabezon", "greenling"}:
+                    self.assertTrue(entries[item["id"]])
                 if "image" in item:
                     img = item["image"]
                     self.assertTrue(img["credit"].startswith("Photo: "))
                     for key in ("url", "source", "reuse"):
-                        self.assertIn(urlsplit(img[key]).hostname, {"www.fisheries.noaa.gov", "www.fws.gov"})
+                        self.assertIn(urlsplit(img[key]).hostname, {"www.fisheries.noaa.gov", "www.fws.gov", "thumb.wikimedia.org",
+                                                                         "upload.wikimedia.org", "commons.wikimedia.org"})
                         self.assertEqual(urlsplit(img[key]).scheme, "https")
-                for entry in entries[item["id"]]:
+                for entry in entries.get(item["id"], []):
                     self.assertIn(entry["kind"], {"reference", "schedule", "emergency"})
                     if entry["kind"] == "emergency":
                         self.assertTrue(entry["sources"])
@@ -67,3 +69,20 @@ class FishingRulesTests(unittest.TestCase):
                     self.assertTrue(set(entry["rules"]) <= {
                         "minimum", "maximum", "bag", "possession", "season", "depth", "methods", "permits", "special"
                     })
+
+
+    def test_salmon_reaches_have_expiring_sources(self):
+        snapshot = json.loads((Path(__file__).resolve().parents[1] / "fishing-rules.json").read_text())
+        salmon = snapshot["salmon"]
+        self.assertEqual(set(salmon["oceanAreas"]), {"bay", "north", "mendocino", "sf", "central", "south"})
+        self.assertEqual(snapshot["entries"]["coho"][0]["status"], "retention")
+        for reach in salmon["rivers"].values():
+            self.assertTrue(reach["label"])
+            for entry in reach["entries"]:
+                self.assertEqual(entry["regions"], ["river"])
+                self.assertNotEqual(entry["status"], "open")
+                self.assertTrue(entry["sources"])
+                self.assertTrue(set(entry["sources"]) <= snapshot["sources"].keys())
+                self.assertLessEqual(date.fromisoformat(entry["from"]), date.fromisoformat(entry["through"]))
+                self.assertLessEqual((date.fromisoformat(entry["reviewBy"]) -
+                                      date.fromisoformat(entry["verified"])).days, 14)

@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.2';
+  const release = '3.0.3';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -50,19 +50,28 @@ window.MarineRules = (() => {
     return details;
   }
 
-  function addPhoto(details, asset) {
+  function photo(asset, name, inline = false) {
+    const container = node(inline ? 'span' : 'figure','','rule-photo');
+    const unavailable = node('span',asset?.url ? 'Photo unavailable' :
+      [asset?.label,'Verified photo pending'].filter(Boolean).join(' · '),'rule-photo-missing');
+    if (!asset?.url) {
+      container.append(unavailable);
+      return container;
+    }
     const image = node('img');
-    image.alt = asset.alt;
+    image.alt = asset.alt || name;
     image.loading = 'lazy';
     image.decoding = 'async';
     image.referrerPolicy = 'no-referrer';
-    image.addEventListener('error', () => { image.hidden = true; });
-    details.addEventListener('toggle', () => {
-      if (details.open && !image.hasAttribute('src')) image.src = asset.url;
-    });
-    const credit = node('p', '', 'muted');
-    credit.append(link(asset.credit, asset.source));
-    details.append(image, credit);
+    image.src = asset.url;
+    unavailable.hidden = true;
+    image.addEventListener('error', () => { image.hidden = true; unavailable.hidden = false; });
+    const credit = node(inline ? 'span' : 'figcaption','','rule-photo-credit');
+    if (asset.label) credit.append(asset.label+' · ');
+    credit.append(link(asset.credit,asset.source));
+    if (asset.license) credit.append(' · ',link(asset.license[0],asset.license[1]));
+    container.append(image,unavailable,credit);
+    return container;
   }
 
   function groundfishContext(info, region, tripDate, today, method) {
@@ -73,33 +82,6 @@ window.MarineRules = (() => {
 
   function addGroundfish(details, extra, info, data, region, method, context) {
     const {current,southernBoat} = context;
-    const limits = node('dl');
-    for (const fish of info.limits) {
-      const limit = fish.limit ?? (region === 'north' ? fish.north : fish.other);
-      const value = !current ? 'Current limit unverified' :
-        southernBoat && fish.class.startsWith('Nearshore') ? 'No boat retention during the Southern closure' :
-        limit ? limit + ' per person' + (fish.north ? (region === 'north' ? ' · Northern area' : ' · outside Northern area') : '') :
-        'Counts toward the combined limit';
-      limits.append(node('dt',fish.name));
-      const detail = node('dd',value);
-      if (fish.image) {
-        const photo = group('Photo · '+fish.name);
-        addPhoto(photo,fish.image);
-        detail.append(photo);
-      }
-      limits.append(detail);
-    }
-    details.append(group('Individual species bag limits',limits));
-    const prohibited = node('div','','rule-prohibited');
-    prohibited.append(node('h3', current ? 'Prohibited retention' : '2026 reference · prohibited retention'));
-    for (const fish of info.prohibited) {
-      if (fish.image) {
-        const photo = group(fish.name);
-        addPhoto(photo,fish.image);
-        prohibited.append(photo);
-      } else prohibited.append(node('p',fish.name));
-    }
-    details.append(prohibited);
     if (current) {
       let season = 'Check local closures and the applicable depth boundary.';
       if (southernBoat) {
@@ -119,6 +101,42 @@ window.MarineRules = (() => {
         : 'One line, two hooks maximum when angling for these fish.','rule-retention'));
       else details.append(node('p','Have a descending device available when taking or possessing covered groundfish from a vessel in ocean waters.','rule-retention'));
     }
+    const table = node('table','','groundfish-table');
+    const header = node('tr');
+    for (const name of ['Fish','Identification','Daily sublimit']) {
+      const heading = node('th',name);
+      heading.scope = 'col';
+      header.append(heading);
+    }
+    const head = node('thead');
+    head.append(header);
+    const body = node('tbody');
+    for (const fish of info.limits) {
+      const limit = fish.limit ?? (region === 'north' ? fish.north : fish.other);
+      const value = !current ? 'Unverified' :
+        southernBoat && fish.class.startsWith('Nearshore') ? 'No boat retention' :
+        limit ? limit + ' per person' : 'Combined limit';
+      const row = node('tr');
+      const title = node('th',fish.name);
+      title.scope = 'row';
+      if (fish.favorite) title.append(favoriteButton(fish.favorite,fish.name,context.favorites,true));
+      const media = node('td');
+      for (const item of fish.images || [fish.image]) media.append(photo(item,fish.name));
+      row.append(title,media,node('td',value));
+      body.append(row);
+    }
+    table.append(head,body);
+    details.append(node('h3','Individual species bag limits'),table);
+    const prohibited = node('div','','rule-prohibited');
+    prohibited.append(node('h3',current ? 'Prohibited retention' : '2026 reference · prohibited retention'));
+    const grid = node('div','','groundfish-prohibited');
+    for (const fish of info.prohibited) {
+      const item = node('div');
+      item.append(node('b',fish.name),photo(fish.image,fish.name));
+      grid.append(item);
+    }
+    prohibited.append(grid);
+    details.append(prohibited);
     extra.append(
       node('p','Example: one retained copper rockfish leaves at most nine slots for other eligible fish.'),
       node('p','Transit exceptions are limited. Possession remains prohibited where a species is prohibited throughout the management area or exceeds its bag limit. Keep gear undeployed unless a specific exception applies.'),
@@ -132,13 +150,23 @@ window.MarineRules = (() => {
     }
   }
 
+  function favoriteButton(id,name,favorites,small=false) {
+    const favorite = node('button',favorites.has(id) ? '★' : '☆',small ? 'rule-row-star' : 'rule-star');
+    favorite.type = 'button';
+    favorite.dataset.species = id;
+    favorite.setAttribute('aria-label','Favorite '+name);
+    favorite.setAttribute('aria-pressed',String(favorites.has(id)));
+    return favorite;
+  }
+
   function ruleCard(species, entries, region, tripDate, today, data, favorites, method) {
     const details = node('details', '', 'rule-card');
-    const summary = node('summary', species.name);
+    const summary = node('summary');
+    summary.append(node('span',species.name,'rule-card-name'));
     details.append(summary);
     const extra = group('Additional Regulations');
     if (species.scientific) extra.append(node('p',species.scientific,'muted'));
-    if (species.image) addPhoto(extra,species.image);
+
     const regional = entries.filter(entry => entry.regions.includes(region));
     const inDate = entry => tripDate >= entry.from && tripDate <= entry.through &&
       today >= entry.verified && today <= entry.reviewBy;
@@ -146,20 +174,21 @@ window.MarineRules = (() => {
     const reference = regional.filter(entry => entry.kind === 'reference' && !inDate(entry));
     const restrictions = Object.assign({}, ...current.map(entry => entry.rules));
     const published = Object.assign({}, ...reference.map(entry => entry.rules));
-    const groundfish = data.groundfish.species.includes(species.id);
-    const context = groundfishContext(data.groundfish,region,tripDate,today,method);
+    const groundfish = species.id === 'rockfish';
+    const context = {...groundfishContext(data.groundfish,region,tripDate,today,method),favorites};
     const statuses = current.map(entry=>entry.status);
     let status = ['closed','retention','conditional','open'].find(key=>statuses.includes(key)) || 'unverified';
     if (groundfish) {
       status = !context.current ? 'unverified' :
-        context.southernBoat && species.id !== 'rockfish' ? 'closed' : 'conditional';
+        'conditional';
     }
     const labels = {closed:'Closed',retention:'No retention',conditional:'Conditional',open:'Season open',unverified:'Unverified'};
     summary.append(node('span',labels[status], 'rule-status rule-status-'+status));
     const ordinaryCount = value => value?.match(/^(\d+) (?:fish|crabs)(?: combined)?(?: under the (?:ordinary|standard) limit)?$/)?.[1];
     const limits = {...restrictions};
     if (groundfish) {
-      limits.bag = context.current ? (status === 'closed' ? '0 fish' : '10 fish combined') : null;
+      limits.bag = context.current ? data.groundfish.combined + ' fish combined' : null;
+      limits.minimum = context.current ? data.groundfish.minimum : null;
       limits.possession = null;
     }
     if (limits.bag === limits.possession || (ordinaryCount(limits.bag) && ordinaryCount(limits.bag) === ordinaryCount(limits.possession))) {
@@ -170,8 +199,13 @@ window.MarineRules = (() => {
       if (limits[key]) metrics.append(node('span',fields[key],'rule-quick-label'),node('strong',limits[key]));
     }
     if (metrics.childElementCount) summary.append(metrics);
+    if (!groundfish) {
+      const photos = node('span','','rule-photo-strip');
+      for (const image of species.images || [species.image]) photos.append(photo(image,species.name,true));
+      summary.append(photos);
+    }
     if (groundfish) {
-      if (context.current && status !== 'closed') details.append(node('p','Each retained fish counts toward the 10-fish rockfish, cabezon and greenling limit.','rule-retention'));
+      if (context.current) details.append(node('p','Rockfish, cabezon and greenling all count toward the combined limit.','rule-retention'));
       addGroundfish(details,extra,data.groundfish,data,region,method,context);
     } else {
       for (const key of ['season','depth','special','methods']) {
@@ -206,12 +240,7 @@ window.MarineRules = (() => {
     extra.append(node('h3','Official regulatory sources'),links);
     details.append(extra);
     const wrapper = node('section', '', 'rule-section');
-    const favorite = node('button', favorites.has(species.id) ? '★' : '☆', 'rule-star');
-    favorite.type = 'button';
-    favorite.dataset.species = species.id;
-    favorite.setAttribute('aria-label', `Favorite ${species.name}`);
-    favorite.setAttribute('aria-pressed', String(favorites.has(species.id)));
-    wrapper.append(favorite, details);
+    wrapper.append(favoriteButton(species.id,species.name,favorites),details);
     return wrapper;
   }
 
@@ -236,6 +265,8 @@ window.MarineRules = (() => {
     let pending;
     let lastRender;
     let reviewDay;
+    let salmonTab = 'ocean';
+    let riverReach = '';
 
     function render() {
       if (page.hidden || !data) return;
@@ -245,7 +276,7 @@ window.MarineRules = (() => {
       const selectedDate = ruleDate.value || trip.date || date;
       const region = select.value === 'trip' ? suggested : select.value;
       const query = search.value.trim().toLowerCase();
-      const key = JSON.stringify([trip, date, selectedDate, region, select.value, method.value, query, favoriteOnly.checked, [...favorites]]);
+      const key = JSON.stringify([trip, date, selectedDate, region, select.value, method.value, query, favoriteOnly.checked, [...favorites], salmonTab, riverReach]);
       if (key === lastRender) return;
       lastRender = key;
       tripLabel.textContent = `${trip.name || 'No fishing location'} · ${dateLabel(selectedDate)} (Pacific)`;
@@ -259,15 +290,96 @@ window.MarineRules = (() => {
       document.getElementById('rules-snapshot').textContent =
         `Snapshot verified ${dateLabel(data.verified)} (Pacific). Check current official notices before fishing.`;
       const open = new Set([...cards.querySelectorAll('.rule-card[open]')].map(details => details.dataset.species));
-      const rows = data.species.filter(species => (!favoriteOnly.checked || favorites.has(species.id)) &&
-        [species.name, species.scientific, ...species.aliases].filter(Boolean).some(name => name.toLowerCase().includes(query)));
-      cards.replaceChildren(...rows.map(species => {
-        const card = ruleCard(species, data.entries[species.id] || [], region, selectedDate, date, data, favorites, method.value);
+      const matches = species => (!favoriteOnly.checked || favorites.has(species.id)) &&
+        [species.name,species.scientific,...species.aliases].filter(Boolean).some(name=>name.toLowerCase().includes(query));
+      const rows = data.species.filter(matches);
+      const cardsFor = (species, entries, choice = region) => {
+        const card = ruleCard(species,entries,choice,selectedDate,date,data,favorites,method.value);
         const details = card.querySelector('details');
         details.dataset.species = species.id;
         details.open = open.has(species.id);
         return card;
-      }));
+      };
+      const sections = [];
+      const groupIds = new Set(data.groundfish.species);
+      const salmonIds = new Set(['chinook','coho']);
+      let groundfishShown = false, salmonShown = false;
+      for (const species of rows) {
+        if (groupIds.has(species.id)) {
+          if (!groundfishShown) {
+            const entry = data.species.find(fish=>fish.id==='rockfish');
+            sections.push(cardsFor(entry,data.entries.rockfish));
+            groundfishShown = true;
+          }
+          continue;
+        }
+        if (!salmonIds.has(species.id)) {
+          sections.push(cardsFor(species,data.entries[species.id] || []));
+          continue;
+        }
+        if (salmonShown) continue;
+        salmonShown = true;
+        const section = node('section','','salmon-rules');
+        section.append(node('h2','Salmon regulations'));
+        const tabs = node('div','','salmon-tabs');
+        tabs.setAttribute('role','tablist');
+        tabs.setAttribute('aria-label','Salmon waters');
+        for (const [key,name] of [['ocean','Ocean Salmon'],['river','River Salmon']]) {
+          const tab = node('button',name);
+          tab.type = 'button';
+          tab.id = 'salmon-tab-'+key;
+          tab.setAttribute('role','tab');
+          tab.setAttribute('aria-selected',String(salmonTab===key));
+          tab.setAttribute('aria-controls','salmon-rules-panel');
+          tab.tabIndex = salmonTab===key ? 0 : -1;
+          function selectTab(next) {
+            salmonTab = next;
+            render();
+            document.getElementById('salmon-tab-'+next)?.focus();
+          }
+          tab.onclick = ()=>selectTab(key);
+          tab.onkeydown = event=>{
+            if (['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) {
+              event.preventDefault();
+              selectTab(event.key==='Home' ? 'ocean' : event.key==='End' ? 'river' : key==='ocean' ? 'river' : 'ocean');
+            }
+          };
+          tabs.append(tab);
+        }
+        const panel = node('div');
+        panel.id='salmon-rules-panel';
+        panel.setAttribute('role','tabpanel');
+        panel.setAttribute('aria-labelledby','salmon-tab-'+salmonTab);
+        if (salmonTab==='river') {
+          const label = node('label','River section');
+          label.htmlFor='salmon-reach';
+          const reaches=node('select');
+          reaches.id='salmon-reach';
+          reaches.append(new Option('Choose an exact river section',''));
+          for (const [id,reach] of Object.entries(data.salmon.rivers)) reaches.append(new Option(reach.label,id));
+          reaches.value=riverReach;
+          reaches.onchange=()=>{
+            riverReach=reaches.value;
+            render();
+            document.getElementById('salmon-reach')?.focus();
+          };
+          panel.append(label,reaches);
+          if (!riverReach) panel.append(node('p','Choose the reach for Chinook limits. For other reaches, use the inland regulations.','warn'));
+          panel.append(link(...data.sources.inlandSalmon));
+        } else if (!data.salmon.oceanAreas[region]) {
+          panel.append(node('p','Choose a California ocean region to display its rules.','warn'));
+        } else panel.append(node('p',data.salmon.oceanAreas[region],'muted'));
+        for (const fish of data.species.filter(f=>salmonIds.has(f.id)&&(!favoriteOnly.checked||favorites.has(f.id)))) {
+          const reach = data.salmon.rivers[riverReach];
+          const inland = salmonTab==='river';
+          const choice = inland ? 'river' : region;
+          const entries = inland ? (fish.id==='chinook' ? reach?.entries || [] : data.salmon.riverCoho) : data.entries[fish.id];
+          panel.append(cardsFor({...fish,sources:inland?['inlandSalmon','inlandEmergency']:fish.sources},entries,choice));
+        }
+        section.append(tabs,panel);
+        sections.push(section);
+      }
+      cards.replaceChildren(...sections);
       if (!rows.length) cards.append(node('p', favoriteOnly.checked ? 'No favorite species match.' : 'No matching species. Check the official regional regulations.'));
     }
 
@@ -277,7 +389,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=302').then(response => {
+      pending = fetch('./fishing-rules.json?v=303').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {
