@@ -56,10 +56,8 @@ window.MarineMotion = (() => {
       context.clearRect(0, 0, width, height);
       if (!extent) return;
       const {x, y, scale} = view;
-      context.globalAlpha = opacity;
       context.drawImage(raster, (extent.x - x) * scale, (extent.y - y) * scale,
                         extent.width * scale, extent.height * scale);
-      context.globalAlpha = 1;
     }
 
     function cancel() {
@@ -70,6 +68,7 @@ window.MarineMotion = (() => {
     function clear() {
       cancel();
       extent = sample = null;
+      canvas.style.opacity = '';
       particles = [];
       currents = [];
       paint();
@@ -150,6 +149,7 @@ window.MarineMotion = (() => {
       sample = nextSample;
       currents = stations;
       extent = heatmap;
+      canvas.style.opacity = extent ? String(opacity) : '';
       const count = sample && wind ? Math.min(96, Math.ceil(width * height / 2600)) : 0;
       particles.length = Math.min(particles.length, count);
       while (particles.length < count) {
@@ -190,7 +190,7 @@ window.MarineMotion = (() => {
 
     function setOpacity(value) {
       opacity = value;
-      if (extent) paint();
+      if (extent) canvas.style.opacity = String(opacity);
     }
 
     return { clear, configure, setActive, setView, setOpacity };

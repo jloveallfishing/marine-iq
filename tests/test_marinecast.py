@@ -348,8 +348,10 @@ class MarineCastTests(unittest.TestCase):
             input.dispatchEvent(new Event('input'));
             input.dispatchEvent(new Event('change'));
         }""")
-        self.assertFalse(self.page.evaluate(self.canvas_has_color))
         expect(self.page.locator("#marineOpacityValue")).to_have_text("0%")
+        expect(self.page.locator(".marine-flow")).to_have_css("opacity", "0")
+        self.page.locator("#marineLayer").select_option("Wind")
+        expect(self.page.locator(".marine-flow")).to_have_css("opacity", "1")
         self.assertFalse(any(path.startswith(("/points/", "/gridpoints/"))
                              for _, path, _ in self.requests[offset:]))
         self.page.reload()
