@@ -196,7 +196,9 @@ window.MarineCatch = (() => {
       limit.setAttribute('role','status');
       const other = node('details','','catch-row-options');
       const otherLabel = node('summary');
-      const remove = node('button','Remove species','catch-remove');
+      const remove = node('button','','catch-remove');
+      remove.title = 'Remove species';
+      remove.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16m-10 4v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
       remove.type = 'button';
       remove.setAttribute('aria-label','Remove species '+row.name);
       remove.onclick = () => {
@@ -206,8 +208,8 @@ window.MarineCatch = (() => {
             !window.confirm('Remove '+row.name+' and its recorded catches from this trip?')) return;
         if (saveCounts(trip.catches.filter(item=>item.id!==row.id))) (select.hidden?category:select).focus();
       };
-      other.append(otherLabel,released.group,remove);
-      article.append(top,limit,other);
+      other.append(otherLabel,released.group);
+      article.append(remove,top,limit,other);
       return {article,media,retained,released,limit,otherLabel,remove,image:undefined};
     }
 
@@ -265,19 +267,28 @@ window.MarineCatch = (() => {
       el('catch-save').hidden = !complete;
       el('catch-log').hidden = !complete;
       el('catch-resume').hidden = !complete;
-      const options = catalog.filter(species=>categoryOf(species)===category.value &&
-        !trip?.catches.some(row=>row.id===species.id));
+      const added = new Set(trip?.catches.map(row=>row.id));
+      const options = catalog.filter(species=>categoryOf(species)===category.value);
       const direct = category.value==='lingcod' || category.value==='striped-bass';
       select.hidden = el('catch-species-label').hidden = !category.value || direct;
       select.required = !select.hidden;
-      const ids = options.map(row=>row.id).join('|');
+      const ids = options.map(row=>row.id+(added.has(row.id)?':added':'')).join('|');
       if (ids!==optionIds) {
         const previous = select.value;
         optionIds = ids;
-        select.replaceChildren(new Option('Choose a species',''),...options.map(row=>new Option(row.name,row.id)));
-        if (options.some(row=>row.id===previous)) select.value = previous;
+        select.replaceChildren(new Option('Choose a species',''),...options.map(row=>{
+          const exists = added.has(row.id);
+          const option = new Option(row.name+(exists?' · Already added':''),row.id);
+          option.disabled = exists;
+          return option;
+        }));
+        if (options.some(row=>row.id===previous && !added.has(row.id))) select.value = previous;
       }
-      el('catch-add-button').disabled = !options.length;
+      el('catch-add-button').disabled = !options.some(row=>!added.has(row.id) &&
+        row.id===(direct?category.value:select.value));
+      const alreadyAdded = direct && options.some(row=>added.has(row.id));
+      el('catch-picker-note').hidden = !alreadyAdded;
+      setText(el('catch-picker-note'),alreadyAdded?options[0].name+' is already added.':'');
       const catches = trip?.catches || [];
       const todayKey = today();
       const daily = trip ? [...catches,...getLoggedCatches(trip.date,trip.id)] : [];
@@ -322,6 +333,7 @@ window.MarineCatch = (() => {
     }
 
     category.onchange = () => { select.value = '';render(); };
+    select.onchange = render;
     form.onsubmit = event => {
       event.preventDefault();
       const selected = catalog.find(row=>row.id===(select.hidden?category.value:select.value) && categoryOf(row)===category.value);
