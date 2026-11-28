@@ -69,6 +69,7 @@ window.MarineMotion = (() => {
       cancel();
       extent = sample = null;
       canvas.style.opacity = '';
+      canvas.style.visibility = 'hidden';
       particles = [];
       currents = [];
       paint();
@@ -178,7 +179,9 @@ window.MarineMotion = (() => {
 
     function setActive(enabled) {
       active = enabled;
-      if (!active || (!particles.length && !currents.length)) {
+      const hasFlow = particles.length || currents.length;
+      canvas.style.visibility = extent || (active && hasFlow) ? '' : 'hidden';
+      if (!active || !hasFlow) {
         if (frame !== null) {
           cancel();
           paint();

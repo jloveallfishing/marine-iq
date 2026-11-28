@@ -441,13 +441,13 @@ class MarineCastTests(unittest.TestCase):
         self.page.wait_for_function(self.canvas_has_color)
         motion.click()
         expect(motion).to_have_attribute("aria-checked", "false")
-        self.page.wait_for_function("() => !(" + self.canvas_has_color + ")()")
+        expect(self.page.locator(".marine-flow")).to_have_css("visibility", "hidden")
         motion.click()
         expect(motion).to_have_attribute("aria-checked", "true")
         self.page.wait_for_function(self.canvas_has_color)
         self.page.evaluate("location.hash = 'tripsetup'")
         expect(self.page.locator("#page-map")).to_be_hidden()
-        self.page.wait_for_function("() => !(" + self.canvas_has_color + ")()")
+        expect(self.page.locator(".marine-flow")).to_have_css("visibility", "hidden")
 
     def test_directional_current_animation_requires_a_bearing(self):
         self.open_map()
