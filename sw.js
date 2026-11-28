@@ -1,7 +1,7 @@
-const RELEASE = '2.6.0';
-const CACHE = 'marine-iq-v26';
-const INDEX = './index.html?v=26';
-const SHELL = [INDEX, './marine-motion.js?v=26', './manifest.webmanifest',
+const RELEASE = '2.7.0';
+const CACHE = 'marine-iq-v27';
+const INDEX = './index.html?v=27';
+const SHELL = [INDEX, './marine-motion.js?v=27', './marine-tiles.js?v=27', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './brand.jpg?v=6', './brand-light.jpg?v=11'];
 const urls = new Set(SHELL.map(path => new URL(path, self.location.href).href));
 const appRoot = new URL('./', self.location.href).pathname;

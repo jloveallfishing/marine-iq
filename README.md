@@ -77,26 +77,27 @@ and gust layers share the NWS data. Provider rate-limit responses trigger a
 cooldown. Cached wind readings become stale after 10 minutes and are dropped
 after an hour. Cached station predictions become stale after 30 minutes and are
 dropped after 24 hours. A failed refresh also flags retained readings as stale.
-Popups show the original valid time and the fetch time for stale readings. The wind flow and speed
-shading interpolate only within cells where all four surrounding samples have the
-required values for the selected Pacific forecast time. The point labels show
-source samples. Wide views show a limited region around the center, and areas
+Popups show the original valid time and the fetch time for stale readings.
+The point labels show source samples. Wide views show a limited region around the center, and areas
 outside NWS coverage stay blank. Gust readings are independent of sustained wind
 readings and appear as discrete samples. NOAA [CO-OPS](https://tidesandcurrents.noaa.gov/api/)
 supplies station-based tide and current predictions. Official NWS advisories stay
 freely accessible. The existing basemap uses OpenStreetMap with attribution and
 is subject to its [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
 
-Wind, heatmap, and gust labels are spaced by zoom level. The map gives open
-popups and fresh samples priority when labels compete for room. The original
-forecast samples still drive the overlays. The date picker uses the same
-Pacific date as the trip planner. Adjust **Heatmap opacity** to reveal more
-basemap detail. It changes shading only and saves the setting on this device.
+Wind, heatmap, and gust labels are spaced by zoom level. Open popups and fresh
+samples have priority. Wind particles, wind speed labels, and heatmap shading
+can be switched independently, and their settings are saved on the device.
+Heatmap shading has a separate opacity control and separate canvas so particle
+animation can run without repainting the heatmap. The map date uses the trip
+planner's Pacific date. NOAA current animation remains station-local.
 
-The **Animate flow** control pauses wind and current motion. The map respects
-reduced-motion settings and suspends animation when offscreen or in a background
-tab. NOAA current streaks indicate only the supplied direction near the station.
-The nearest-event markers show their prediction time in the station popup.
+Wind interpolation uses four-corner cells when all four values are available.
+At coastal gaps, three valid surrounding corners support a triangle. It stays
+blank outside that triangle and wherever too few samples exist. The vector
+layer also requires supplied bearings except at calm samples. Close zoom uses a
+minimum geographic sample spacing with a direct center sample.
+
 
 ### Map performance benchmark
 
@@ -105,7 +106,9 @@ simulated latency per NWS request. To compare against another checkout, set
 `MARINECAST_BENCH_ROOT` to its path. The script reports time to the first marker
 inside the map viewport and the number of provider requests for each movement.
 The fixture maps all NWS sample points to a shared grid response to exercise
-deduplication. Actual timing depends on the device, network, and grid coverage.
+deduplication. It also samples viewport basemap coverage after a deliberate
+replacement-tile failure and counts heat raster writes during a cached pan.
+Actual timing depends on the device, network, and grid coverage.
 
 ### Model and satellite source investigation
 
@@ -166,3 +169,33 @@ until the map opens and retains already-loaded tiles around the viewport in
 Leaflet. It uses browser HTTP caching and sends the web referrer and attribution.
 Tile prefetch and offline tile downloads are disabled. No new provider or paid
 service is enabled.
+
+### Coverage and data investigation for 2.7
+
+Version 2.6 resolved coordinates through individually requested NWS point and
+grid endpoints. Even when forecast grid URLs repeated, the chart-ready time
+series was parsed for each display coordinate. The renderer seeded particles
+across the screen, including outside supported cells, and dropped a whole
+cell when any corner was missing. Leaflet could retain the old zoom briefly,
+but a failed replacement tile had no explicit geographically aligned fallback.
+
+Version 2.7 prioritizes the center cell, shares the parsed wind series by NWS
+grid response and Pacific date, and starts particles where samples support
+flow. Heatmap rasters are reused on cached pans. Visible-area tile requests
+use the browser's normal HTTP cache. During loading or failure, a tile can
+display an aligned crop of an already-decoded parent or a mosaic of already
+decoded children. These previews use a bounded, in-memory set of 56 decoded
+images. They never fetch parent or child tiles speculatively. An area without
+matching imagery remains blank. [OpenStreetMap raster policy](https://operations.osmfoundation.org/policies/tiles/)
+
+| Candidate | Findings |
+| --- | --- |
+| [NOAA GFS](https://registry.opendata.aws/noaa-gfs-bdp-pds/) | Commercially reusable global GRIB2 with broad offshore coverage. Its 0.25° grid is useful at wide zooms, with limited local coastal detail. |
+| [NOAA HRRR](https://registry.opendata.aws/noaa-hrrr-pds/) | Commercially reusable 3 km short-range guidance. Compare only inside the HRRR domain and match forecast valid times before combining it with other products. |
+| [NOAA NDFD](https://registry.opendata.aws/noaa-ndfd/) | Commercially reusable regional grids. The [NDFD XML service](https://digital.weather.gov/xml/rest.php) can request up to 100 positions with selected wind elements in one request. It is the quickest batching prototype if browser CORS and live response timing can be verified. Regional GRIB2 gives a shared-cache path with decoding and packaging work. |
+| [OpenFreeMap](https://openfreemap.org/#is-commercial-usage-allowed) | Its public vector service permits commercial use and requires attribution. A MapLibre prototype would need to compare startup bytes, tile continuity, and iPhone WebGL load. The provider offers no uptime guarantee. [Terms](https://openfreemap.org/tos/) |
+
+Direct NDFD XML, the public data bucket probe, and the OpenFreeMap style probe
+were blocked by the test environment. Provider documentation was available.
+The release keeps NWS JSON, NOAA station predictions, and the current raster
+basemap. There is no new data service, forecast ingest, or paid dependency.

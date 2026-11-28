@@ -12,27 +12,68 @@ window.MarineMotion = (() => {
   }
 
   function field(grid, values, project) {
-    const { latitudes, longitudes } = grid;
+    const {latitudes, longitudes} = grid;
     const xs = longitudes.map(lon => project([latitudes[0], lon]).x);
     const ys = latitudes.map(lat => project([lat, longitudes[0]]).y);
-    return (x, y, vector = false) => {
-      const col = xs.findIndex(value => value > x) - 1;
-      const row = ys.findIndex(value => value > y) - 1;
-      if (col < 0 || row < 0) return null;
-      const corners = [values[row][col], values[row][col + 1], values[row + 1][col], values[row + 1][col + 1]];
-      const wx = (xs[col + 1] - x) / (xs[col + 1] - xs[col]);
-      const wy = (ys[row + 1] - y) / (ys[row + 1] - ys[row]);
-      const [a, b, c, d] = corners;
-      const blend = (nw, ne, sw, se) => (nw * wx + ne * (1 - wx)) * wy +
-                                        (sw * wx + se * (1 - wx)) * (1 - wy);
-      if (vector) {
-        if (!a?.vector || !b?.vector || !c?.vector || !d?.vector) return null;
-        return [blend(a.vector[0], b.vector[0], c.vector[0], d.vector[0]),
-                blend(a.vector[1], b.vector[1], c.vector[1], d.vector[1])];
+    const cells = [], heat = [], flow = [];
+    function supported(corners, fieldName, x, y, width, height) {
+      const positions = [[0, 0], [1, 0], [0, 1], [1, 1]];
+      const available = corners.map((corner, i) => ({point: positions[i], value: corner?.[fieldName]}))
+        .filter(corner => corner.value != null);
+      if (available.length < 3) return null;
+      const polygon = available.length === 4
+        ? [positions[0], positions[1], positions[3], positions[2]] : available.map(corner => corner.point);
+      const boundary = [0, 1, 3, 2].filter(i => polygon.includes(positions[i]))
+        .map(i => [x + width * positions[i][0], y + height * positions[i][1]]);
+      const shape = {x, y, width, height, boundary};
+      const vector = fieldName === 'vector';
+      const value = (i, component) => vector ? available[i].value[component] : available[i].value;
+      let interpolate;
+      if (available.length === 4) {
+        interpolate = (u, v, component) =>
+          (value(0, component) * (1 - u) + value(1, component) * u) * (1 - v) +
+          (value(2, component) * (1 - u) + value(3, component) * u) * v;
+      } else {
+        const [a, b, c] = polygon;
+        const determinant = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]);
+        interpolate = (u, v, component) => {
+          const wa = ((b[1] - c[1]) * (u - c[0]) + (c[0] - b[0]) * (v - c[1])) / determinant;
+          const wb = ((c[1] - a[1]) * (u - c[0]) + (a[0] - c[0]) * (v - c[1])) / determinant;
+          const wc = 1 - wa - wb;
+          return wa < -1e-9 || wb < -1e-9 || wc < -1e-9 ? null :
+            wa * value(0, component) + wb * value(1, component) + wc * value(2, component);
+        };
       }
-      if (a?.speed == null || b?.speed == null || c?.speed == null || d?.speed == null) return null;
-      return blend(a.speed, b.speed, c.speed, d.speed);
+      return {shape, interpolate};
+    }
+    for (let row = 0; row < ys.length - 1; row++) {
+      const line = [];
+      for (let col = 0; col < xs.length - 1; col++) {
+        const corners = [values[row][col], values[row][col + 1], values[row + 1][col], values[row + 1][col + 1]];
+        const x = xs[col], y = ys[row], width = xs[col + 1] - x, height = ys[row + 1] - y;
+        const speed = supported(corners, 'speed', x, y, width, height);
+        const vector = supported(corners, 'vector', x, y, width, height);
+        if (speed) heat.push(speed.shape);
+        if (vector) flow.push(vector.shape);
+        line.push({speed, vector, x, y, width, height});
+      }
+      cells.push(line);
+    }
+    const sample = (x, y, vector = false) => {
+      let col = 0, row = 0;
+      if (x < xs[0] || y < ys[0]) return null;
+      while (col < cells[0]?.length && x >= xs[col + 1]) col++;
+      while (row < cells.length && y >= ys[row + 1]) row++;
+      const cell = cells[row]?.[col];
+      const source = vector ? cell?.vector : cell?.speed;
+      if (!source) return null;
+      const u = (x - cell.x) / cell.width, v = (y - cell.y) / cell.height;
+      const first = source.interpolate(u, v, 0);
+      return vector && first !== null ? [first, source.interpolate(u, v, 1)] : first;
     };
+    sample.heat = heat;
+    sample.flow = flow;
+    return sample;
   }
 
   function create(container) {
@@ -41,31 +82,42 @@ window.MarineMotion = (() => {
     canvas.setAttribute('aria-hidden', 'true');
     container.append(canvas);
     const context = canvas.getContext('2d');
+    const heatCanvas = document.createElement('canvas');
+    heatCanvas.className = 'marine-flow marine-heat leaflet-zoom-animated';
+    heatCanvas.setAttribute('aria-hidden', 'true');
+    heatCanvas.style.visibility = 'hidden';
+    container.insertBefore(heatCanvas, canvas);
+    const heatContext = heatCanvas.getContext('2d');
     const raster = document.createElement('canvas');
     const rasterContext = raster.getContext('2d');
-    if (!context || !rasterContext) {
+    if (!context || !rasterContext || !heatContext) {
       canvas.remove();
+      heatCanvas.remove();
       return null;
     }
     let width = 0, height = 0, frame = null, last = null, active = false;
+    let flowCells = [], spawnCells = null, rasterKey = '';
     let particles = [], currents = [], sample = null, extent = null;
     let opacity = .64, cameraAt = 0;
     let view = {x: 0, y: 0, scale: 1};
 
-    function paint() {
-      context.clearRect(0, 0, width, height);
+    function paintHeat() {
+      heatContext.clearRect(0, 0, width, height);
       if (!extent) return;
       const {x, y, scale} = view;
-      context.save();
-      context.beginPath();
+      heatContext.save();
+      heatContext.beginPath();
       for (const cell of extent.cells) {
-        context.rect((cell.x - x) * scale, (cell.y - y) * scale, cell.width * scale, cell.height * scale);
+        cell.boundary.forEach(([px, py], i) => {
+          if (i === 0) heatContext.moveTo((px - x) * scale, (py - y) * scale);
+          else heatContext.lineTo((px - x) * scale, (py - y) * scale);
+        });
+        heatContext.closePath();
       }
-      context.clip();
-      context.imageSmoothingEnabled = true;
-      context.drawImage(raster, (extent.x - x) * scale, (extent.y - y) * scale,
-                        extent.width * scale, extent.height * scale);
-      context.restore();
+      heatContext.clip();
+      heatContext.drawImage(raster, (extent.x - x) * scale, (extent.y - y) * scale,
+                            extent.width * scale, extent.height * scale);
+      heatContext.restore();
     }
 
     function cancel() {
@@ -76,18 +128,37 @@ window.MarineMotion = (() => {
     function clear() {
       cancel();
       extent = sample = null;
-      canvas.style.opacity = '';
       canvas.style.visibility = 'hidden';
+      heatCanvas.style.visibility = 'hidden';
+      flowCells = [];
+      spawnCells = null;
+      rasterKey = '';
       particles = [];
       currents = [];
-      paint();
+      context.clearRect(0, 0, width, height);
+      paintHeat();
     }
 
     function spawn(particle) {
-      particle.x = view.x + Math.random() * width / view.scale;
-      particle.y = view.y + Math.random() * height / view.scale;
-      particle.life = 15 + Math.random() * 30;
-      particle.trail = [];
+      if (!spawnCells) {
+        const right = view.x + width / view.scale, bottom = view.y + height / view.scale;
+        spawnCells = flowCells.map(cell => ({
+          x: Math.max(cell.x, view.x), y: Math.max(cell.y, view.y),
+          right: Math.min(cell.x + cell.width, right), bottom: Math.min(cell.y + cell.height, bottom)
+        })).filter(cell => cell.x < cell.right && cell.y < cell.bottom);
+      }
+      particle.life = 0;
+      particle.trail.length = 0;
+      for (let i = 0; i < 4 && spawnCells.length; i++) {
+        const cell = spawnCells[Math.floor(Math.random() * spawnCells.length)];
+        const x = cell.x + Math.random() * (cell.right - cell.x);
+        const y = cell.y + Math.random() * (cell.bottom - cell.y);
+        if (!sample(x, y, true)) continue;
+        particle.x = x;
+        particle.y = y;
+        particle.life = 15 + Math.random() * 30;
+        break;
+      }
     }
 
     function animate(now) {
@@ -96,11 +167,11 @@ window.MarineMotion = (() => {
       const elapsed = last === null ? 1 : Math.min(1.5, (now - last) / 40);
       last = now;
       const {x, y, scale} = view;
-      paint();
+      context.clearRect(0, 0, width, height);
       context.beginPath();
       for (const particle of particles) {
         const sx = (particle.x - x) * scale, sy = (particle.y - y) * scale;
-        const velocity = sample(particle.x, particle.y, true);
+        const velocity = particle.life > 0 ? sample(particle.x, particle.y, true) : null;
         if (!velocity || particle.life-- <= 0 || sx < 0 || sx > width || sy < 0 || sy > height) {
           spawn(particle);
           continue;
@@ -145,35 +216,47 @@ window.MarineMotion = (() => {
     }
 
     function setView(nextView) {
-      if (nextView.x !== view.x || nextView.y !== view.y || nextView.scale !== view.scale) cameraAt = performance.now();
+      const changed = nextView.x !== view.x || nextView.y !== view.y || nextView.scale !== view.scale;
+      if (changed) {
+        cameraAt = performance.now();
+        spawnCells = null;
+      }
       view = nextView;
       const nextWidth = container.clientWidth, nextHeight = container.clientHeight;
-      if (width !== nextWidth || height !== nextHeight) {
+      const resized = width !== nextWidth || height !== nextHeight;
+      if (resized) {
         width = nextWidth;
         height = nextHeight;
         const density = Math.min(window.devicePixelRatio || 1, 1.25);
         canvas.width = Math.ceil(width * density);
         canvas.height = Math.ceil(height * density);
         context.setTransform(density, 0, 0, density, 0, 0);
-        context.imageSmoothingEnabled = false;
+        heatCanvas.width = canvas.width;
+        heatCanvas.height = canvas.height;
+        heatContext.setTransform(density, 0, 0, density, 0, 0);
       }
-      if (extent) paint();
+      if (extent && (changed || resized)) paintHeat();
     }
 
-    function configure({ sample: nextSample = null, heatmap = null, wind = false, stations = [] } = {}) {
+    function configure({ sample: nextSample = null, heatmap = null, wind = false, stations = [], shapes = [] } = {}) {
       sample = nextSample;
       const phases = new Map(currents.map(station => [station.id, station.phase]));
       currents = stations.map(station => ({ ...station, phase: phases.get(station.id) ?? 0 }));
+      const previousExtent = extent;
       extent = heatmap;
-      canvas.style.opacity = extent ? String(opacity) : '';
-      const count = sample && wind ? Math.min(96, Math.ceil(width * height / 2600)) : 0;
+      heatCanvas.style.opacity = String(opacity);
+      heatCanvas.style.visibility = extent ? '' : 'hidden';
+      flowCells = shapes;
+      spawnCells = null;
+      const count = sample && wind && flowCells.length ? Math.min(72, Math.ceil(width * height / 2800)) : 0;
       particles.length = Math.min(particles.length, count);
       while (particles.length < count) {
-        const particle = {};
+        const particle = {x: 0, y: 0, life: 0, trail: []};
         spawn(particle);
         particles.push(particle);
       }
-      if (extent) {
+      if (extent && rasterKey !== extent.key) {
+        rasterKey = extent.key;
         raster.width = Math.min(160, Math.max(1, Math.ceil(extent.width * view.scale / 5)));
         raster.height = Math.min(128, Math.max(1, Math.ceil(extent.height * view.scale / 5)));
         const image = rasterContext.createImageData(raster.width, raster.height);
@@ -185,9 +268,9 @@ window.MarineMotion = (() => {
           }
         }
         rasterContext.putImageData(image, 0, 0);
-        paint();
-      } else if (!particles.length && !currents.length) {
-        paint();
+        paintHeat();
+      } else if (extent && !previousExtent) {
+        paintHeat();
       }
       setActive(active);
     }
@@ -195,11 +278,11 @@ window.MarineMotion = (() => {
     function setActive(enabled) {
       active = enabled;
       const hasFlow = particles.length || currents.length;
-      canvas.style.visibility = extent || (active && hasFlow) ? '' : 'hidden';
+      canvas.style.visibility = active && hasFlow ? '' : 'hidden';
       if (!active || !hasFlow) {
         if (frame !== null) {
           cancel();
-          paint();
+          context.clearRect(0, 0, width, height);
         }
       } else if (frame === null && width && height) {
         frame = requestAnimationFrame(animate);
@@ -208,7 +291,7 @@ window.MarineMotion = (() => {
 
     function setOpacity(value) {
       opacity = value;
-      if (extent) canvas.style.opacity = String(opacity);
+      heatCanvas.style.opacity = String(opacity);
     }
 
     return { clear, configure, setActive, setView, setOpacity };
