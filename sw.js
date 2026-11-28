@@ -1,8 +1,8 @@
-const RELEASE = '3.0.5';
-const CACHE = 'marine-iq-v305';
-const INDEX = './index.html?v=305';
-const RULES_SCRIPT = './marine-rules.js?v=305';
-const RULES_DATA = './fishing-rules.json?v=305';
+const RELEASE = '3.0.6';
+const CACHE = 'marine-iq-v306';
+const INDEX = './index.html?v=306';
+const RULES_SCRIPT = './marine-rules.js?v=306';
+const RULES_DATA = './fishing-rules.json?v=306';
 const SHELL = [INDEX, './marine-motion.js?v=302', './marine-tiles.js?v=300', './marine-mpa.js?v=300',
   RULES_SCRIPT, RULES_DATA,
   './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css',
@@ -18,7 +18,15 @@ const appIndex = new URL(INDEX, self.location.href).pathname;
 
 async function installShell() {
   const requested = new URL(self.location.href).searchParams.get('release');
-  if (requested && requested !== RELEASE) throw Error('Worker release still propagating');
+  // A registration keeps its script URL across updates, including an old
+  // release query. Allow that URL to serve a newer worker, and reject stale bytes.
+  if (requested) {
+    const actual = RELEASE.split('.').map(Number);
+    const wanted = requested.split('.').map(Number);
+    const difference = actual.findIndex((part,i)=>part!==wanted[i]);
+    if (!/^\d+\.\d+\.\d+$/.test(requested) ||
+        (difference>=0 && actual[difference]<wanted[difference])) throw Error('Worker release still propagating');
+  }
   const cache = await caches.open(CACHE);
   try {
     await cache.addAll(SHELL.map(path => new Request(path, {cache: 'reload'})));

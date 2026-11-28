@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.5';
+  const release = '3.0.6';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -345,7 +345,6 @@ window.MarineRules = (() => {
     panel.addEventListener('toggle',()=>{
       if (panel.open && !results.childElementCount) render();
     });
-    panel.hidden = false;
   }
 
   function install({getTrip, today}) {
@@ -354,6 +353,8 @@ window.MarineRules = (() => {
     const select = document.getElementById('rules-region');
     const search = document.getElementById('rules-search');
     const cards = document.getElementById('rules-cards');
+    const comparisons = group('Compare Species');
+    comparisons.id = 'rule-comparisons';
     const method = document.getElementById('rules-method');
     const favoriteOnly = document.getElementById('rules-favorites');
     const ruleDate = document.getElementById('rules-date');
@@ -402,6 +403,7 @@ window.MarineRules = (() => {
         const card = ruleCard(species,entries,choice,selectedDate,date,data,favorites,method.value);
         const details = card.querySelector('details');
         details.dataset.species = species.id;
+        if (species.id==='rockfish') details.insertBefore(comparisons,details.lastElementChild);
         details.open = open.has(species.id);
         return card;
       };
@@ -474,6 +476,16 @@ window.MarineRules = (() => {
         } else if (!data.salmon.oceanAreas[region]) {
           panel.append(node('p','Choose a California ocean region to display its rules.','warn'));
         } else panel.append(node('p',data.salmon.oceanAreas[region],'muted'));
+        const idNotes = node('p',salmonTab==='ocean'
+          ? 'Check both the lower gum line and tail. Chinook usually have dark gums and spots on both tail lobes. Coho have pale gums and usually have spots on the upper lobe only.'
+          : 'Body color changes in fresh water. Compare the gums and tail marks as well as body color.');
+        const idLinks = node('ul','','rules-links');
+        for (const [label,url] of data.salmon.identificationGuides) {
+          const item = node('li');
+          item.append(link(label,url));
+          idLinks.append(item);
+        }
+        panel.append(group('Salmon identification photos and tips',idNotes,idLinks));
         for (const fish of data.species.filter(f=>salmonIds.has(f.id)&&(!favoriteOnly.checked||favorites.has(f.id)))) {
           const reach = data.salmon.rivers[riverReach];
           const inland = salmonTab==='river';
@@ -496,7 +508,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=305').then(response => {
+      pending = fetch('./fishing-rules.json?v=306').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {
@@ -515,7 +527,7 @@ window.MarineRules = (() => {
           if (Object.hasOwn(snapshot.regions, saved)) select.value = saved;
         } catch {}
         data = snapshot;
-        installComparisons(document.getElementById('rule-comparisons'),data);
+        installComparisons(comparisons,data);
         render();
       }).catch(() => {
         cards.textContent = 'Regulations unavailable. Use the official links above.';

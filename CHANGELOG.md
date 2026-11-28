@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.6
+
+- Move the collapsed Compare Species panel into Rockfish and groundfish. Refresh the copper rockfish photograph and preserve source credits and enlargement.
+- Keep freshwater photos in River Salmon. Link ocean-phase salmon identification photographs and gum and tail references. Mark pending in-app ocean photos explicitly.
+- Allow existing version-qualified worker registrations to install newer app shells. Retry when release metadata advances before matching assets and check the previous worker route during deployment verification.
+
 ## 3.0.5
 
 - Add expandable side-by-side rockfish comparisons with distinguishing traits, credited photos where available, and links to CDFW, RecFIN, ODFW and NOAA identification guides.
