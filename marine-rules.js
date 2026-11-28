@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.10';
+  const release = '3.0.11';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -53,9 +53,13 @@ window.MarineRules = (() => {
   function photoCredit(asset, tag, compact = false) {
     const credit = node(tag,'','rule-photo-credit');
     if (asset.label) credit.append(asset.label+' · ');
-    const source = link(compact ? 'Credits' : asset.credit,asset.source);
-    if (compact) source.setAttribute('aria-label',asset.credit);
-    credit.append(source);
+    if (asset.source) {
+      const source = link(compact ? 'Credits' : asset.credit,asset.source);
+      if (compact) source.setAttribute('aria-label',asset.credit);
+      credit.append(source);
+    } else {
+      credit.append(asset.credit);
+    }
     if (!compact && asset.license) credit.append(' · ',link(asset.license[0],asset.license[1]));
     if (!compact && asset.edits) credit.append(' · ',asset.edits);
     return credit;
@@ -515,7 +519,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=310').then(response => {
+      pending = fetch('./fishing-rules.json?v=311').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {
