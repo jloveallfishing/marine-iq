@@ -11,14 +11,16 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     ("index.html", ""),
-    ("index.html", "index.html?v=309"),
+    ("index.html", "index.html?v=310"),
     ("sw.js", "sw.js"),
     ("release.json", "release.json"),
     ("marine-motion.js", "marine-motion.js?v=309"),
     ("marine-tiles.js", "marine-tiles.js?v=309"),
     ("marine-mpa.js", "marine-mpa.js?v=300"),
-    ("marine-rules.js", "marine-rules.js?v=309"),
-    ("fishing-rules.json", "fishing-rules.json?v=309"),
+    ("marine-rules.js", "marine-rules.js?v=310"),
+    ("fishing-rules.json", "fishing-rules.json?v=310"),
+    *((path.relative_to(ROOT).as_posix(), path.relative_to(ROOT).as_posix())
+      for path in sorted((ROOT / "assets/rules").glob("*.jpg"))),
     ("mpa-boundaries.geojson", "mpa-boundaries.geojson?v=28"),
     ("vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.js"),
     ("vendor/leaflet/leaflet.css", "vendor/leaflet/leaflet.css"),

@@ -1,5 +1,5 @@
 {
-  "release": "3.0.9",
+  "release": "3.0.10",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -1179,17 +1179,18 @@
         "class": "Shelf",
         "note": "Included in the combined limit. A long jaw extends to or beyond the eye socket; young fish may show small brown spots.",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Juvenile_Bocaccio_Rockfish.jpg/330px-Juvenile_Bocaccio_Rockfish.jpg",
-          "alt": "Juvenile bocaccio (Sebastes paucispinis) photographed at Santa Cruz wharf",
-          "credit": "Photo: Breezygamer117",
-          "source": "https://commons.wikimedia.org/wiki/File:Juvenile_Bocaccio_Rockfish.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Juvenile_Bocaccio_Rockfish.jpg",
-          "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Juvenile_Bocaccio_Rockfish.jpg/960px-Juvenile_Bocaccio_Rockfish.jpg",
+          "label": "Bocaccio",
+          "url": "./assets/rules/bocaccio.jpg",
+          "alt": "Bocaccio (Sebastes paucispinis)",
+          "credit": "Photo: Dominic Alianelli",
+          "source": "https://www.inaturalist.org/photos/35479435",
+          "reuse": "https://creativecommons.org/publicdomain/zero/1.0/",
           "license": [
-            "CC BY-SA 4.0",
-            "https://creativecommons.org/licenses/by-sa/4.0/"
+            "CC0 1.0",
+            "https://creativecommons.org/publicdomain/zero/1.0/"
           ],
-          "setting": "out-of-water"
+          "setting": "out-of-water",
+          "edits": "Rotated 90° clockwise and resized."
         }
       },
       {
@@ -1205,7 +1206,18 @@
         "class": "Nearshore",
         "note": "Included in the combined limit; regional closures apply.",
         "image": {
-          "label": "Blue rockfish"
+          "label": "Blue rockfish",
+          "url": "./assets/rules/blue-rockfish.jpg",
+          "alt": "Blue rockfish (Sebastes mystinus)",
+          "credit": "Photo: Konshau Duman",
+          "source": "https://www.inaturalist.org/photos/235033228",
+          "reuse": "https://creativecommons.org/licenses/by/4.0/",
+          "license": [
+            "CC BY 4.0",
+            "https://creativecommons.org/licenses/by/4.0/"
+          ],
+          "setting": "out-of-water",
+          "edits": "Resized."
         }
       },
       {
@@ -1233,10 +1245,32 @@
         "note": "Included in the combined limit; regional closures apply.",
         "images": [
           {
-            "label": "Kelp greenling"
+            "label": "Kelp greenling",
+            "url": "./assets/rules/kelp-greenling.jpg",
+            "alt": "Kelp greenling (Hexagrammos decagrammus)",
+            "credit": "Photo: Matt Muir",
+            "source": "https://www.inaturalist.org/photos/315375151",
+            "reuse": "https://creativecommons.org/licenses/by/4.0/",
+            "license": [
+              "CC BY 4.0",
+              "https://creativecommons.org/licenses/by/4.0/"
+            ],
+            "setting": "out-of-water",
+            "edits": "Resized."
           },
           {
-            "label": "Rock greenling"
+            "label": "Rock greenling · western Pacific red form",
+            "url": "./assets/rules/rock-greenling.jpg",
+            "alt": "Rock greenling · western Pacific red form (Hexagrammos lagocephalus)",
+            "credit": "Photo: Valeria Kovaleva (Валерия Ковалева)",
+            "source": "https://www.inaturalist.org/photos/303292378",
+            "reuse": "https://creativecommons.org/licenses/by/4.0/",
+            "license": [
+              "CC BY 4.0",
+              "https://creativecommons.org/licenses/by/4.0/"
+            ],
+            "setting": "out-of-water",
+            "edits": "Resized."
           }
         ],
         "favorite": "greenling"
@@ -1677,7 +1711,23 @@
       },
       "Gopher": {
         "tip": "Pink or gray blotches and irregular color along the lateral line.",
-        "scientific": "Sebastes carnatus"
+        "scientific": "Sebastes carnatus",
+        "images": [
+          {
+            "label": "Gopher rockfish",
+            "url": "./assets/rules/gopher-rockfish.jpg",
+            "alt": "Gopher rockfish (Sebastes carnatus)",
+            "credit": "Photo: Konshau Duman",
+            "source": "https://www.inaturalist.org/photos/235033500",
+            "reuse": "https://creativecommons.org/licenses/by/4.0/",
+            "license": [
+              "CC BY 4.0",
+              "https://creativecommons.org/licenses/by/4.0/"
+            ],
+            "setting": "out-of-water",
+            "edits": "Resized."
+          }
+        ]
       },
       "Quillback": {
         "tip": "Tall dorsal spines and pale head freckles that usually stop before the tail.",

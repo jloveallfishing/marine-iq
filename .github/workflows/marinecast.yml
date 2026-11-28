@@ -51,7 +51,7 @@ jobs:
         run: |
           mkdir site
           cp index.html release.json marine-motion.js marine-tiles.js marine-mpa.js marine-rules.js fishing-rules.json mpa-boundaries.geojson sw.js manifest.webmanifest icon-192.png icon-512.png brand.jpg brand-light.jpg site/
-          cp -r vendor site/
+          cp -r vendor assets site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

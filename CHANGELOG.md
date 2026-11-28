@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.10
+
+- Add five cleared Rules identification photos for Blue and Gopher rockfish, Kelp and Rock greenlings, and Bocaccio. Keep source, creator, license and edits accessible in the photo viewer.
+
 ## 3.0.9
 
 - Keep fresh NWS wind cells available across map views, reuse published coverage at close zoom and index cell lookups for continuous wind shading and particle trails.
