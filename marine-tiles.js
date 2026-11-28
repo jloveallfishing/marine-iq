@@ -6,13 +6,13 @@ window.createMarineBasemap = function (L) {
   const key = (z, x, y) => [z, x, y].join('/');
   const remembered = (z, x, y) => loaded.get(key(z, x, y));
 
-  function fallback(canvas, {z, x, y}, size) {
+  function fallback(getCanvas, {z, x, y}, size) {
     let context;
     const draw = (...args) => {
-      context ??= canvas.getContext('2d');
+      context ??= getCanvas().getContext('2d');
       context?.drawImage(...args);
     };
-    for (let level = 0; level <= Math.min(z, 2); level++) {
+    for (let level = 0; level <= Math.min(z, 3); level++) {
       const factor = 2 ** level;
       const image = remembered(z - level, Math.floor(x / factor), Math.floor(y / factor));
       if (!image) continue;
@@ -38,10 +38,13 @@ window.createMarineBasemap = function (L) {
       const tile = document.createElement('div');
       tile.dataset.tileZoom = coords.z;
       const size = this.getTileSize().x;
-      const preview = document.createElement('canvas');
-      preview.width = preview.height = size;
-      const source = fallback(preview, coords, size);
-      if (source) {
+      let preview;
+      const source = fallback(() => {
+        preview ??= document.createElement('canvas');
+        preview.width = preview.height = size;
+        return preview;
+      }, coords, size);
+      if (source && preview) {
         tile.dataset.tilePreview = source;
         tile.style.visibility = 'visible';
         tile.append(preview);
@@ -57,9 +60,9 @@ window.createMarineBasemap = function (L) {
         const id = key(coords.z, coords.x, coords.y);
         loaded.delete(id);
         loaded.set(id, image);
-        if (loaded.size > 56) loaded.delete(loaded.keys().next().value);
+        if (loaded.size > 40) loaded.delete(loaded.keys().next().value);
         image.hidden = false;
-        preview.remove();
+        preview?.remove();
         delete tile.dataset.tilePreview;
         tile.style.visibility = '';
         done(null, tile);
@@ -74,7 +77,7 @@ window.createMarineBasemap = function (L) {
     }
   });
   const layer = new Layer({
-    maxZoom: 19, keepBuffer: 3, updateWhenIdle: true, updateWhenZooming: false,
+    maxZoom: 19, keepBuffer: 2, updateWhenIdle: true, updateWhenZooming: false,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
   });
   layer.on('tileunload', ({tile}) => {

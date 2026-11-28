@@ -1,5 +1,5 @@
 {
-  "release": "2.9.1",
+  "release": "3.0.0",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -209,7 +209,14 @@
         "salmon",
         "inseason",
         "inland"
-      ]
+      ],
+      "image": {
+        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/banner_images/2021-08/Chinook-salmon-Ryan-Hagerty-usfws.jpg?itok=stVi_Qt1",
+        "alt": "Adult Chinook salmon swimming above a riverbed",
+        "credit": "Photo: Ryan Hagerty/USFWS",
+        "source": "https://www.fws.gov/media/chinook",
+        "reuse": "https://www.fws.gov/media/chinook"
+      }
     },
     {
       "id": "rockfish",
@@ -1058,5 +1065,6 @@
         "from": "2026-11-28"
       }
     ]
-  }
+  },
+  "verified": "2026-11-28"
 }

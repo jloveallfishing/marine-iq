@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '2.9.1';
+  const release = '3.0.0';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -9,6 +9,23 @@ window.MarineRules = (() => {
   const deltaPresets = new Set([6, 7, 11, 12]);
   const favoritesKey = 'marinecastFavoriteSpecies';
   const regionPreference = 'marinecastRulesRegion';
+
+  function suggestRegion(trip) {
+    if (trip.predefined) {
+      if (bayPresets.has(trip.index)) return 'bay';
+      if (deltaPresets.has(trip.index)) return 'delta';
+      return '';
+    }
+    // Both place text and a broad sanity check are required. A map coordinate
+    // alone cannot distinguish inland, tidal and ocean legal boundaries.
+    if (trip.latitude >= 37.39 && trip.latitude <= 38.17 &&
+        trip.longitude >= -122.48 && trip.longitude <= -122.13 &&
+        /san francisco bay|san pablo bay|berkeley marina|richmond marina|angel island|alcatraz/i.test(trip.name)) return 'bay';
+    if (trip.latitude >= 37.75 && trip.latitude <= 38.55 &&
+        trip.longitude >= -122.1 && trip.longitude <= -121.25 &&
+        /sacramento.san joaquin delta|rio vista|sherman island|delta marina/i.test(trip.name)) return 'delta';
+    return '';
+  }
 
   function node(tag, text, className) {
     const element = document.createElement(tag);
@@ -30,12 +47,14 @@ window.MarineRules = (() => {
     if (species.scientific) details.append(node('p', species.scientific, 'muted'));
     if (species.image) {
       const image = node('img');
-      image.src = species.image.url;
       image.alt = species.image.alt;
       image.loading = 'lazy';
       image.decoding = 'async';
       image.referrerPolicy = 'no-referrer';
       image.addEventListener('error', () => { image.hidden = true; });
+      details.addEventListener('toggle', () => {
+        if (details.open && !image.hasAttribute('src')) image.src = species.image.url;
+      });
       const credit = node('p', '', 'muted');
       credit.append(link(species.image.credit, species.image.source));
       details.append(image, credit);
@@ -44,6 +63,7 @@ window.MarineRules = (() => {
     const inDate = entry => tripDate >= entry.from && tripDate <= entry.through &&
       today >= entry.verified && today <= entry.reviewBy;
     const current = regional.filter(inDate);
+    if (current.length) summary.after(node('p', 'Verified summary for the selected date · check local exceptions', 'muted'));
     const reference = regional.filter(entry => entry.kind === 'reference' && !inDate(entry));
     const restrictions = Object.assign({}, ...current.map(entry => entry.rules));
     const published = Object.assign({}, ...reference.map(entry => entry.rules));
@@ -121,8 +141,7 @@ window.MarineRules = (() => {
       if (page.hidden || !data) return;
       const trip = getTrip();
       const date = today();
-      const suggested = trip.predefined
-        ? (bayPresets.has(trip.index) ? 'bay' : deltaPresets.has(trip.index) ? 'delta' : '') : '';
+      const suggested = suggestRegion(trip);
       const selectedDate = ruleDate.value || trip.date || date;
       const region = select.value === 'trip' ? suggested : select.value;
       const query = search.value.trim().toLowerCase();
@@ -130,9 +149,15 @@ window.MarineRules = (() => {
       if (key === lastRender) return;
       lastRender = key;
       tripLabel.textContent = `${trip.name || 'No fishing location'} · ${selectedDate} (Pacific)`;
-      context.textContent = select.value !== 'trip' ? 'Manual selection. Confirm the official boundary for your fishing spot.'
-        : suggested ? `Suggested region: ${data.regions[suggested].label}. Confirm the official boundary before fishing.`
+      const mismatch = Boolean(suggested && region !== suggested);
+      context.classList.toggle('warn', mismatch);
+      context.classList.toggle('rule-mismatch', mismatch);
+      context.textContent = mismatch
+        ? `Region mismatch. Showing ${data.regions[region].label}. The trip location suggests ${data.regions[suggested].label}. Confirm the official boundary.`
+        : region ? `${select.value === 'trip' ? 'Suggested' : 'Selected'} region: ${data.regions[region].label}. Confirm the official boundary before fishing.`
         : 'Select a region manually for this location. A map pin alone does not establish jurisdiction.';
+      document.getElementById('rules-snapshot').textContent =
+        `Snapshot verified ${data.verified} (Pacific). Check current official notices before fishing.`;
       const open = new Set([...cards.querySelectorAll('details[open]')].map(details => details.dataset.species));
       const rows = data.species.filter(species => (!favoriteOnly.checked || favorites.has(species.id)) &&
         [species.name, species.scientific, ...species.aliases].filter(Boolean).some(name => name.toLowerCase().includes(query)));
@@ -152,7 +177,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=291').then(response => {
+      pending = fetch('./fishing-rules.json?v=300').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {

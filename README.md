@@ -258,3 +258,7 @@ Review the [CDFW in-season notices](https://wildlife.ca.gov/Fishing/Ocean/Regula
 Each entry has region IDs, an inclusive Pacific trip-date range (`from` and `through`), a `verified` date and a `reviewBy` date. Set `effective` only for a known legal effective date. Use `reference` for standing facts that can still be shown as dated reference outside the verified window. Use `schedule` or `emergency` for time-sensitive entries, which the app withholds after review expires or outside their dates. Keep time-sensitive review windows short and cite each supporting source. The 2.9.1 snapshot was checked November 28, 2026, with its first in-season review due December 5. Re-check time-sensitive entries before production release if that date has passed.
 
 To publish a snapshot revision, update its release, the page and script version, the worker cache and asset URLs, the deployment verification paths, and the changelog. Run the snapshot and browser tests. Live deployment verification checks canonical asset bytes, the permanent launch URL, the active worker version and a worker-controlled reload. The service worker uses a separate versioned app cache and leaves the local fishing-data storage in place. A resumed standalone app offers a reload so users can finish editing before updating.
+
+## Private beta
+
+See the [beta checklist and source audit](docs/PRIVATE-BETA.md) for device tests, the regulatory monitoring process and commercial prerequisites.
