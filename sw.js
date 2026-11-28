@@ -1,5 +1,6 @@
-const CACHE = 'marine-iq-v24';
-const SHELL = ['./', './index.html', './marine-motion.js?v=24', './manifest.webmanifest',
+const CACHE = 'marine-iq-v25';
+const INDEX = './index.html?v=25';
+const SHELL = [INDEX, './marine-motion.js?v=25', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './brand.jpg?v=6', './brand-light.jpg?v=11'];
 const urls = new Set(SHELL.map(path => new URL(path, self.location.href).href));
 
@@ -19,8 +20,8 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request, {cache: 'no-cache'}).catch(() => caches.match('./index.html')));
+    event.respondWith(fetch(request, {cache: 'no-cache'}).catch(() => caches.open(CACHE).then(cache => cache.match(INDEX))));
   } else if (urls.has(request.url)) {
-    event.respondWith(caches.match(request).then(response => response || fetch(request)));
+    event.respondWith(caches.open(CACHE).then(cache => cache.match(request)).then(response => response || fetch(request)));
   }
 });

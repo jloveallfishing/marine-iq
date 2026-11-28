@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.5.0
+
+- Space wind and gust markers by zoom level to prevent overlapping speed labels.
+- Improve wind trail contrast and length within the existing animation budget.
+- Add a Pacific date picker on the map and a saved heatmap opacity control.
+- Add an automated foreground service worker upgrade test and document iPhone verification.
+- Expand research into commercially reusable satellite imagery without enabling a new provider.
+
 ## 2.4.0
 
 - Keep valid wind, tide, and current overlays in place during map movement and refreshes. Update new coverage progressively and keep the particle layer anchored to the map as it moves.

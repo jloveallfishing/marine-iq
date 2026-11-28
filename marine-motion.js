@@ -49,14 +49,17 @@ window.MarineMotion = (() => {
     }
     let width = 0, height = 0, frame = null, last = null, active = false;
     let particles = [], currents = [], sample = null, extent = null;
+    let opacity = .64;
     let view = {x: 0, y: 0, scale: 1};
 
     function paint() {
       context.clearRect(0, 0, width, height);
       if (!extent) return;
       const {x, y, scale} = view;
+      context.globalAlpha = opacity;
       context.drawImage(raster, (extent.x - x) * scale, (extent.y - y) * scale,
                         extent.width * scale, extent.height * scale);
+      context.globalAlpha = 1;
     }
 
     function cancel() {
@@ -95,14 +98,14 @@ window.MarineMotion = (() => {
         }
         const speed = Math.hypot(velocity[0], velocity[1]);
         if (speed < .2) continue;
-        const step = Math.min(speed * .24, 6) / (speed * scale);
+        const step = Math.min(Math.max(speed * .28, .8), 7) / (speed * scale);
         const nx = particle.x + velocity[0] * step, ny = particle.y + velocity[1] * step;
         if (!sample(nx, ny, true)) {
           spawn(particle);
           continue;
         }
         particle.trail.push([particle.x, particle.y]);
-        if (particle.trail.length > 4) particle.trail.shift();
+        if (particle.trail.length > 6) particle.trail.shift();
         const [first, ...rest] = particle.trail;
         context.moveTo((first[0] - x) * scale, (first[1] - y) * scale);
         for (const [px, py] of rest) context.lineTo((px - x) * scale, (py - y) * scale);
@@ -118,11 +121,13 @@ window.MarineMotion = (() => {
         context.moveTo(sx + current.dx * offset, sy + current.dy * offset);
         context.lineTo(sx + current.dx * (offset + 7), sy + current.dy * (offset + 7));
       }
-      context.lineWidth = 2.2;
-      context.strokeStyle = 'rgba(7,24,40,.83)';
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+      context.lineWidth = 3.2;
+      context.strokeStyle = 'rgba(7,24,40,.92)';
       context.stroke();
-      context.lineWidth = 1;
-      context.strokeStyle = 'rgba(255,255,255,.93)';
+      context.lineWidth = 1.65;
+      context.strokeStyle = '#fff';
       context.stroke();
     }
 
@@ -160,7 +165,7 @@ window.MarineMotion = (() => {
           for (let x = 0; x < raster.width; x++) {
             const speed = sample(extent.x + (x + .5) * extent.width / raster.width,
                                  extent.y + (y + .5) * extent.height / raster.height);
-            if (speed !== null) image.data.set([...color(speed), 162], (y * raster.width + x) * 4);
+            if (speed !== null) image.data.set([...color(speed), 255], (y * raster.width + x) * 4);
           }
         }
         rasterContext.putImageData(image, 0, 0);
@@ -183,7 +188,12 @@ window.MarineMotion = (() => {
       }
     }
 
-    return { clear, configure, setActive, setView };
+    function setOpacity(value) {
+      opacity = value;
+      if (extent) paint();
+    }
+
+    return { clear, configure, setActive, setView, setOpacity };
   }
 
   return { color, field, create, gradient, stops };
