@@ -58,7 +58,12 @@ window.MarineCatch = (() => {
     const details = el('catch-details');
     const status = el('catch-status'), form = el('catch-add'), cards = el('catch-cards');
     let snapshot, catalog = [], trip = null, busy = false, stored = null;
-    const expanded = new Set();
+    const rows = new Map();
+    const summary = el('catch-summary'), totals = el('catch-totals'), combinedNote = el('catch-combined');
+    let optionIds = '';
+    const setText = (element, text) => {
+      if (element.textContent !== text) element.textContent = text;
+    };
     try {
       stored = localStorage.getItem(storageKey);
       const saved = JSON.parse(stored);
@@ -118,30 +123,102 @@ window.MarineCatch = (() => {
     }
 
     function saveCounts(catches) {
-      if (persist({...trip,catches})) render();
+      if (!persist({...trip,catches})) return false;
+      render();
+      return true;
     }
 
     function counter(row, key) {
       const group = node('div', '', 'catch-counter');
-      const label = key === 'retained' ? 'retained' : 'released';
-      const output = node('output', String(row[key]));
-      output.setAttribute('aria-label', row.name+' '+label+' count');
-      for (const [delta,text,action] of [[-1,'−','Remove'],[1,'+','Add']]) {
-        const button = node('button',text);
+      const output = node('output');
+      output.setAttribute('aria-label', row.name+' '+key+' count');
+      const buttons = [-1,1].map(delta => {
+        const button = node('button',delta<0 ? '−' : '+');
         button.type = 'button';
-        button.disabled = trip.state !== 'active' || (delta<0 && row[key]===0) || (delta>0 && row[key]>=9999);
-        button.setAttribute('aria-label', action+' '+label+' '+row.name);
-        button.dataset.counter = row.id+'-'+key+'-'+delta;
+        button.setAttribute('aria-label', (delta<0?'Remove':'Add')+' '+key+' '+row.name);
         button.onclick = () => {
-          if (key === 'released') expanded.add(row.id);
-          saveCounts(trip.catches.map(item=>item.id===row.id ? {...item,[key]:item[key]+delta} : item));
-          const next = [...cards.querySelectorAll('button[data-counter]')].find(b=>b.dataset.counter===button.dataset.counter);
-          next?.focus({preventScroll:true});
+          const current = trip?.catches.find(item=>item.id===row.id);
+          if (trip?.state!=='active' || !current) return;
+          const count = current[key]+delta;
+          if (count<0 || count>9999) return;
+          saveCounts(trip.catches.map(item=>item.id===row.id ? {...item,[key]:count} : item));
         };
-        if (delta===1) group.append(output);
-        group.append(button);
+        return button;
+      });
+      group.append(buttons[0],output,buttons[1]);
+      return {
+        group,
+        update(count, active) {
+          setText(output,String(count));
+          buttons[0].disabled = !active || count===0;
+          buttons[1].disabled = !active || count>=9999;
+        }
+      };
+    }
+
+    function createRow(row) {
+      const article = node('article','','catch-row');
+      article.dataset.catchSpecies = row.id;
+      const media = node('div','','catch-photo');
+      media.hidden = true;
+      const retained = counter(row,'retained'), released = counter(row,'released');
+      const heading = node('div','','catch-row-heading');
+      heading.append(node('h3',row.name),node('p','Retained','catch-caption'),retained.group);
+      const top = node('div','','catch-row-top');
+      top.append(media,heading);
+      const limit = node('p','','catch-limit');
+      limit.setAttribute('role','status');
+      const other = node('details','','catch-row-options');
+      const otherLabel = node('summary');
+      const remove = node('button','Remove species','catch-remove');
+      remove.type = 'button';
+      remove.setAttribute('aria-label','Remove species '+row.name);
+      remove.onclick = () => {
+        const current = trip?.catches.find(item=>item.id===row.id);
+        if (trip?.state!=='active' || !current) return;
+        if ((current.retained || current.released) &&
+            !window.confirm('Remove '+row.name+' and its recorded catches from this trip?')) return;
+        if (saveCounts(trip.catches.filter(item=>item.id!==row.id))) select.focus();
+      };
+      other.append(otherLabel,released.group,remove);
+      article.append(top,limit,other);
+      return {article,media,retained,released,limit,otherLabel,remove,image:undefined};
+    }
+
+    function updateRow(view, row, daily, todayKey, active) {
+      const species = catalog.find(item=>item.id===row.id) || row;
+      const image = species.id==='chinook' && ['inland','delta'].includes(trip.region) ? species.riverImage : species.image;
+      if (view.image !== image) {
+        view.image = image;
+        view.media.replaceChildren(...(image?.url ? [photo(image,row.name,undefined)] : []));
+        view.media.hidden = !image?.url;
       }
-      return group;
+      const {status:regStatus,bag,cap} = limits(snapshot,species,trip,todayKey);
+      const intake = retainedIn(daily,item=>row.groundfish ? item.groundfish===row.groundfish : item.id===row.id);
+      const ambiguous = row.groundfish && row.id!=='unidentified-rockfish' &&
+        daily.some(item=>item.id==='unidentified-rockfish' && item.retained>0);
+      const blocked = regStatus==='closed' || regStatus==='retention';
+      const messages = [];
+      if (blocked) messages.push(regStatus==='closed'?'Season closed':'Retention prohibited');
+      else if (bag) messages.push('Daily bag limit · '+bag);
+      const numeric = Number.isInteger(cap);
+      const warning = blocked || (numeric && (intake>cap || (cap>0 && intake===cap)));
+      if (numeric && intake>cap) messages.push('Limit exceeded · '+intake+' / '+cap);
+      else if (numeric && cap>0 && !ambiguous) {
+        if (intake===cap) messages.push((row.groundfish?'Sublimit':'Bag limit')+' reached · '+intake+' / '+cap);
+        else {
+          const remaining = (cap-intake)+' under '+(row.groundfish?'sublimit':'bag cap');
+          messages.push((row.groundfish?'Sublimit · '+intake+' / '+cap+' · ':'')+remaining);
+        }
+      } else if (!blocked && (!row.groundfish || ambiguous)) messages.push('Verified allowance unavailable');
+      if (ambiguous && numeric && cap>0 && intake===cap) messages.push('Known catches reach the sublimit');
+      setText(view.limit,messages.join(' · '));
+      view.limit.hidden = !messages.length;
+      view.limit.classList.toggle('catch-warning',warning);
+      view.retained.update(row.retained,active);
+      view.released.update(row.released,active);
+      setText(view.otherLabel,'Released · '+row.released);
+      view.remove.hidden = !active;
     }
 
     function render() {
@@ -156,58 +233,45 @@ window.MarineCatch = (() => {
       el('catch-log').hidden = !complete;
       el('catch-resume').hidden = !complete;
       const options = catalog.filter(species=>!trip?.catches.some(row=>row.id===species.id));
-      const previous = select.value;
-      select.replaceChildren(new Option('Choose a species',''),...options.map(row=>new Option(row.name,row.id)));
-      if (options.some(row=>row.id===previous)) select.value = previous;
+      const ids = options.map(row=>row.id).join('|');
+      if (ids!==optionIds) {
+        const previous = select.value;
+        optionIds = ids;
+        select.replaceChildren(new Option('Choose a species',''),...options.map(row=>new Option(row.name,row.id)));
+        if (options.some(row=>row.id===previous)) select.value = previous;
+      }
       el('catch-add-button').disabled = !options.length;
       const catches = trip?.catches || [];
       const todayKey = today();
       const daily = trip ? [...catches,...getLoggedCatches(trip.date,trip.id)] : [];
-      const combined = retainedIn(daily,row=>row.groundfish);
-      const shared = node('p');
-      if (catches.some(row=>row.groundfish)) {
-        const row = catches.find(row=>row.groundfish);
-        const cap = limits(snapshot,row,trip,todayKey).combined;
-        shared.id = 'catch-combined';
-        shared.textContent = Number.isInteger(cap)
-          ? 'Combined groundfish · '+combined+' / '+cap+(combined>cap ? ' · Limit exceeded' : ' · '+(cap-combined)+' under cap')
-          : 'Combined groundfish · '+combined+' retained · Verified allowance unavailable';
-        if (combined>cap && Number.isInteger(cap)) shared.className = 'warn';
+      const retained = retainedIn(catches,()=>true);
+      const released = catches.reduce((sum,row)=>sum+row.released,0);
+      summary.hidden = !trip;
+      setText(totals,retained+' retained · '+released+' released this trip');
+      const groundfish = catches.find(row=>row.groundfish);
+      combinedNote.hidden = !groundfish;
+      if (groundfish) {
+        const combined = retainedIn(daily,row=>row.groundfish);
+        const cap = limits(snapshot,groundfish,trip,todayKey).combined;
+        const verified = Number.isInteger(cap);
+        setText(combinedNote,verified ? 'Combined groundfish · '+combined+' / '+cap+
+          (combined>cap ? ' · Limit exceeded' : combined===cap ? ' · Limit reached · 0 under cap' : ' · '+(cap-combined)+' under cap')
+          : 'Combined groundfish · '+combined+' retained · Verified allowance unavailable');
+        combinedNote.classList.toggle('catch-warning',verified && combined>=cap);
       }
-      const rows = catches.map(row=>{
-        const article = node('article','','catch-row');
-        article.dataset.catchSpecies = row.id;
-        article.append(node('h3',row.name));
-        const species = catalog.find(item=>item.id===row.id) || row;
-        const image = species.id==='chinook' && ['inland','delta'].includes(trip.region) ? species.riverImage : species.image;
-        if (image?.url) article.append(photo(image,row.name,undefined));
-        const {status:regStatus,bag,cap} = limits(snapshot,species,trip,todayKey);
-        const intake = retainedIn(daily,item=>row.groundfish ? item.groundfish===row.groundfish : item.id===row.id);
-        const ambiguous = row.groundfish && row.id!=='unidentified-rockfish' &&
-          daily.some(item=>item.id==='unidentified-rockfish' && item.retained>0);
-        if (regStatus==='closed' || regStatus==='retention') {
-          article.append(node('p',regStatus==='closed'?'Season closed':'Retention prohibited','warn'));
-        }
-        if (bag && !['closed','retention'].includes(regStatus)) article.append(node('p','Daily bag limit · '+bag));
-        if (Number.isInteger(cap) && intake>cap) article.append(node('p','Limit exceeded · '+intake+' / '+cap,'warn'));
-        else if (Number.isInteger(cap) && cap>0 && !ambiguous) {
-          article.append(node('p',(row.groundfish?'Sublimit · '+intake+' / '+cap+' · ':'')+
-            (cap-intake)+' under '+(row.groundfish?'sublimit':'bag cap')));
-        } else if (!['closed','retention'].includes(regStatus) && (!row.groundfish || ambiguous)) {
-          article.append(node('p','Verified allowance unavailable','muted'));
-        }
-        article.append(node('p','Retained','catch-caption'),counter(row,'retained'));
-        const released = node('details');
-        released.open = expanded.has(row.id);
-        released.append(node('summary','Released · '+row.released),counter(row,'released'));
-        released.ontoggle = () => {
-          if (!released.isConnected) return;
-          if (released.open) expanded.add(row.id); else expanded.delete(row.id);
-        };
-        article.append(released);
-        return article;
-      });
-      cards.replaceChildren(...(shared.id ? [shared] : []),...rows);
+      for (const [id,view] of rows) {
+        if (catches.some(row=>row.id===id)) continue;
+        view.article.remove();
+        rows.delete(id);
+      }
+      let next = cards.firstElementChild;
+      for (const row of catches) {
+        if (!rows.has(row.id)) rows.set(row.id,createRow(row));
+        const view = rows.get(row.id);
+        updateRow(view,row,daily,todayKey,active);
+        if (view.article!==next) cards.insertBefore(view.article,next);
+        next = view.article.nextElementSibling;
+      }
       el('catch-rule-note').hidden = !trip;
       el('catch-mismatch').hidden = !trip?.location.suggested || !trip.region || trip.location.suggested===trip.region;
     }
