@@ -1,5 +1,5 @@
 {
-  "release": "3.0.6",
+  "release": "3.0.7",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -303,7 +303,8 @@
         "oceanSalmonCA"
       ],
       "image": {
-        "label": "Ocean-phase Chinook"
+        "label": "Ocean-phase Chinook",
+        "guide": "https://www.fws.gov/sites/default/files/documents/07_Salmon%20Identification%20Chart.pdf"
       },
       "groups": true,
       "riverImage": {
@@ -335,7 +336,8 @@
         "oceanSalmonFederal"
       ],
       "image": {
-        "label": "Ocean-phase Coho"
+        "label": "Ocean-phase Coho",
+        "guide": "https://www.fws.gov/sites/default/files/documents/07_Salmon%20Identification%20Chart.pdf"
       },
       "riverImage": {
         "url": "https://www.fws.gov/sites/default/files/2023-10/Jon%20Rather_edited.jpg",
@@ -1190,11 +1192,12 @@
         "class": "Shelf",
         "note": "Included in the combined limit. A long jaw extends to or beyond the eye socket; young fish may show small brown spots.",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg/330px-Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg",
-          "alt": "Large bocaccio rockfish in the foreground",
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Juvenile_Bocaccio_Rockfish.jpg/330px-Juvenile_Bocaccio_Rockfish.jpg",
+          "alt": "Juvenile bocaccio (Sebastes paucispinis) photographed at Santa Cruz wharf",
           "credit": "Photo: Breezygamer117",
-          "source": "https://commons.wikimedia.org/wiki/File:Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg",
+          "source": "https://commons.wikimedia.org/wiki/File:Juvenile_Bocaccio_Rockfish.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Juvenile_Bocaccio_Rockfish.jpg",
+          "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Juvenile_Bocaccio_Rockfish.jpg/960px-Juvenile_Bocaccio_Rockfish.jpg",
           "license": [
             "CC BY-SA 4.0",
             "https://creativecommons.org/licenses/by-sa/4.0/"
@@ -1206,11 +1209,16 @@
         "class": "Nearshore",
         "note": "Included in the combined limit; regional closures apply.",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Sebastes_melanops.jpg/330px-Sebastes_melanops.jpg",
-          "alt": "Black rockfish",
-          "credit": "Photo: Chad King / SIMoN / MBNMS",
-          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops.jpg"
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Sebastes_melanops_549696293_%28cropped%29.jpg/330px-Sebastes_melanops_549696293_%28cropped%29.jpg",
+          "alt": "Black rockfish (Sebastes melanops) photographed off California",
+          "credit": "Photo: Tynen Benson (source cropped)",
+          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops_549696293_%28cropped%29.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops_549696293_%28cropped%29.jpg",
+          "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Sebastes_melanops_549696293_%28cropped%29.jpg/960px-Sebastes_melanops_549696293_%28cropped%29.jpg",
+          "license": [
+            "CC BY 4.0",
+            "https://creativecommons.org/licenses/by/4.0/"
+          ]
         }
       },
       {
@@ -1219,10 +1227,14 @@
         "note": "Included in the combined limit; regional closures apply.",
         "image": {
           "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Blue_rockfish_%28Sebastes_mystinus%29_CIMNS.jpg/330px-Blue_rockfish_%28Sebastes_mystinus%29_CIMNS.jpg",
-          "alt": "Blue rockfish",
+          "alt": "Blue rockfish (Sebastes mystinus) in the Channel Islands National Marine Sanctuary",
           "credit": "Photo: Claire Fackler / CINMS / NOAA",
           "source": "https://commons.wikimedia.org/wiki/File:Blue_rockfish_(Sebastes_mystinus)_CIMNS.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Blue_rockfish_(Sebastes_mystinus)_CIMNS.jpg"
+          "reuse": "https://commons.wikimedia.org/wiki/File:Blue_rockfish_(Sebastes_mystinus)_CIMNS.jpg",
+          "license": [
+            "CC BY 2.0",
+            "https://creativecommons.org/licenses/by/2.0/"
+          ]
         }
       },
       {
@@ -1274,10 +1286,11 @@
       {
         "name": "Quillback rockfish",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Sanc1759_-_Flickr_-_NOAA_Photo_Library_%28cropped%29.jpg/330px-Sanc1759_-_Flickr_-_NOAA_Photo_Library_%28cropped%29.jpg",
-          "alt": "Quillback rockfish at Cordell Bank",
-          "credit": "Photo: NOAA Photo Library (cropped, via Wikimedia Commons)",
-          "source": "https://commons.wikimedia.org/wiki/File:Sanc1759_-_Flickr_-_NOAA_Photo_Library_(cropped).jpg"
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/62/Quillback_Rockfish.JPG",
+          "alt": "Quillback rockfish (Sebastes maliger) caught in the Gulf of Alaska",
+          "credit": "Photo: EDSClikes2hunt",
+          "source": "https://commons.wikimedia.org/wiki/File:Quillback_Rockfish.JPG",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Quillback_Rockfish.JPG"
         }
       },
       {
@@ -1639,7 +1652,7 @@
       ],
       "deacon": [
         "Blue versus Deacon · ODFW identification",
-        "https://myodfw.com/articles/rockfish-identification-tips"
+        "https://dfw.state.or.us/mrp/FishID/docs/Rockfish_ID_blk_blu_deacon.pdf"
       ],
       "tail": [
         "Yellowtail, Olive and Widow",
@@ -1656,6 +1669,10 @@
       "portal": [
         "California Marine Species Portal",
         "https://marinespecies.wildlife.ca.gov/"
+      ],
+      "deacon-paper": [
+        "Species description · Blue and Deacon",
+        "https://spo.nmfs.noaa.gov/sites/default/files/frable_0.pdf"
       ]
     },
     "groups": {
@@ -1690,23 +1707,27 @@
     },
     "species": {
       "Yelloweye": {
-        "tip": "Adults have a yellow iris, a smooth chin and dark fin edges. Juveniles typically have two pale stripes along the side.",
-        "groundfish": "Yelloweye rockfish"
+        "tip": "Yellow iris, smooth chin and dark fin edges. Juveniles typically have two pale stripes.",
+        "groundfish": "Yelloweye rockfish",
+        "scientific": "Sebastes ruberrimus"
       },
       "Vermilion/Sunset": {
-        "tip": "Look for a rough chin and upper jaw. Vermilion and sunset cannot reliably be separated by appearance alone.",
-        "groundfish": "Vermilion and sunset rockfish"
+        "tip": "Rough chin and upper jaw. These two species cannot reliably be told apart by appearance.",
+        "groundfish": "Vermilion and sunset rockfish",
+        "scientific": "Sebastes miniatus / Sebastes crocotulus"
       },
       "Canary": {
-        "tip": "Look for a continuous gray band along the lateral line, a smooth chin and a slanted anal fin.",
-        "groundfish": "Canary rockfish"
+        "tip": "Gray lateral band, smooth chin and slanted anal fin.",
+        "groundfish": "Canary rockfish",
+        "scientific": "Sebastes pinniger"
       },
       "Copper": {
-        "tip": "The rear two-thirds of the lateral line is generally pale. Body color varies from copper to dark brown.",
-        "groundfish": "Copper rockfish"
+        "tip": "Pale rear two-thirds of the lateral line. Body color varies.",
+        "groundfish": "Copper rockfish",
+        "scientific": "Sebastes caurinus"
       },
       "Gopher": {
-        "tip": "Look for pink or gray blotches on a dark body, with irregular color along the lateral line.",
+        "tip": "Pink or gray blotches and irregular color along the lateral line.",
         "images": [
           {
             "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg/330px-Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
@@ -1729,14 +1750,16 @@
             "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_carnatus_%28juvenile%29.jpg",
             "label": "Juvenile gopher rockfish"
           }
-        ]
+        ],
+        "scientific": "Sebastes carnatus"
       },
       "Quillback": {
-        "tip": "Look for tall dorsal spines and light freckles near the head. The lighter markings generally do not reach the tail.",
-        "groundfish": "Quillback rockfish"
+        "tip": "Tall dorsal spines and pale head freckles that usually stop before the tail.",
+        "groundfish": "Quillback rockfish",
+        "scientific": "Sebastes maliger"
       },
       "China": {
-        "tip": "A broad yellow band runs back along the lateral line on the dark body.",
+        "tip": "Broad yellow band along the lateral line.",
         "images": [
           {
             "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/China_rockfish.jpg/250px-China_rockfish.jpg",
@@ -1746,10 +1769,11 @@
             "reuse": "https://commons.wikimedia.org/wiki/File:China_rockfish.jpg",
             "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/China_rockfish.jpg/500px-China_rockfish.jpg"
           }
-        ]
+        ],
+        "scientific": "Sebastes nebulosus"
       },
       "Black-and-Yellow": {
-        "tip": "Look for scattered yellow blotches against a dark body. The blotches do not form the China rockfish’s continuous band.",
+        "tip": "Scattered yellow blotches. No continuous yellow band.",
         "images": [
           {
             "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Black_and_yellow_rockfish_%2816607872560%29.jpg/330px-Black_and_yellow_rockfish_%2816607872560%29.jpg",
@@ -1763,35 +1787,25 @@
               "https://creativecommons.org/licenses/by/2.0/"
             ]
           }
-        ]
+        ],
+        "scientific": "Sebastes chrysomelas"
       },
       "Black": {
-        "tip": "A relatively large mouth helps distinguish it from blue rockfish. Look for mottled dark sides and a pale belly.",
-        "groundfish": "Black rockfish"
+        "tip": "Large mouth, dark mottling and a pale belly.",
+        "groundfish": "Black rockfish",
+        "scientific": "Sebastes melanops"
       },
       "Blue": {
-        "tip": "Look for dark blotches on the sides. Unlike deacon, the upper and lower jaws meet when closed.",
-        "groundfish": "Blue rockfish"
+        "tip": "Blotched sides, small mouth and jaws that meet when closed.",
+        "groundfish": "Blue rockfish",
+        "scientific": "Sebastes mystinus"
       },
       "Deacon": {
-        "tip": "The lower jaw protrudes when the mouth is closed. The sides are generally more uniform than those of blue rockfish.",
-        "images": [
-          {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Sebastes_mystinus_2.jpg/330px-Sebastes_mystinus_2.jpg",
-            "alt": "Deacon rockfish at Vancouver Aquarium",
-            "credit": "Photo: Stan Shebs",
-            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_mystinus_2.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_mystinus_2.jpg",
-            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cf/Sebastes_mystinus_2.jpg/960px-Sebastes_mystinus_2.jpg",
-            "license": [
-              "CC BY-SA 3.0",
-              "https://creativecommons.org/licenses/by-sa/3.0/"
-            ]
-          }
-        ]
+        "tip": "Uniform sides and a lower jaw that projects when closed.",
+        "scientific": "Sebastes diaconus"
       },
       "Yellowtail": {
-        "tip": "Look for brown flecks along the sides and a yellow tail.",
+        "tip": "Brown flecks along the sides and a yellow tail.",
         "images": [
           {
             "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Sebastes_flavidus_582767978.jpg/330px-Sebastes_flavidus_582767978.jpg",
@@ -1805,10 +1819,11 @@
               "https://creativecommons.org/licenses/by/4.0/"
             ]
           }
-        ]
+        ],
+        "scientific": "Sebastes flavidus"
       },
       "Olive": {
-        "tip": "Look for drab olive sides and a deeper body at the tail base than on widow rockfish.",
+        "tip": "Drab olive sides and a thicker tail base than Widow.",
         "images": [
           {
             "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Sebastes_serranoides_50393887.jpg/330px-Sebastes_serranoides_50393887.jpg",
@@ -1822,10 +1837,12 @@
               "https://creativecommons.org/licenses/by/4.0/"
             ]
           }
-        ]
+        ],
+        "scientific": "Sebastes serranoides"
       },
       "Widow": {
-        "tip": "Look for dark fin membranes and a slender body where the tail attaches."
+        "tip": "Dark fin membranes and a slender tail base.",
+        "scientific": "Sebastes entomelas"
       }
     },
     "labels": {
@@ -1834,7 +1851,7 @@
       "dark": "Quillback and lookalikes",
       "black": "Black vs. Blue",
       "deacon": "Blue vs. Deacon",
-      "tail": "Yellowtail, Olive and Widow"
+      "tail": "Yellowtail and lookalikes"
     }
   }
 }

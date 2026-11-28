@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.6';
+  const release = '3.0.7';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -103,6 +103,7 @@ window.MarineRules = (() => {
       [asset?.label,'Verified photo pending'].filter(Boolean).join(' · '),'rule-photo-missing');
     if (!asset?.url) {
       container.append(unavailable);
+      if (asset?.guide) container.append(link('ID photos',asset.guide));
       return container;
     }
     const image = node('img');
@@ -327,11 +328,13 @@ window.MarineRules = (() => {
     function render() {
       if (!panel.open) return;
       const guide = guides[select.value];
-      results.replaceChildren(...groups[select.value].map(name=>{
+      const members = groups[select.value];
+      results.dataset.pair = String(members.length===2);
+      results.replaceChildren(...members.map(name=>{
         const entry = species[name];
         const card = node('article','','rule-comparison-species');
         const tip = {text:entry.tip,source:guide[1]};
-        card.append(node('h3',name));
+        card.append(node('h3',name.replace('/',' / ')),node('i',entry.scientific,'rule-comparison-name'));
         const images = entry.images || photos.get(entry.groundfish) || [];
         if (!images.length) card.append(node('p','Verified photo pending','rule-photo-missing'));
         for (const asset of images) card.append(photo(asset,name+' rockfish',tip));
@@ -508,7 +511,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=306').then(response => {
+      pending = fetch('./fishing-rules.json?v=307').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {

@@ -117,3 +117,20 @@ class FishingRulesTests(unittest.TestCase):
                         self.assertTrue(label)
                         self.assertEqual(urlsplit(url).hostname, "creativecommons.org")
         self.assertCountEqual(missing, ["Ocean-phase Chinook", "Ocean-phase Coho", "Sunset rockfish"])
+
+
+    def test_comparison_species_use_distinct_photo_sources(self):
+        snapshot = json.loads((Path(__file__).resolve().parents[1] / "fishing-rules.json").read_text())
+        groundfish = snapshot["groundfish"]
+        rows = {item["name"]: item for item in groundfish["limits"] + groundfish["prohibited"]}
+        comparisons = snapshot["comparisons"]
+        owners = {}
+        for name, entry in comparisons["species"].items():
+            self.assertTrue(entry["scientific"].startswith("Sebastes "))
+            row = rows[entry["groundfish"]] if "groundfish" in entry else entry
+            for image in row.get("images", [row.get("image")]):
+                if image and image.get("url"):
+                    self.assertEqual(owners.setdefault(image["source"], name), name)
+        for species in comparisons["groups"].values():
+            self.assertTrue(set(species) <= comparisons["species"].keys())
+        self.assertNotIn("images", comparisons["species"]["Deacon"])
