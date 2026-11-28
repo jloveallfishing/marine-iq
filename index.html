@@ -124,6 +124,7 @@
 .rule-photo-missing{display:block;font-size:.76rem;font-weight:400;line-height:1.25}
 #rule-comparisons{margin:12px 0;border:1px solid #426577;border-radius:10px;padding:10px;min-width:0;overflow-wrap:anywhere}
 #rule-comparisons > summary{font-weight:700;cursor:pointer}
+.rule-card:not([open]) > #rule-comparisons,#rule-comparisons:not([open]) > :not(summary){display:none}
 #rule-comparison-group{min-width:0;max-width:100%;text-overflow:ellipsis}
 .rule-comparison-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .rule-comparison-species{min-width:0;padding:8px;border:1px solid #426577;border-radius:8px}
