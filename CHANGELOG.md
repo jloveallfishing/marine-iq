@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.9.0
+
+- Add free California fishing regulations search for 11 species and species groups, with selected trip date and location, a manual region selector, and links to official restrictions and emergency notices.
+- Publish dated summaries with explicit unverified fields and stale-data handling. Include two credited NOAA Fisheries identification photos.
+- Keep MPAs separate. Move seven-day forecasts, fishing logs, statistics, favorites and settings under More, preserving existing links and saved data.
+- Cache the rules snapshot in the update-managed app shell for offline reference.
+
 ## 2.8.0
 
 - Add a free MPA tab with all 155 CDFW ds582 records, a restriction legend, area search and official regulation links. Add an optional overlay to the weather map.

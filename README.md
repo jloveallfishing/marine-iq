@@ -247,3 +247,12 @@ requires a reliable outside fix followed by two reliable inside fixes.
 Fixes older than 30 seconds or less accurate than about 328 ft suppress
 alerts. This system cannot detect every crossing or substitute for current
 rules, published coordinates, navigation charts, or a dedicated safety device.
+
+
+## Maintaining the fishing regulations snapshot
+
+`fishing-rules.json` contains original summaries of regulatory facts and direct links to CDFW, NOAA Fisheries and federal legal text. It includes no republished CDFW dataset, guides or artwork. The two species photos are individually credited to NOAA Fisheries on their source pages. NOAA permits reuse of agency-created images with credit under its [website policies](https://www.fisheries.noaa.gov/national/about-us/website-policies-and-disclaimers). Photos load on demand from NOAA and may be unavailable offline.
+
+Before publishing a rules update, review the direct legal text and region-specific CDFW summaries, CDFW in-season notices and health orders, and federal rules where relevant. Verify the scope (including vessel vs. shore, subareas and boundary lines), effective date and sunset or quota conditions. Use plain factual summaries and add each supporting source to `sources`. For a field with unresolved conditions, omit the value and link to the official rule. Never translate the absence of a closure into permission to fish.
+
+Each entry has region IDs, an inclusive Pacific trip-date range (`from` and `through`), a verification date and a `reviewBy` date. An optional `effective` date is the legal effective date when established. Entries for the same species may contribute different fields. When adding entries, ensure every displayed field has one applicable value for any region/date combination. Limit any rule that depends on an in-season order to a short review window. The 2.9.0 snapshot was checked November 28, 2026, with review due December 5. Reverify it before a later production release. When the review date passes, the app hides affected values and retains the official links. Update the release and versioned snapshot URL when shipping a changed snapshot to installed apps. Run the browser and snapshot tests and verify direct authority links before opening the update PR.

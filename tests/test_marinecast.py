@@ -35,12 +35,12 @@ class Handler(SimpleHTTPRequestHandler):
             return
         legacy = getattr(self.server, "legacy_shell", False)
         stale_navigation = getattr(self.server, "stale_navigation", False)
-        if (legacy and self.path in ("/", "/index.html?v=27", "/sw.js")) or (stale_navigation and self.path == "/"):
+        if (legacy and self.path in ("/", "/index.html?v=28", "/sw.js")) or (stale_navigation and self.path == "/"):
             worker = self.path == "/sw.js"
             file = ROOT / ("sw.js" if worker else "index.html")
-            content = (file.read_bytes().replace(b"Version 2.8", b"Version 2.7")
-                       .replace(b"2.8.0", b"2.7.0").replace(b"marine-iq-v28", b"marine-iq-v27")
-                       .replace(b"index.html?v=28", b"index.html?v=27"))
+            content = (file.read_bytes().replace(b"Version 2.9", b"Version 2.8")
+                       .replace(b"2.9.0", b"2.8.0").replace(b"marine-iq-v29", b"marine-iq-v28")
+                       .replace(b"index.html?v=29", b"index.html?v=28"))
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript" if worker else "text/html")
             self.send_header("Content-Length", str(len(content)))
@@ -393,7 +393,7 @@ class MarineCastTests(unittest.TestCase):
         page.route("https://**/*", self.mock_provider)
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        self.assertIn("Version 2.7", page.locator("#page-home > p").first.text_content())
+        self.assertIn("Version 2.8", page.locator("#page-home > p").first.text_content())
         page.evaluate("""() => {
             window.openPageFixture = true;
             window.upgradeActivated = false;
@@ -408,8 +408,8 @@ class MarineCastTests(unittest.TestCase):
         }""")
         self.assertTrue(page.evaluate("""async () => {
             for (let i = 0; i < 120; i++) {
-                const response = await caches.match('./index.html?v=28', {cacheName: 'marine-iq-v28'});
-                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.8')) {
+                const response = await caches.match('./index.html?v=29', {cacheName: 'marine-iq-v29'});
+                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.9')) {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -417,13 +417,13 @@ class MarineCastTests(unittest.TestCase):
             return false;
         }"""))
         self.assertTrue(page.evaluate("window.openPageFixture"))
-        self.assertIn("Version 2.7", page.locator("#page-home > p").first.text_content())
-        self.assertTrue(page.goto(self.url + "offline-check").ok)
         self.assertIn("Version 2.8", page.locator("#page-home > p").first.text_content())
+        self.assertTrue(page.goto(self.url + "offline-check").ok)
+        self.assertIn("Version 2.9", page.locator("#page-home > p").first.text_content())
         expect(page.locator("body")).to_have_class("light")
         self.server.stale_navigation = True
         page.goto(self.url)
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.8.0")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.9.0")
 
     def test_manual_update_applies_active_shell_at_permanent_url(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
@@ -441,14 +441,92 @@ class MarineCastTests(unittest.TestCase):
         self.server.legacy_shell = False
         self.server.stale_navigation = True
         page.get_by_role("button", name="Check for Updates").click()
-        expect(page.locator("#updateStatus")).to_contain_text("2.8.0 is ready", timeout=16000)
+        expect(page.locator("#updateStatus")).to_contain_text("2.9.0 is ready", timeout=16000)
         page.get_by_role("button", name="Reload to update").click()
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.8.0")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.9.0")
         expect(page).to_have_url(self.url + "#settings")
         for key, value in saved.items():
             self.assertEqual(page.evaluate("key => localStorage.getItem(key)", key), value)
         page.get_by_role("button", name="Check for Updates").click()
         expect(page.locator("#updateStatus")).to_contain_text("up to date", timeout=16000)
+
+    def test_rules_and_more_navigation_preserve_existing_pages(self):
+        page = self.page
+        page.goto(self.url)
+        nav = page.get_by_role("navigation", name="Main navigation")
+        self.assertEqual(nav.get_by_role("link").all_text_contents(),
+                         ["⌂Home", "⌖Map", "≋Forecast", "◈MPAs", "§Rules", "⋯More"])
+        nav.get_by_role("link", name="More").click()
+        menu = page.get_by_role("navigation", name="More pages")
+        for title, section in [
+            ("Seven-day forecast", "#week"), ("Fishing log", "#log"),
+            ("Fishing statistics", "#logstats"), ("Favorites", "[data-more-view=favorites] section"), ("Settings", "#backups")
+        ]:
+            menu.get_by_role("link", name=title).click()
+            expect(page.locator(section)).to_be_visible()
+            expect(nav.get_by_role("link", name="More")).to_have_attribute("aria-current", "page")
+        page.goto(self.url + "#log")
+        expect(page.get_by_role("button", name="Save fishing log entry")).to_be_visible()
+        nav.get_by_role("link", name="MPAs").click()
+        expect(page.locator("#page-mpa")).to_be_visible()
+        expect(page.locator("#page-rules")).to_be_hidden()
+
+    def test_rules_use_trip_date_and_keep_unknown_and_stale_values_hidden(self):
+        page = self.page
+        page.add_init_script("""
+            window.rulesNow = Date.parse("2026-11-28T20:00:00Z");
+            Date.now = () => window.rulesNow;
+        """)
+        page.goto(self.url)
+        page.locator("#day").fill("2026-11-28")
+        page.get_by_role("link", name="Rules", exact=True).click()
+        expect(page.locator("#rules-context")).to_contain_text("Suggested region: San Francisco Bay")
+        expect(page.locator("#rules-trip")).to_contain_text("2026-11-28")
+        search = page.get_by_role("searchbox", name="Search fish and shellfish")
+        search.fill("dungeness")
+        card = page.locator(".rule-card")
+        expect(card).to_have_count(1)
+        card.locator("summary").click()
+        expect(card).to_contain_text("prohibited in San Francisco and San Pablo bays")
+        region = page.get_by_label("Regulatory region")
+        region.select_option("north")
+        expect(card).to_contain_text("Emergency health delay")
+        expect(card).to_contain_text("Last verified 2026-11-28")
+        search.fill("pacific halibut")
+        expect(card.locator("summary")).to_have_text("Pacific halibut")
+        card.locator("summary").click()
+        expect(card).to_contain_text("closed north of Point Arena")
+        expect(card.get_by_role("link", name="Photo: NOAA Fisheries")).to_have_attribute(
+            "href", "https://www.fisheries.noaa.gov/species/pacific-halibut"
+        )
+        region.select_option("sf")
+        expect(card).to_contain_text("subject to earlier quota closure")
+        expect(card).not_to_contain_text("closed north of Point Arena")
+        region.select_option("inland")
+        expect(card).to_contain_text("Fishing status is unverified")
+        expect(card.get_by_role("link", name="CDFW Inland", exact=False)).to_be_visible()
+        expect(card).not_to_contain_text("Emergency health delay")
+        page.reload()
+        expect(region).to_have_value("inland")
+        search.fill("striper")
+        expect(card.locator("summary")).to_have_text("Striped bass")
+        region.select_option("bay")
+        page.evaluate("""() => {
+            const date = document.getElementById('day');
+            date.value = '2027-01-08';
+            date.dispatchEvent(new Event('change', {bubbles:true}));
+        }""")
+        card.locator("summary").click()
+        expect(card).to_contain_text("Rules unavailable for this date or region")
+        expect(card).not_to_contain_text("18 inches total length")
+        page.evaluate("window.rulesNow = Date.parse('2026-12-08T18:00:00Z')")
+        page.evaluate("""() => {
+            const date = document.getElementById('day');
+            date.value = '2026-11-28';
+            date.dispatchEvent(new Event('change', {bubbles:true}));
+        }""")
+        expect(card).to_contain_text("Outdated summary")
+        expect(card).not_to_contain_text("18 inches total length")
 
     def test_forecast_readouts_align_color_and_keep_independent_midnight_sliders(self):
         self.open_map()
@@ -675,9 +753,11 @@ class MarineCastTests(unittest.TestCase):
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         self.assertTrue(page.evaluate("""async () => {
-            const cache = await caches.open('marine-iq-v28');
+            const cache = await caches.open('marine-iq-v29');
             return Boolean(await cache.match('./marine-motion.js?v=28')) &&
-                Boolean(await cache.match('./marine-tiles.js?v=28'));
+                Boolean(await cache.match('./marine-tiles.js?v=28')) &&
+                Boolean(await cache.match('./marine-rules.js?v=29')) &&
+                Boolean(await cache.match('./fishing-rules.json?v=29'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
         response = page.goto(self.url + "offline-check")
