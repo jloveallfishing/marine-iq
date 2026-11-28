@@ -47,12 +47,14 @@ window.MarineRules = (() => {
     if (species.scientific) details.append(node('p', species.scientific, 'muted'));
     if (species.image) {
       const image = node('img');
-      image.src = species.image.url;
       image.alt = species.image.alt;
       image.loading = 'lazy';
       image.decoding = 'async';
       image.referrerPolicy = 'no-referrer';
       image.addEventListener('error', () => { image.hidden = true; });
+      details.addEventListener('toggle', () => {
+        if (details.open && !image.hasAttribute('src')) image.src = species.image.url;
+      });
       const credit = node('p', '', 'muted');
       credit.append(link(species.image.credit, species.image.source));
       details.append(image, credit);

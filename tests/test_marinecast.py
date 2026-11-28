@@ -661,8 +661,10 @@ class MarineCastTests(unittest.TestCase):
               {species:'Lingcod',count:1,location:'Test harbor',date:'2026-11-28'}
             ]));
         }""")
-        context.set_offline(True)
-        page.reload()
+        self.addCleanup(setattr, self.server, "offline_app", False)
+        self.server.offline_app = True
+        page.add_init_script("Object.defineProperty(Navigator.prototype, 'onLine', {get: () => false})")
+        self.assertTrue(page.goto(self.url + "offline-check#rules").ok)
         expect(page.locator(".rule-card").first).to_be_visible()
         page.evaluate("location.hash = 'log'")
         expect(page.locator("#logentries")).to_contain_text("Lingcod")
