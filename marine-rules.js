@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.3';
+  const release = '3.0.4';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -50,7 +50,52 @@ window.MarineRules = (() => {
     return details;
   }
 
-  function photo(asset, name, inline = false) {
+  function photoCredit(asset, tag) {
+    const credit = node(tag,'','rule-photo-credit');
+    if (asset.label) credit.append(asset.label+' · ');
+    credit.append(link(asset.credit,asset.source));
+    if (asset.license) credit.append(' · ',link(asset.license[0],asset.license[1]));
+    return credit;
+  }
+
+  const photoViewer = node('dialog','','rule-photo-viewer');
+  photoViewer.setAttribute('aria-labelledby','rule-photo-title');
+  const photoTitle = node('h2');
+  photoTitle.id = 'rule-photo-title';
+  const closePhoto = node('button','Close photo');
+  closePhoto.type = 'button';
+  closePhoto.addEventListener('click',()=>photoViewer.close());
+  const photoBody = node('div');
+  photoViewer.append(photoTitle,closePhoto,photoBody);
+  let photoTrigger;
+  photoViewer.addEventListener('close',()=>{
+    photoBody.replaceChildren();
+    photoTrigger?.focus();
+    photoTrigger = null;
+  });
+
+  function showPhoto(asset, name, tip) {
+    photoTitle.textContent = asset.label || name;
+    const full = node('img');
+    const unavailable = node('p','Photo unavailable.');
+    unavailable.hidden = true;
+    full.alt = asset.alt || name;
+    full.referrerPolicy = 'no-referrer';
+    full.addEventListener('error',()=>{
+      full.hidden = true;
+      unavailable.hidden = false;
+    });
+    full.src = asset.full || asset.url;
+    photoBody.replaceChildren(full,unavailable,photoCredit(asset,'p'));
+    if (tip) {
+      const notes = node('p',tip.text);
+      notes.append(' ',link('Identification guide',tip.source));
+      photoBody.append(group('Identification tips',notes));
+    }
+    photoViewer.showModal();
+  }
+
+  function photo(asset, name, tip, inline = false) {
     const container = node(inline ? 'span' : 'figure','','rule-photo');
     const unavailable = node('span',asset?.url ? 'Photo unavailable' :
       [asset?.label,'Verified photo pending'].filter(Boolean).join(' · '),'rule-photo-missing');
@@ -65,12 +110,20 @@ window.MarineRules = (() => {
     image.referrerPolicy = 'no-referrer';
     image.src = asset.url;
     unavailable.hidden = true;
-    image.addEventListener('error', () => { image.hidden = true; unavailable.hidden = false; });
-    const credit = node(inline ? 'span' : 'figcaption','','rule-photo-credit');
-    if (asset.label) credit.append(asset.label+' · ');
-    credit.append(link(asset.credit,asset.source));
-    if (asset.license) credit.append(' · ',link(asset.license[0],asset.license[1]));
-    container.append(image,unavailable,credit);
+    const enlarge = node('button','','rule-photo-button');
+    enlarge.type = 'button';
+    enlarge.setAttribute('aria-label','Enlarge '+(asset.label || name)+' photo');
+    enlarge.append(image);
+    enlarge.addEventListener('click',event=>{
+      event.preventDefault();
+      photoTrigger = enlarge;
+      showPhoto(asset,name,tip);
+    });
+    image.addEventListener('error',()=>{
+      enlarge.hidden = true;
+      unavailable.hidden = false;
+    });
+    container.append(enlarge,unavailable,photoCredit(asset,inline ? 'span' : 'figcaption'));
     return container;
   }
 
@@ -121,7 +174,7 @@ window.MarineRules = (() => {
       title.scope = 'row';
       if (fish.favorite) title.append(favoriteButton(fish.favorite,fish.name,context.favorites,true));
       const media = node('td');
-      for (const item of fish.images || [fish.image]) media.append(photo(item,fish.name));
+      for (const item of fish.images || [fish.image]) media.append(photo(item,fish.name,data.identification[fish.name]));
       row.append(title,media,node('td',value));
       body.append(row);
     }
@@ -132,7 +185,7 @@ window.MarineRules = (() => {
     const grid = node('div','','groundfish-prohibited');
     for (const fish of info.prohibited) {
       const item = node('div');
-      item.append(node('b',fish.name),photo(fish.image,fish.name));
+      item.append(node('b',fish.name),photo(fish.image,fish.name,data.identification[fish.name]));
       grid.append(item);
     }
     prohibited.append(grid);
@@ -201,8 +254,14 @@ window.MarineRules = (() => {
     if (metrics.childElementCount) summary.append(metrics);
     if (!groundfish) {
       const photos = node('span','','rule-photo-strip');
-      for (const image of species.images || [species.image]) photos.append(photo(image,species.name,true));
+      for (const image of species.images || [species.image]) photos.append(photo(image,species.name,data.identification[species.id],true));
       summary.append(photos);
+    }
+    const tip = data.identification[species.id];
+    if (tip) {
+      const id = node('p',tip.text,'rule-identification');
+      id.append(' ',link('Identification guide',tip.source));
+      details.append(group('Identification tips',id));
     }
     if (groundfish) {
       if (context.current) details.append(node('p','Rockfish, cabezon and greenling all count toward the combined limit.','rule-retention'));
@@ -246,6 +305,7 @@ window.MarineRules = (() => {
 
   function install({getTrip, today}) {
     const page = document.getElementById('page-rules');
+    page.append(photoViewer);
     const select = document.getElementById('rules-region');
     const search = document.getElementById('rules-search');
     const cards = document.getElementById('rules-cards');
@@ -374,7 +434,9 @@ window.MarineRules = (() => {
           const inland = salmonTab==='river';
           const choice = inland ? 'river' : region;
           const entries = inland ? (fish.id==='chinook' ? reach?.entries || [] : data.salmon.riverCoho) : data.entries[fish.id];
-          panel.append(cardsFor({...fish,sources:inland?['inlandSalmon','inlandEmergency']:fish.sources},entries,choice));
+          const image = (inland && fish.riverImage) || fish.image;
+          const sources = inland ? ['inlandSalmon','inlandEmergency'] : fish.sources;
+          panel.append(cardsFor({...fish,image,sources},entries,choice));
         }
         section.append(tabs,panel);
         sections.push(section);
@@ -389,7 +451,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=303').then(response => {
+      pending = fetch('./fishing-rules.json?v=304').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {

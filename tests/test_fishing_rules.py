@@ -86,3 +86,34 @@ class FishingRulesTests(unittest.TestCase):
                 self.assertLessEqual(date.fromisoformat(entry["from"]), date.fromisoformat(entry["through"]))
                 self.assertLessEqual((date.fromisoformat(entry["reviewBy"]) -
                                       date.fromisoformat(entry["verified"])).days, 14)
+
+    def test_photo_inventory_has_sources_and_safe_enlargement_urls(self):
+        snapshot = json.loads((Path(__file__).resolve().parents[1] / "fishing-rules.json").read_text())
+        groundfish = snapshot["groundfish"]
+        rows = [item for item in snapshot["species"] if item["id"] not in groundfish["species"]]
+        rows += groundfish["limits"] + groundfish["prohibited"]
+        allowed_hosts = {"www.fws.gov", "www.fisheries.noaa.gov",
+                         "thumb.wikimedia.org", "upload.wikimedia.org", "commons.wikimedia.org"}
+        missing = []
+        for row in rows:
+            assets = list(row.get("images", [row.get("image")]))
+            if "riverImage" in row:
+                assets.append(row["riverImage"])
+            for asset in assets:
+                with self.subTest(fish=row["name"], asset=asset):
+                    self.assertIsNotNone(asset)
+                    if "url" not in asset:
+                        missing.append(asset["label"])
+                        continue
+                    self.assertTrue(asset["alt"])
+                    self.assertTrue(asset["credit"].startswith("Photo: "))
+                    for key in ("url", "source", "full", "reuse"):
+                        if key in asset:
+                            url = urlsplit(asset[key])
+                            self.assertEqual(url.scheme, "https")
+                            self.assertIn(url.hostname, allowed_hosts)
+                    if "license" in asset:
+                        label, url = asset["license"]
+                        self.assertTrue(label)
+                        self.assertEqual(urlsplit(url).hostname, "creativecommons.org")
+        self.assertEqual(missing, ["Sunset rockfish"])

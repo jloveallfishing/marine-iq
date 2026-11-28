@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.4
+
+- Add a tap-to-enlarge identification viewer with uncropped photos, source credits, keyboard dismissal and light and dark styling.
+- Add expandable comparison tips for salmon, sturgeon and commonly confused rockfish. Keep the existing regulation limits, closures and shared groundfish card.
+- Add distinct river Chinook imagery and replace selected photos with commercially reusable USFWS and NOAA field photographs. Document remaining photo gaps and reuse terms.
+
 ## 3.0.3
 
 - Consolidate rockfish, cabezon and greenling into one groundfish card with a shared bag limit, species sublimits and a photo guide to prohibited retention. Preserve existing species favorites.
