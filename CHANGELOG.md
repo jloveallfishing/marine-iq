@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.3
+
+- Consolidate rockfish, cabezon and greenling into one groundfish card with a shared bag limit, species sublimits and a photo guide to prohibited retention. Preserve existing species favorites.
+- Separate Ocean Salmon and River Salmon. Show the 2026 California ocean closure, zero Coho retention and verified Chinook limits or closures for selected river reaches. Expire dated rules and display unsupported reaches as unverified.
+- Show credited species photos directly on cards and mark missing photos explicitly. Add identification photos for Coho, California halibut, white sturgeon and several groundfish and other species.
+- Bump the app and service worker release together at the existing URL.
+
 ## 3.0.2
 
 - Render and reuse published NWS grid-cell footprints, with continuous wind shading and fresh directional particles plus supported interpolation. Make heat shading the default for Wind while preserving saved preferences.

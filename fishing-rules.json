@@ -1,5 +1,5 @@
 {
-  "release": "3.0.2",
+  "release": "3.0.3",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -150,6 +150,54 @@
     "noaaBocaccioID": [
       "NOAA Fisheries · Bocaccio identification",
       "https://www.fisheries.noaa.gov/species/bocaccio"
+    ],
+    "inlandSalmon": [
+      "CDFW freshwater rules · §§ 5.89 and 7.40",
+      "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=209090"
+    ],
+    "inlandEmergency": [
+      "CDFW in-season salmon notices",
+      "https://wildlife.ca.gov/News/Archive/cid/118?Category=salmon"
+    ],
+    "centralValleySalmon": [
+      "Approved 2026 Central Valley salmon regulations",
+      "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=246762&inline="
+    ],
+    "centralValleyNotice": [
+      "CDFW · 2026 river seasons and limits",
+      "https://wildlife.ca.gov/News/Archive/chinook-fishing-to-reopen-on-klamath-trinity-and-sacramento-rivers-after-3-year-closure"
+    ],
+    "klamathSalmon": [
+      "Approved 2026 Klamath Basin rule",
+      "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=246674&inline="
+    ],
+    "klamathSpit": [
+      "CDFW · Klamath spit fishing closure",
+      "https://wildlife.ca.gov/News/Archive/cdfw-announces-angling-closure-at-the-mouth-of-the-klamath-river1"
+    ],
+    "lowerKlamath": [
+      "CDFW · Lower Klamath adult quota closure",
+      "https://wildlife.ca.gov/News/Archive/lower-klamath-river-quota-met"
+    ],
+    "lowerTrinity": [
+      "CDFW · Lower Trinity adult quota closure",
+      "https://wildlife.ca.gov/News/Archive/lower-trinity-river-nearing-quota-adult-fall-run-chinook-salmon-fishery-to-close"
+    ],
+    "upperTrinity": [
+      "CDFW · Upper Trinity adult quota closure",
+      "https://wildlife.ca.gov/News/Archive/upper-trinity-river-nears-adult-fall-run-chinook-quota-fishery-to-close-this-week"
+    ],
+    "riverCoho": [
+      "CDFW · Coho identification and California angling prohibition",
+      "https://wildlife.ca.gov/Fishing/Hatcheries/Trinity-River/Species-Raised"
+    ],
+    "oceanSalmonFederal": [
+      "Federal 2026 ocean salmon measures",
+      "https://www.govinfo.gov/content/pkg/FR-2026-05-19/pdf/2026-09973.pdf"
+    ],
+    "oceanSalmonCA": [
+      "California § 27.80 · corrected 2026 ocean salmon rules",
+      "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=246781&inline="
     ]
   },
   "species": [
@@ -163,7 +211,14 @@
       "sources": [
         "general",
         "inseason"
-      ]
+      ],
+      "image": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Halibut_300.jpg/330px-Halibut_300.jpg",
+        "alt": "California halibut on the seafloor",
+        "credit": "Photo: Shane Anderson / NOAA",
+        "source": "https://commons.wikimedia.org/wiki/File:Halibut_300.jpg",
+        "reuse": "https://commons.wikimedia.org/wiki/File:Halibut_300.jpg"
+      }
     },
     {
       "id": "pacific-halibut",
@@ -220,11 +275,18 @@
         "general",
         "inland"
       ],
-      "groups": true
+      "groups": true,
+      "image": {
+        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/images/2024-07/c88a7466.jpg?itok=IA2o7e3G",
+        "alt": "White sturgeon",
+        "credit": "Photo: Ryan Hagerty / USFWS",
+        "source": "https://www.fws.gov/media/white-sturgeon",
+        "reuse": "https://www.fws.gov/media/white-sturgeon"
+      }
     },
     {
       "id": "chinook",
-      "name": "Chinook salmon",
+      "name": "Chinook Salmon (King Salmon)",
       "scientific": "Oncorhynchus tshawytscha",
       "aliases": [
         "king salmon",
@@ -234,7 +296,9 @@
       "sources": [
         "salmon",
         "inseason",
-        "inland"
+        "inland",
+        "oceanSalmonFederal",
+        "oceanSalmonCA"
       ],
       "image": {
         "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/banner_images/2021-08/Chinook-salmon-Ryan-Hagerty-usfws.jpg?itok=stVi_Qt1",
@@ -246,8 +310,30 @@
       "groups": true
     },
     {
+      "id": "coho",
+      "name": "Coho Salmon (Silver Salmon)",
+      "scientific": "Oncorhynchus kisutch",
+      "aliases": [
+        "silver",
+        "salmon",
+        "coho"
+      ],
+      "sources": [
+        "salmon",
+        "oceanSalmonCA",
+        "oceanSalmonFederal"
+      ],
+      "image": {
+        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2021-12/Coho%20salmon%20Quilcene%20R%20Aug%202020%20C_Roger%20Tabor_cropped.jpg?itok=C9Ccu_sp",
+        "alt": "Adult Coho salmon (Silver Salmon)",
+        "credit": "Photo: Roger Tabor / USFWS",
+        "source": "https://www.fws.gov/media/coho-salmon-2",
+        "reuse": "https://www.fws.gov/media/coho-salmon-2"
+      }
+    },
+    {
       "id": "rockfish",
-      "name": "Rockfish",
+      "name": "Rockfish and groundfish",
       "scientific": "Sebastes spp.",
       "aliases": [
         "rcg",
@@ -263,7 +349,10 @@
         "greenling",
         "canary",
         "copper",
-        "sunset rockfish"
+        "sunset rockfish",
+        "cowcod",
+        "bronzespotted",
+        "sunset"
       ],
       "sources": [
         "groundfish",
@@ -325,7 +414,18 @@
         "groundfish",
         "general",
         "inseason"
-      ]
+      ],
+      "image": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Triakis_semifasciata_742030466.jpg/330px-Triakis_semifasciata_742030466.jpg",
+        "alt": "Leopard shark",
+        "credit": "Photo: Henrik Kibak",
+        "source": "https://commons.wikimedia.org/wiki/File:Triakis_semifasciata_742030466.jpg",
+        "reuse": "https://commons.wikimedia.org/wiki/File:Triakis_semifasciata_742030466.jpg",
+        "license": [
+          "CC BY 4.0",
+          "https://creativecommons.org/licenses/by/4.0/"
+        ]
+      }
     },
     {
       "id": "dungeness-crab",
@@ -340,7 +440,18 @@
         "whale",
         "inseason"
       ],
-      "groups": true
+      "groups": true,
+      "image": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Dungeness_crab_%28Metacarcinus_magister%29.jpg/330px-Dungeness_crab_%28Metacarcinus_magister%29.jpg",
+        "alt": "Dungeness crab",
+        "credit": "Photo: Bildflut",
+        "source": "https://commons.wikimedia.org/wiki/File:Dungeness_crab_%28Metacarcinus_magister%29.jpg",
+        "reuse": "https://commons.wikimedia.org/wiki/File:Dungeness_crab_%28Metacarcinus_magister%29.jpg",
+        "license": [
+          "CC0 1.0",
+          "https://creativecommons.org/publicdomain/zero/1.0/"
+        ]
+      }
     },
     {
       "id": "green-sturgeon",
@@ -354,7 +465,14 @@
         "sturgeon",
         "inland"
       ],
-      "groups": true
+      "groups": true,
+      "image": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg/330px-Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg",
+        "alt": "Juvenile green sturgeon from the Sacramento River",
+        "credit": "Photo: Steve Martarano / USFWS",
+        "source": "https://commons.wikimedia.org/wiki/File:Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg",
+        "reuse": "https://commons.wikimedia.org/wiki/File:Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg"
+      }
     },
     {
       "id": "black-bass",
@@ -404,6 +522,27 @@
       "sources": [
         "freshwater",
         "brannan"
+      ],
+      "images": [
+        {
+          "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/images/2018-02/31861.jpg?itok=0XPvUw51",
+          "alt": "Bluegill",
+          "credit": "Photo: Sam Stukel / USFWS",
+          "source": "https://www.fws.gov/media/bluegill-8",
+          "reuse": "https://www.fws.gov/media/bluegill-8",
+          "label": "Bluegill"
+        },
+        {
+          "label": "Black crappie",
+          "alt": "Black crappie at Gavins Point National Fish Hatchery",
+          "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2023-08/53084649608_2204342f63_o.jpg?itok=AC58Bw9c",
+          "credit": "Photo: Sam Stukel / USFWS",
+          "source": "https://www.fws.gov/media/black-crappie-7",
+          "reuse": "https://www.fws.gov/media/black-crappie-7"
+        },
+        {
+          "label": "White crappie"
+        }
       ]
     }
   ],
@@ -713,21 +852,25 @@
           "mendocino",
           "sf",
           "central",
-          "south"
+          "south",
+          "bay"
         ],
+        "status": "closed",
+        "rules": {
+          "bag": "0 fish · season closed",
+          "season": "Recreational ocean salmon season concluded for 2026.",
+          "minimum": "No legal retention size while closed"
+        },
+        "sources": [
+          "salmon",
+          "oceanSalmonCA",
+          "oceanSalmonFederal"
+        ],
+        "kind": "schedule",
+        "from": "2026-11-28",
         "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
-        "sources": [],
-        "rules": {
-          "bag": "0 fish during the ocean closure",
-          "season": "Recreational ocean salmon fishery closed for the remainder of 2026, as verified November 28.",
-          "special": "Freshwater and estuary restrictions are separate. Check the regulation for your exact waters.",
-          "possession": "0 fish taken in the closed ocean fishery."
-        },
-        "from": "2026-11-28",
-        "kind": "schedule",
-        "status": "closed"
+        "reviewBy": "2026-12-05"
       }
     ],
     "rockfish": [
@@ -749,66 +892,6 @@
         },
         "from": "2026-11-28",
         "kind": "reference"
-      },
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
-        "through": "2026-12-31",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-31",
-        "sources": [],
-        "rules": {
-          "minimum": "No minimum",
-          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table.",
-          "methods": "When angling, one line with no more than two hooks."
-        },
-        "from": "2026-11-28",
-        "kind": "reference"
-      },
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
-        "through": "2026-12-05",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
-        "sources": [],
-        "rules": {
-          "bag": "Up to 10 fish combined in the rockfish, cabezon and greenling complex; species sublimits and closures apply."
-        },
-        "from": "2026-11-28",
-        "kind": "schedule"
-      },
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
-        "through": "2026-12-31",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-31",
-        "sources": [],
-        "rules": {
-          "special": "No retention of bronzespotted rockfish, cowcod, quillback rockfish or yelloweye rockfish. Check current regional and species-specific sublimits."
-        },
-        "from": "2026-11-28",
-        "kind": "reference",
-        "status": "conditional"
       }
     ],
     "lingcod": [
@@ -873,67 +956,6 @@
         },
         "from": "2026-11-28",
         "kind": "reference"
-      }
-    ],
-    "cabezon": [
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
-        "through": "2026-12-31",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-31",
-        "sources": [],
-        "rules": {
-          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
-        },
-        "from": "2026-11-28",
-        "kind": "reference"
-      },
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
-        "through": "2026-12-31",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-31",
-        "sources": [],
-        "rules": {
-          "minimum": "No minimum",
-          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table.",
-          "methods": "When angling, one line with no more than two hooks."
-        },
-        "from": "2026-11-28",
-        "kind": "reference"
-      },
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
-        "through": "2026-12-05",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
-        "sources": [],
-        "rules": {
-          "bag": "Up to 10 fish combined in the rockfish, cabezon and greenling complex; species sublimits and closures apply."
-        },
-        "from": "2026-11-28",
-        "kind": "schedule"
       }
     ],
     "leopard-shark": [
@@ -1118,31 +1140,6 @@
         "status": "conditional"
       }
     ],
-    "greenling": [
-      {
-        "kind": "reference",
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
-        "rules": {
-          "minimum": "No minimum in CDFW’s 2026 groundfish summary",
-          "bag": "Counts toward the 10-fish combined rockfish, cabezon and greenling limit",
-          "methods": "When angling, one line with no more than two hooks."
-        },
-        "sources": [
-          "groundfish"
-        ],
-        "from": "2026-11-28",
-        "through": "2026-12-31",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-31"
-      }
-    ],
     "sunfish-crappie": [
       {
         "kind": "reference",
@@ -1164,6 +1161,33 @@
         "verified": "2026-11-28",
         "reviewBy": "2026-12-31",
         "status": "conditional"
+      }
+    ],
+    "coho": [
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "status": "retention",
+        "rules": {
+          "bag": "0 fish",
+          "season": "Coho retention prohibited in California ocean fisheries under Title 14 §§ 27.70(b) and 27.80(b)."
+        },
+        "sources": [
+          "salmon",
+          "oceanSalmonCA",
+          "oceanSalmonFederal"
+        ],
+        "kind": "schedule",
+        "from": "2026-11-28",
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-05"
       }
     ]
   },
@@ -1199,13 +1223,40 @@
         "class": "Shelf",
         "north": 4,
         "other": 2,
-        "note": "Combined across the two species. Compare coloring and anatomy with CDFW’s identification guide."
+        "note": "Combined across the two species. Compare coloring and anatomy with CDFW’s identification guide.",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Sebastes_miniatus.jpg/330px-Sebastes_miniatus.jpg",
+          "alt": "Vermilion rockfish",
+          "credit": "Photo: Chad King / SIMoN / MBNMS",
+          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg"
+        },
+        "images": [
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Sebastes_miniatus.jpg/330px-Sebastes_miniatus.jpg",
+            "alt": "Vermilion rockfish",
+            "credit": "Photo: Chad King / SIMoN / MBNMS",
+            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus.jpg",
+            "label": "Vermilion"
+          },
+          {
+            "label": "Sunset rockfish"
+          }
+        ]
       },
       {
         "name": "Copper rockfish",
         "class": "Nearshore",
         "limit": 1,
-        "note": "Use the copper–gopher–canary comparison guide."
+        "note": "Use the copper–gopher–canary comparison guide.",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/Sebastes_caurinus_2.jpg/330px-Sebastes_caurinus_2.jpg",
+          "alt": "Copper rockfish",
+          "credit": "Photo: Lonhart / MBNMS",
+          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_caurinus_2.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_caurinus_2.jpg"
+        }
       },
       {
         "name": "Canary rockfish",
@@ -1222,27 +1273,86 @@
       {
         "name": "Bocaccio",
         "class": "Shelf",
-        "note": "Included in the combined limit. A long jaw extends to or beyond the eye socket; young fish may show small brown spots."
+        "note": "Included in the combined limit. A long jaw extends to or beyond the eye socket; young fish may show small brown spots.",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg/330px-Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg",
+          "alt": "Large bocaccio rockfish in the foreground",
+          "credit": "Photo: Breezygamer117",
+          "source": "https://commons.wikimedia.org/wiki/File:Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Bocaccio_Rockfish_%28Sebastes_paucispinis%29_at_the_California_Academy_of_Sciences.jpg",
+          "license": [
+            "CC BY-SA 4.0",
+            "https://creativecommons.org/licenses/by-sa/4.0/"
+          ]
+        }
       },
       {
         "name": "Black rockfish",
         "class": "Nearshore",
-        "note": "Included in the combined limit; regional closures apply."
+        "note": "Included in the combined limit; regional closures apply.",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/Sebastes_melanops.jpg/330px-Sebastes_melanops.jpg",
+          "alt": "Black rockfish",
+          "credit": "Photo: Chad King / SIMoN / MBNMS",
+          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops.jpg"
+        }
       },
       {
         "name": "Blue rockfish",
         "class": "Nearshore",
-        "note": "Included in the combined limit; regional closures apply."
+        "note": "Included in the combined limit; regional closures apply.",
+        "image": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Blue_rockfish_%28Sebastes_mystinus%29_CIMNS.jpg/330px-Blue_rockfish_%28Sebastes_mystinus%29_CIMNS.jpg",
+          "alt": "Blue rockfish",
+          "credit": "Photo: Claire Fackler / CINMS / NOAA",
+          "source": "https://commons.wikimedia.org/wiki/File:Blue_rockfish_(Sebastes_mystinus)_CIMNS.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Blue_rockfish_(Sebastes_mystinus)_CIMNS.jpg"
+        }
       },
       {
         "name": "Cabezon",
         "class": "Nearshore group",
-        "note": "Included in the combined limit; regional closures apply."
+        "note": "Included in the combined limit; regional closures apply.",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Scorpaenichthys_marmoratus.jpg/330px-Scorpaenichthys_marmoratus.jpg",
+          "alt": "Cabezon",
+          "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
+          "source": "https://commons.wikimedia.org/wiki/File:Scorpaenichthys_marmoratus.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Scorpaenichthys_marmoratus.jpg"
+        },
+        "favorite": "cabezon"
       },
       {
         "name": "Kelp and rock greenlings",
         "class": "Nearshore group",
-        "note": "Included in the combined limit; regional closures apply."
+        "note": "Included in the combined limit; regional closures apply.",
+        "image": {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Hexagrammos_decagrammus_%28male%29.jpg/330px-Hexagrammos_decagrammus_%28male%29.jpg",
+          "alt": "Male kelp greenling",
+          "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
+          "source": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg"
+        },
+        "images": [
+          {
+            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Hexagrammos_decagrammus_%28male%29.jpg/330px-Hexagrammos_decagrammus_%28male%29.jpg",
+            "alt": "Male kelp greenling",
+            "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
+            "source": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg",
+            "label": "Kelp greenling"
+          },
+          {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg/330px-Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg",
+            "alt": "Rock greenling",
+            "credit": "Photo: David Csepp / NOAA Fisheries",
+            "source": "https://commons.wikimedia.org/wiki/File:Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg",
+            "reuse": "https://commons.wikimedia.org/wiki/File:Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg",
+            "label": "Rock greenling"
+          }
+        ],
+        "favorite": "greenling"
       }
     ],
     "prohibited": [
@@ -1265,10 +1375,268 @@
         }
       },
       {
-        "name": "Cowcod"
+        "name": "Cowcod",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Sebastes_levis.jpg/330px-Sebastes_levis.jpg",
+          "alt": "Cowcod",
+          "credit": "Photo: Rick Starr / SIMoN / MBNMS",
+          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_levis.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_levis.jpg"
+        }
       },
       {
-        "name": "Bronzespotted rockfish"
+        "name": "Bronzespotted rockfish",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Sebatses_gilli.jpg/330px-Sebatses_gilli.jpg",
+          "alt": "Bronzespotted rockfish",
+          "credit": "Photo: NOAA NMFS SWFSC ROV Team",
+          "source": "https://commons.wikimedia.org/wiki/File:Sebatses_gilli.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebatses_gilli.jpg"
+        }
+      }
+    ],
+    "combined": 10,
+    "minimum": "No minimum for this complex"
+  },
+  "salmon": {
+    "oceanAreas": {
+      "north": "Klamath Management Zone · Oregon border to Cape Mendocino",
+      "mendocino": "Fort Bragg Management Area · Cape Mendocino to Point Arena",
+      "sf": "San Francisco Management Area · Point Arena to Pigeon Point",
+      "central": "Monterey Management Area · Pigeon Point to the Mexico border",
+      "south": "Monterey Management Area · Pigeon Point to the Mexico border",
+      "bay": "San Francisco Bay District · CDFW Bay summary"
+    },
+    "rivers": {
+      "sac-woodson": {
+        "label": "Sacramento · Woodson Bridge to Highway 113 near Knights Landing",
+        "entries": [
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "conditional",
+            "rules": {
+              "bag": "2 Chinook",
+              "possession": "4 Chinook",
+              "minimum": "No minimum size",
+              "season": "Published Chinook season: July 16–December 16, 2026.",
+              "special": "Confirm the reach and any new closures before fishing."
+            },
+            "sources": [
+              "centralValleySalmon",
+              "centralValleyNotice",
+              "inlandEmergency"
+            ],
+            "kind": "schedule",
+            "from": "2026-11-28",
+            "through": "2026-12-16",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-07-15"
+          },
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "closed",
+            "rules": {
+              "bag": "0 Chinook",
+              "season": "Chinook season ended for this reach."
+            },
+            "sources": [
+              "centralValleySalmon",
+              "centralValleyNotice",
+              "inlandEmergency"
+            ],
+            "kind": "schedule",
+            "from": "2026-12-17",
+            "through": "2026-12-31",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-07-15"
+          }
+        ]
+      },
+      "sac-carquinez": {
+        "label": "Sacramento · Highway 113 near Knights Landing to Carquinez Bridge",
+        "entries": [
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "conditional",
+            "rules": {
+              "bag": "2 Chinook",
+              "possession": "4 Chinook",
+              "minimum": "No minimum size",
+              "season": "Published Chinook season: July 16–December 16, 2026.",
+              "special": "Confirm the reach and any new closures before fishing."
+            },
+            "sources": [
+              "centralValleySalmon",
+              "centralValleyNotice",
+              "inlandEmergency"
+            ],
+            "kind": "schedule",
+            "from": "2026-11-28",
+            "through": "2026-12-16",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-07-15"
+          },
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "closed",
+            "rules": {
+              "bag": "0 Chinook",
+              "season": "Chinook season ended for this reach."
+            },
+            "sources": [
+              "centralValleySalmon",
+              "centralValleyNotice",
+              "inlandEmergency"
+            ],
+            "kind": "schedule",
+            "from": "2026-12-17",
+            "through": "2026-12-31",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-07-15"
+          }
+        ]
+      },
+      "klamath-spit": {
+        "label": "Klamath · spit within 100 yards of the river-mouth channel",
+        "entries": [
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "closed",
+            "rules": {
+              "bag": "0 Chinook",
+              "season": "CDFW quota closure. The spit is closed to all fishing through the end of 2026."
+            },
+            "sources": [
+              "klamathSpit",
+              "klamathSalmon"
+            ],
+            "kind": "schedule",
+            "from": "2026-09-03",
+            "through": "2026-12-31",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-09-03"
+          }
+        ]
+      },
+      "klamath-lower": {
+        "label": "Lower Klamath · Highway 96 Weitchpec to river mouth",
+        "entries": [
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "conditional",
+            "rules": {
+              "bag": "2 jacks",
+              "possession": "6 Chinook under the fall-run possession rule",
+              "maximum": "23 inches total length for retention",
+              "season": "Jacks only under the quota closure. Published fall season: August 15–December 31, 2026.",
+              "special": "Release all adult Chinook immediately. The spit is closed to all fishing. Check tributary-mouth closures."
+            },
+            "sources": [
+              "lowerKlamath",
+              "klamathSalmon"
+            ],
+            "kind": "emergency",
+            "from": "2026-09-14",
+            "through": "2026-12-31",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-09-14"
+          }
+        ]
+      },
+      "trinity-lower": {
+        "label": "Lower Trinity · Denny Road Bridge at Hawkins Bar to Klamath confluence",
+        "entries": [
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "conditional",
+            "rules": {
+              "bag": "2 jacks",
+              "possession": "6 Chinook under the fall-run possession rule",
+              "maximum": "23 inches total length for retention",
+              "season": "Jacks only under the quota closure. Published fall season: September 1–December 31, 2026.",
+              "special": "Release all adult Chinook immediately. A North Coast Salmon Report Card is required."
+            },
+            "sources": [
+              "lowerTrinity",
+              "klamathSalmon"
+            ],
+            "kind": "emergency",
+            "from": "2026-10-17",
+            "through": "2026-12-31",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-10-17"
+          }
+        ]
+      },
+      "trinity-upper": {
+        "label": "Upper Trinity · Old Lewiston Bridge to Highway 299 West Bridge at Cedar Flat",
+        "entries": [
+          {
+            "regions": [
+              "river"
+            ],
+            "status": "conditional",
+            "rules": {
+              "bag": "2 jacks",
+              "possession": "6 Chinook under the fall-run possession rule",
+              "maximum": "23 inches total length for retention",
+              "season": "Jacks only under the quota closure. Published fall season: September 1–December 31, 2026.",
+              "special": "Release all adult Chinook immediately. A North Coast Salmon Report Card is required."
+            },
+            "sources": [
+              "upperTrinity",
+              "klamathSalmon"
+            ],
+            "kind": "emergency",
+            "from": "2026-10-29",
+            "through": "2026-12-31",
+            "verified": "2026-11-28",
+            "reviewBy": "2026-12-05",
+            "effective": "2026-10-29"
+          }
+        ]
+      }
+    },
+    "riverCoho": [
+      {
+        "regions": [
+          "river"
+        ],
+        "status": "retention",
+        "rules": {
+          "bag": "0 fish",
+          "season": "CDFW prohibits recreational angling for Coho Salmon in California."
+        },
+        "sources": [
+          "riverCoho",
+          "inlandSalmon"
+        ],
+        "kind": "schedule",
+        "from": "2026-11-28",
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-05"
       }
     ]
   }
