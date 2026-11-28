@@ -1,21 +1,23 @@
 """Compare the production app shell with the checked-out release."""
 
 import os
+import json
 from pathlib import Path
 import time
+from urllib.parse import urlencode, urljoin
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     ("index.html", ""),
-    ("index.html", "index.html?v=29"),
+    ("index.html", "index.html?v=291"),
     ("sw.js", "sw.js"),
     ("marine-motion.js", "marine-motion.js?v=28"),
     ("marine-tiles.js", "marine-tiles.js?v=28"),
     ("marine-mpa.js", "marine-mpa.js?v=28"),
-    ("marine-rules.js", "marine-rules.js?v=29"),
-    ("fishing-rules.json", "fishing-rules.json?v=29"),
+    ("marine-rules.js", "marine-rules.js?v=291"),
+    ("fishing-rules.json", "fishing-rules.json?v=291"),
     ("mpa-boundaries.geojson", "mpa-boundaries.geojson?v=28"),
     ("vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.js"),
     ("vendor/leaflet/leaflet.css", "vendor/leaflet/leaflet.css"),
@@ -33,9 +35,44 @@ ASSETS = (
 )
 
 
+def verify_browser(base, release):
+    from playwright.sync_api import expect, sync_playwright
+
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(executable_path=os.environ.get("MARINECAST_BROWSER_PATH"))
+        page = browser.new_page(**playwright.devices["iPhone 13"])
+        origin = urljoin(base, "/")
+        page.route("**/*", lambda route: route.continue_() if route.request.url.startswith(origin) else route.abort())
+        page.goto(base + "#rules", wait_until="domcontentloaded")
+        page.wait_for_function("Boolean(navigator.serviceWorker.controller)", timeout=20000)
+        version = page.evaluate("""() => new Promise(resolve => {
+            const channel = new MessageChannel();
+            const timer = setTimeout(() => { channel.port1.close(); resolve(null); }, 5000);
+            channel.port1.onmessage = ({data}) => {
+                clearTimeout(timer); channel.port1.close(); resolve(data);
+            };
+            navigator.serviceWorker.controller.postMessage('marinecast-version', [channel.port2]);
+        })""")
+        if version != release:
+            raise SystemExit(f"Service worker is {version}; expected {release}")
+        expect(page.locator("#rules-cards .rule-card").first).to_be_visible()
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", release)
+        query = urlencode({"marinecast-release": release, "marinecast-refresh": time.time_ns()})
+        page.goto(base + "?" + query + "#rules", wait_until="domcontentloaded")
+        expect(page).to_have_url(base + "#rules")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", release)
+        browser.close()
+
+
 def main():
     base = os.environ["MARINECAST_URL"].rstrip("/") + "/"
+    release = json.loads((ROOT / "fishing-rules.json").read_text())["release"]
+    launch = json.loads((ROOT / "manifest.webmanifest").read_text())["start_url"]
+    if urljoin(base, launch) != base:
+        raise SystemExit("Installed launch URL changed")
+    release_query = urlencode({"marinecast-release": release, "marinecast-refresh": time.time_ns()})
     expected = [(route, (ROOT / file).read_bytes()) for file, route in ASSETS]
+    expected.append(("?" + release_query, (ROOT / "index.html").read_bytes()))
     deadline = time.monotonic() + 540
     while True:
         failures = []
@@ -48,7 +85,10 @@ def main():
             except (URLError, OSError) as error:
                 failures.append(f"{route or '/'} returned {error}")
         if not failures:
-            print(f"Verified {len(expected)} published assets at {base}")
+            print(f"Verified {len(expected)} published routes at {base}", flush=True)
+            if os.environ.get("MARINECAST_VERIFY_BROWSER") == "1":
+                verify_browser(base, release)
+                print(f"Verified clean and worker-controlled launches of {release}", flush=True)
             return
         if time.monotonic() >= deadline:
             raise SystemExit("\n".join(failures))

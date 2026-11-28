@@ -66,10 +66,16 @@ jobs:
           (needs.publish.result == 'success' || needs.publish.result == 'skipped') }}
     needs: [test, publish]
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 16
     steps:
       - uses: actions/checkout@v4
-      - name: Verify published app shell
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r tests/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Verify published app shell and installed launch
         env:
+          MARINECAST_VERIFY_BROWSER: "1"
           MARINECAST_URL: ${{ vars.MARINECAST_URL || needs.publish.outputs.url || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
         run: python tests/verify_deployment.py

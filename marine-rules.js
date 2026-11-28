@@ -1,10 +1,13 @@
 window.MarineRules = (() => {
+  const release = '2.9.1';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
     methods: 'Permitted methods', permits: 'Licenses and permits', special: 'Special restrictions'
   };
   const bayPresets = new Set([0, 1, 3, 8, 9, 10]);
+  const deltaPresets = new Set([6, 7, 11, 12]);
+  const favoritesKey = 'marinecastFavoriteSpecies';
   const regionPreference = 'marinecastRulesRegion';
 
   function node(tag, text, className) {
@@ -20,9 +23,10 @@ window.MarineRules = (() => {
     return element;
   }
 
-  function ruleCard(species, entries, region, tripDate, today, data) {
+  function ruleCard(species, entries, region, tripDate, today, data, favorites) {
     const details = node('details', '', 'rule-card');
-    details.append(node('summary', species.name));
+    const summary = node('summary', species.name);
+    details.append(summary);
     if (species.scientific) details.append(node('p', species.scientific, 'muted'));
     if (species.image) {
       const image = node('img');
@@ -37,23 +41,39 @@ window.MarineRules = (() => {
       details.append(image, credit);
     }
     const regional = entries.filter(entry => entry.regions.includes(region));
-    const dated = regional.filter(entry => tripDate >= entry.from && tripDate <= entry.through);
-    const stale = dated.some(entry => today > entry.reviewBy);
-    const current = dated.filter(entry => today >= entry.verified && today <= entry.reviewBy);
-    if (!current.length) {
-      const message = stale ? 'Outdated summary. Check the official rules before fishing.'
-        : 'Rules unavailable for this date or region. Fishing status is unverified.';
-      details.append(node('p', message, 'warn'));
-    }
+    const inDate = entry => tripDate >= entry.from && tripDate <= entry.through &&
+      today >= entry.verified && today <= entry.reviewBy;
+    const current = regional.filter(inDate);
+    const reference = regional.filter(entry => entry.kind === 'reference' && !inDate(entry));
     const restrictions = Object.assign({}, ...current.map(entry => entry.rules));
-    const values = node('dl');
-    for (const [key, label] of Object.entries(fields)) {
-      values.append(node('dt', label), node('dd', restrictions[key] || 'Unverified · see official rules'));
+    const published = Object.assign({}, ...reference.map(entry => entry.rules));
+    const preview = [
+      restrictions.minimum?.length <= 40 && 'Min ' + restrictions.minimum,
+      restrictions.bag?.length <= 40 && 'Bag ' + restrictions.bag,
+      restrictions.possession?.length <= 40 && 'Possession ' + restrictions.possession
+    ].filter(Boolean).join(' · ');
+    summary.append(node('span', preview || (current.length ? 'See restrictions' :
+      reference.length ? 'Published reference only' : 'No verified rules for this region/date'), 'muted rule-preview'));
+    if (!current.length || regional.some(entry => entry.kind !== 'reference' && !inDate(entry))) {
+      details.append(node('p', reference.length
+        ? 'Some information is published reference only. Fishing status for the selected date is unverified.'
+        : 'Some rules are unverified for this date or region. Check current official notices.', 'warn'));
     }
-    details.append(values);
-    const dates = new Set((current.length ? current : regional).map(entry => [
+    for (const [values, historical] of [[restrictions, false], [published, true]]) {
+      const rows = node('dl');
+      for (const [key, label] of Object.entries(fields)) {
+        if (values[key] && (!historical || !restrictions[key])) rows.append(node('dt', label), node('dd', values[key]));
+      }
+      if (rows.childElementCount) {
+        if (historical) details.append(node('h3', 'Published reference · verify before use'));
+        details.append(rows);
+      }
+    }
+    if (current.length < regional.length || ['minimum','maximum','bag','possession','season'].some(key => !restrictions[key])) {
+      details.append(node('p', 'Unlisted limits or conditions need official confirmation. Check local boundaries and closures.', 'muted'));
+    }
+    const dates = new Set([...current, ...reference].map(entry => [
         entry.effective && `Effective ${entry.effective}`,
-        `Summary covers ${entry.from} to ${entry.through} (Pacific)`,
         `Last verified ${entry.verified}`
     ].filter(Boolean).join(' · ')));
     for (const date of dates) details.append(node('p', date, 'muted'));
@@ -66,8 +86,13 @@ window.MarineRules = (() => {
       list.append(item);
     }
     details.append(list);
-    const wrapper = node('section');
-    wrapper.append(details);
+    const wrapper = node('section', '', 'rule-section');
+    const favorite = node('button', favorites.has(species.id) ? '★' : '☆', 'rule-star');
+    favorite.type = 'button';
+    favorite.dataset.species = species.id;
+    favorite.setAttribute('aria-label', `Favorite ${species.name}`);
+    favorite.setAttribute('aria-pressed', String(favorites.has(species.id)));
+    wrapper.append(favorite, details);
     return wrapper;
   }
 
@@ -76,6 +101,15 @@ window.MarineRules = (() => {
     const select = document.getElementById('rules-region');
     const search = document.getElementById('rules-search');
     const cards = document.getElementById('rules-cards');
+    const favoriteOnly = document.getElementById('rules-favorites');
+    const ruleDate = document.getElementById('rules-date');
+    const useToday = document.getElementById('rules-today');
+    const tripDate = document.getElementById('rules-trip-date');
+    let favorites = new Set();
+    try {
+      const saved = JSON.parse(localStorage.getItem(favoritesKey) || '[]');
+      if (Array.isArray(saved)) favorites = new Set(saved);
+    } catch {}
     const context = document.getElementById('rules-context');
     const tripLabel = document.getElementById('rules-trip');
     let data;
@@ -87,25 +121,29 @@ window.MarineRules = (() => {
       if (page.hidden || !data) return;
       const trip = getTrip();
       const date = today();
-      const suggested = trip.predefined && bayPresets.has(trip.index) ? 'bay' : '';
+      const suggested = trip.predefined
+        ? (bayPresets.has(trip.index) ? 'bay' : deltaPresets.has(trip.index) ? 'delta' : '') : '';
+      const selectedDate = ruleDate.value || trip.date || date;
       const region = select.value === 'trip' ? suggested : select.value;
       const query = search.value.trim().toLowerCase();
-      const key = JSON.stringify([trip, date, region, select.value, query]);
+      const key = JSON.stringify([trip, date, selectedDate, region, select.value, query, favoriteOnly.checked, [...favorites]]);
       if (key === lastRender) return;
       lastRender = key;
-      tripLabel.textContent = `${trip.name || 'No fishing location'} · ${trip.date || 'No forecast date'} (Pacific)`;
+      tripLabel.textContent = `${trip.name || 'No fishing location'} · ${selectedDate} (Pacific)`;
       context.textContent = select.value !== 'trip' ? 'Manual selection. Confirm the official boundary for your fishing spot.'
-        : suggested ? 'Suggested region: San Francisco Bay District. Confirm the official boundary before fishing.'
+        : suggested ? `Suggested region: ${data.regions[suggested].label}. Confirm the official boundary before fishing.`
         : 'Select a region manually for this location. A map pin alone does not establish jurisdiction.';
-      const open = new Set([...cards.querySelectorAll('details[open] summary')].map(summary => summary.textContent));
-      const rows = data.species.filter(species =>
+      const open = new Set([...cards.querySelectorAll('details[open]')].map(details => details.dataset.species));
+      const rows = data.species.filter(species => (!favoriteOnly.checked || favorites.has(species.id)) &&
         [species.name, species.scientific, ...species.aliases].filter(Boolean).some(name => name.toLowerCase().includes(query)));
       cards.replaceChildren(...rows.map(species => {
-        const card = ruleCard(species, data.entries[species.id] || [], region, trip.date, date, data);
-        if (open.has(species.name)) card.querySelector('details').open = true;
+        const card = ruleCard(species, data.entries[species.id] || [], region, selectedDate, date, data, favorites);
+        const details = card.querySelector('details');
+        details.dataset.species = species.id;
+        details.open = open.has(species.id);
         return card;
       }));
-      if (!rows.length) cards.append(node('p', 'No matching species. Check the official regional regulations.'));
+      if (!rows.length) cards.append(node('p', favoriteOnly.checked ? 'No favorite species match.' : 'No matching species. Check the official regional regulations.'));
     }
 
     function refresh() {
@@ -114,11 +152,20 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=29').then(response => {
+      pending = fetch('./fishing-rules.json?v=291').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {
-        for (const [id, region] of Object.entries(snapshot.regions)) select.add(new Option(region.label, id));
+        if (snapshot.release !== release) throw Error('Rules are from a different release');
+        for (const [label, ids] of [
+          ['Bay and inland', ['bay','delta','inland']],
+          ['Pacific coast', ['north','mendocino','sf','central','south']]
+        ]) {
+          const group = node('optgroup');
+          group.label = label;
+          for (const id of ids) group.append(new Option(snapshot.regions[id].label, id));
+          select.append(group);
+        }
         try {
           const saved = localStorage.getItem(regionPreference);
           if (Object.hasOwn(snapshot.regions, saved)) select.value = saved;
@@ -142,6 +189,25 @@ window.MarineRules = (() => {
       render();
     });
     search.addEventListener('input', render);
+    ruleDate.addEventListener('change', render);
+    useToday.addEventListener('click', () => { ruleDate.value = today(); render(); });
+    tripDate.addEventListener('click', () => { ruleDate.value = ''; render(); });
+    favoriteOnly.addEventListener('change', render);
+    cards.addEventListener('click', event => {
+      const button = event.target.closest('button[data-species]');
+      if (!button) return;
+      const id = button.dataset.species;
+      if (favorites.has(id)) favorites.delete(id);
+      else favorites.add(id);
+      try { localStorage.setItem(favoritesKey, JSON.stringify([...favorites])); } catch {}
+      if (favoriteOnly.checked && !favorites.has(id)) {
+        render();
+        favoriteOnly.focus();
+      } else {
+        button.textContent = favorites.has(id) ? '★' : '☆';
+        button.setAttribute('aria-pressed', String(favorites.has(id)));
+      }
+    });
     new MutationObserver(refresh).observe(page, {attributes: true, attributeFilter: ['hidden']});
     new MutationObserver(render).observe(document.getElementById('pagecontext'), {childList: true});
     window.addEventListener('pageshow', refresh);

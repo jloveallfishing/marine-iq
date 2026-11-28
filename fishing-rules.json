@@ -1,5 +1,14 @@
 {
+  "release": "2.9.1",
   "regions": {
+    "bay": {
+      "label": "Bay · San Francisco Bay District",
+      "source": "bay"
+    },
+    "delta": {
+      "label": "Sacramento–San Joaquin Delta",
+      "source": "freshwater"
+    },
     "north": {
       "label": "Ocean · Northern",
       "source": "north"
@@ -20,12 +29,8 @@
       "label": "Ocean · Southern",
       "source": "south"
     },
-    "bay": {
-      "label": "Bay · San Francisco Bay District",
-      "source": "bay"
-    },
     "inland": {
-      "label": "Inland · California fresh waters and Delta",
+      "label": "Other California inland waters",
       "source": "inland"
     }
   },
@@ -105,6 +110,22 @@
     "whale": [
       "CDFW whale-safe fisheries · recreational trap restrictions",
       "https://wildlife.ca.gov/Conservation/Marine/Whale-Safe-Fisheries"
+    ],
+    "freshwater": [
+      "CDFW 2026 Freshwater Sport Fishing Regulations",
+      "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=209090"
+    ],
+    "healthOrder": [
+      "CDFW northern Dungeness emergency closure notice",
+      "https://wildlife.ca.gov/News/Archive/additional-recreational-dungeness-crab-area-delay-in-portions-of-humboldt-county-due-to-public-health-hazard"
+    ],
+    "possession": [
+      "CDFW Title 14 § 1.17 · bag and possession limit",
+      "https://wildlife.ca.gov/Fishing/Ocean/Regulations/Sport-Fishing/General-Provisions"
+    ],
+    "crabSeason": [
+      "CDFW Central Coast · Dungeness season and limits",
+      "https://wildlife.ca.gov/Fishing/Ocean/Regulations/Fishing-Map/Central"
     ]
   },
   "species": [
@@ -152,7 +173,14 @@
       "sources": [
         "general",
         "inland"
-      ]
+      ],
+      "image": {
+        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2021-07/Striped%20bass%20Ryan%20Hagerty.jpg?itok=76f6St_4",
+        "alt": "Adult striped bass with horizontal stripes",
+        "credit": "Photo: Ryan Hagerty/USFWS",
+        "source": "https://www.fws.gov/media/striped-bass",
+        "reuse": "https://www.fws.gov/media/striped-bass"
+      }
     },
     {
       "id": "white-sturgeon",
@@ -279,6 +307,26 @@
         "sturgeon",
         "inland"
       ]
+    },
+    {
+      "id": "black-bass",
+      "name": "Black bass",
+      "scientific": "Micropterus spp.",
+      "aliases": [
+        "largemouth",
+        "smallmouth",
+        "spotted bass"
+      ],
+      "sources": [
+        "freshwater"
+      ],
+      "image": {
+        "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2022-02/adult%20largemouth%20bass%20at%20gavins%20point%20nfh%20by%20sam%20stukel-usfws.jpg?itok=x2m1Pz5V",
+        "alt": "Adult largemouth bass, one species in the black bass group",
+        "credit": "Photo: Sam Stukel/USFWS",
+        "source": "https://www.fws.gov/media/adult-largemouth-bass",
+        "reuse": "https://www.fws.gov/media/adult-largemouth-bass"
+      }
     }
   ],
   "entries": {
@@ -292,16 +340,17 @@
           "south",
           "bay"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "minimum": "22 inches total length",
           "season": "Year-round baseline; verify local closures.",
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       },
       {
         "regions": [
@@ -310,23 +359,24 @@
           "sf",
           "bay"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "bag": "2 fish",
           "possession": "2 fish"
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       },
       {
         "regions": [
           "central"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [
           "central",
           "south"
@@ -335,24 +385,47 @@
           "bag": "2 fish north of Point Sur; 5 south of Point Sur",
           "possession": "2 fish north of Point Sur; 5 south of Point Sur"
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       },
       {
         "regions": [
           "south"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "bag": "5 fish",
           "possession": "5 fish"
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       }
     ],
     "pacific-halibut": [
+      {
+        "regions": [
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "effective": "2026-04-01",
+        "sources": [],
+        "rules": {
+          "minimum": "No minimum",
+          "bag": "1 fish",
+          "possession": "1 fish",
+          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
+        },
+        "from": "2026-04-01",
+        "kind": "reference"
+      },
       {
         "regions": [
           "sf",
@@ -366,15 +439,12 @@
         "effective": "2026-04-01",
         "sources": [],
         "rules": {
-          "minimum": "No minimum",
-          "bag": "1 fish",
-          "possession": "1 fish",
           "season": "2026 schedule south of Point Arena: April 1 through December 31, subject to earlier quota closure. Check current status.",
           "methods": "When angling, one line with no more than two hooks.",
-          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide.",
           "special": "The California limits differ from other federal Area 2A subareas."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "schedule"
       },
       {
         "regions": [
@@ -387,9 +457,11 @@
         "sources": [],
         "rules": {
           "bag": "0 fish during the closure",
-          "season": "CDFW lists Pacific halibut closed north of Point Arena. The next scheduled opening is April 1, 2027, subject to confirmation."
+          "season": "CDFW lists Pacific halibut closed north of Point Arena. The next scheduled opening is April 1, 2027, subject to confirmation.",
+          "possession": "0 fish taken in the closed northern fishery."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "schedule"
       }
     ],
     "striped-bass": [
@@ -398,9 +470,9 @@
           "bay",
           "sf"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [
           "general"
         ],
@@ -410,17 +482,19 @@
           "bag": "2 fish",
           "possession": "2 fish",
           "season": "Year-round baseline; verify local closures.",
-          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
+          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide.",
+          "special": "No sinker weighing over four pounds; no powered gurdy or winch."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       },
       {
         "regions": [
           "inland"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [
           "freshwaterBass"
         ],
@@ -431,6 +505,28 @@
           "permits": "California sport fishing license and applicable validations; see the CDFW licensing guide.",
           "special": "Check Title 14 § 5.75 and the rules of the exact waterbody before fishing."
         },
+        "from": "2026-11-28",
+        "kind": "reference"
+      },
+      {
+        "regions": [
+          "delta"
+        ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "sources": [
+          "freshwater",
+          "possession"
+        ],
+        "rules": {
+          "minimum": "18 inches total length",
+          "bag": "2 fish",
+          "possession": "2 fish under the ordinary limit",
+          "season": "Year-round under § 5.75, subject to local closures.",
+          "special": "Delta gear rules apply under § 2.10(c). Striped bass hybrids count toward the limit."
+        },
+        "kind": "reference",
         "from": "2026-11-28"
       }
     ],
@@ -446,18 +542,78 @@
         ],
         "through": "2027-06-30",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2027-06-30",
         "effective": "2026-10-01",
         "sources": [],
         "rules": {
           "bag": "0 fish · release only",
           "possession": "0 fish",
+          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide. Sturgeon Fishing Report Card required."
+        },
+        "from": "2026-10-01",
+        "kind": "reference"
+      },
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "through": "2027-06-30",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-05",
+        "effective": "2026-10-01",
+        "sources": [],
+        "rules": {
           "season": "Published catch-and-release schedule: October 1, 2026 through June 30, 2027, with the local closure below.",
           "methods": "One single barbless hook; no trolling or snagging.",
-          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide. Sturgeon Fishing Report Card required.",
           "special": "Release promptly. Fish over 60 inches fork length must remain in the water. The area described in § 27.90(i) is closed January 1 through March 15."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "schedule"
+      },
+      {
+        "regions": [
+          "delta"
+        ],
+        "through": "2027-06-30",
+        "verified": "2026-11-28",
+        "reviewBy": "2027-06-30",
+        "sources": [
+          "freshwater",
+          "sturgeon",
+          "card"
+        ],
+        "rules": {
+          "bag": "0 fish · catch and release only",
+          "possession": "0 fish",
+          "permits": "Sturgeon Fishing Report Card required.",
+          "methods": "One single barbless hook. No trolling, snagging, gaffs, snares or firearms.",
+          "special": "Special closures apply, including the Yolo Bypass above Lisbon Weir. Check §§ 5.80 and 1.74."
+        },
+        "kind": "reference",
+        "from": "2026-10-01"
+      },
+      {
+        "regions": [
+          "delta"
+        ],
+        "through": "2027-06-30",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-05",
+        "sources": [
+          "freshwater",
+          "sturgeon"
+        ],
+        "rules": {
+          "season": "Published catch-and-release schedule: October 1–June 30 east of the west Carquinez Bridge, below the Feather River confluence on the Sacramento and below I-5 on the San Joaquin. Separate rules apply upstream."
+        },
+        "kind": "schedule",
+        "from": "2026-10-01",
+        "effective": "2026-10-01"
       }
     ],
     "chinook": [
@@ -476,9 +632,11 @@
         "rules": {
           "bag": "0 fish during the ocean closure",
           "season": "Recreational ocean salmon fishery closed for the remainder of 2026, as verified November 28.",
-          "special": "Freshwater and estuary restrictions are separate. Check the regulation for your exact waters."
+          "special": "Freshwater and estuary restrictions are separate. Check the regulation for your exact waters.",
+          "possession": "0 fish taken in the closed ocean fishery."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "schedule"
       }
     ],
     "rockfish": [
@@ -491,6 +649,25 @@
           "south",
           "bay"
         ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "sources": [],
+        "rules": {
+          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
+        },
+        "from": "2026-11-28",
+        "kind": "reference"
+      },
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
         "through": "2026-12-05",
         "verified": "2026-11-28",
         "reviewBy": "2026-12-05",
@@ -498,10 +675,30 @@
         "rules": {
           "season": "Check the current regional table for shore and boat season dates.",
           "depth": "Check the regional boundary lines, depth restrictions and transit rules.",
-          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits.",
-          "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
+          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "schedule"
+      },
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "sources": [],
+        "rules": {
+          "minimum": "No minimum",
+          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table."
+        },
+        "from": "2026-11-28",
+        "kind": "reference"
       },
       {
         "regions": [
@@ -517,11 +714,10 @@
         "reviewBy": "2026-12-05",
         "sources": [],
         "rules": {
-          "minimum": "No minimum",
-          "bag": "Up to 10 fish combined in the rockfish, cabezon and greenling complex; species sublimits and closures apply.",
-          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table."
+          "bag": "Up to 10 fish combined in the rockfish, cabezon and greenling complex; species sublimits and closures apply."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "schedule"
       },
       {
         "regions": [
@@ -532,14 +728,15 @@
           "south",
           "bay"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "special": "No retention of bronzespotted rockfish, cowcod, quillback rockfish or yelloweye rockfish. Check current regional and species-specific sublimits."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       }
     ],
     "lingcod": [
@@ -552,17 +749,15 @@
           "south",
           "bay"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
-          "season": "Check the current regional table for shore and boat season dates.",
-          "depth": "Check the regional boundary lines, depth restrictions and transit rules.",
-          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits.",
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       },
       {
         "regions": [
@@ -578,11 +773,33 @@
         "reviewBy": "2026-12-05",
         "sources": [],
         "rules": {
+          "season": "Check the current regional table for shore and boat season dates.",
+          "depth": "Check the regional boundary lines, depth restrictions and transit rules.",
+          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits."
+        },
+        "from": "2026-11-28",
+        "kind": "schedule"
+      },
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "sources": [],
+        "rules": {
           "minimum": "22 inches total length",
           "bag": "2 fish",
           "possession": "2 fish under the standard limit; check vessel and transit exceptions."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       }
     ],
     "cabezon": [
@@ -595,17 +812,15 @@
           "south",
           "bay"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
-          "season": "Check the current regional table for shore and boat season dates.",
-          "depth": "Check the regional boundary lines, depth restrictions and transit rules.",
-          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits.",
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       },
       {
         "regions": [
@@ -621,11 +836,51 @@
         "reviewBy": "2026-12-05",
         "sources": [],
         "rules": {
+          "season": "Check the current regional table for shore and boat season dates.",
+          "depth": "Check the regional boundary lines, depth restrictions and transit rules.",
+          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits."
+        },
+        "from": "2026-11-28",
+        "kind": "schedule"
+      },
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "sources": [],
+        "rules": {
           "minimum": "No minimum",
-          "bag": "Up to 10 fish combined in the rockfish, cabezon and greenling complex; species sublimits and closures apply.",
           "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
+      },
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "through": "2026-12-05",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-05",
+        "sources": [],
+        "rules": {
+          "bag": "Up to 10 fish combined in the rockfish, cabezon and greenling complex; species sublimits and closures apply."
+        },
+        "from": "2026-11-28",
+        "kind": "schedule"
       }
     ],
     "leopard-shark": [
@@ -633,11 +888,13 @@
         "regions": [
           "sf",
           "central",
-          "bay"
+          "bay",
+          "north",
+          "mendocino"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "minimum": "36 inches total length",
@@ -647,7 +904,8 @@
           "depth": "All depths in the regional baseline; check local area restrictions.",
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       }
     ],
     "dungeness-crab": [
@@ -659,18 +917,42 @@
           "central",
           "south"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
-        "sources": [],
+        "reviewBy": "2026-12-31",
+        "sources": [
+          "possession"
+        ],
         "rules": {
           "minimum": "5¾ inches across the shell as defined by CDFW",
           "bag": "10 crabs",
           "permits": "California sport fishing license and applicable validations; check public-pier exceptions and the CDFW licensing guide.",
-          "season": "Season and trap restrictions depend on the exact coastal zone. Check health closures and the latest gear order.",
+          "possession": "10 crabs under the ordinary limit; verify special vessel rules."
+        },
+        "from": "2026-11-28",
+        "kind": "reference"
+      },
+      {
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south"
+        ],
+        "through": "2026-12-05",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-05",
+        "sources": [
+          "north",
+          "crabSeason"
+        ],
+        "rules": {
+          "season": "Published 2026–27 calendar: November 7 to July 30 in Del Norte, Humboldt and Mendocino counties, and November 7 to June 30 elsewhere. See the health-closure and gear notices before fishing.",
           "methods": "In open portions of trap-restricted zones, check the official order for allowable hoop nets, loop traps and hand take."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "schedule"
       },
       {
         "regions": [
@@ -681,20 +963,22 @@
         "verified": "2026-11-28",
         "reviewBy": "2026-12-05",
         "sources": [
-          "whale"
+          "whale",
+          "healthOrder"
         ],
         "rules": {
           "special": "Emergency health delay applies from the southern boundary of the Reading Rock MPAs to the southern boundary of Ten Mile State Marine Reserve. Check the current CDFW order for exact boundaries and any changes."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "emergency"
       },
       {
         "regions": [
           "bay"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "bag": "0 fish",
@@ -702,7 +986,8 @@
           "season": "Take prohibited in San Francisco and San Pablo bays.",
           "special": "Dungeness crab take is prohibited in San Francisco and San Pablo bays; consult the official rule for the exact line."
         },
-        "from": "2026-11-28"
+        "from": "2026-11-28",
+        "kind": "reference"
       }
     ],
     "green-sturgeon": [
@@ -715,9 +1000,9 @@
           "south",
           "bay"
         ],
-        "through": "2026-12-05",
+        "through": "2026-12-31",
         "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
+        "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "bag": "0 fish",
@@ -725,6 +1010,51 @@
           "season": "Take prohibited.",
           "methods": "Release immediately without removing the fish from the water."
         },
+        "from": "2026-11-28",
+        "kind": "reference"
+      },
+      {
+        "regions": [
+          "delta",
+          "inland"
+        ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "sources": [
+          "freshwater",
+          "card"
+        ],
+        "rules": {
+          "bag": "0 fish",
+          "possession": "0 fish",
+          "season": "Take prohibited.",
+          "methods": "Release immediately without removing the fish from the water.",
+          "special": "Report incidental catch when fishing for white sturgeon."
+        },
+        "kind": "reference",
+        "from": "2026-11-28"
+      }
+    ],
+    "black-bass": [
+      {
+        "regions": [
+          "delta"
+        ],
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31",
+        "sources": [
+          "freshwater",
+          "possession"
+        ],
+        "rules": {
+          "minimum": "12 inches total length",
+          "bag": "5 fish combined",
+          "possession": "5 fish combined under the ordinary limit",
+          "season": "Year-round under the Delta baseline. Check special waterbody closures under §§ 7.40 and 7.50."
+        },
+        "kind": "reference",
         "from": "2026-11-28"
       }
     ]
