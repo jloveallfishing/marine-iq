@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.7
+
+- Enlarge the nested rockfish comparison previews and label species with scientific names.
+- Replace Black and Quillback rockfish photos and add a juvenile Bocaccio field photo. Retain distinct Blue imagery with explicit licensing, and link the authoritative Deacon comparison while a verified replacement is pending.
+- Link marine salmon identification photos directly from the pending ocean cards. Retain California’s verified Coho zero-retention rules and the separate River Salmon view.
+- Document image sources, licensing and unresolved photo gaps.
+
 ## 3.0.6
 
 - Move the collapsed Compare Species panel into Rockfish and groundfish. Refresh the copper rockfish photograph and preserve source credits and enlargement.
