@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.3
+
+- Keep all supported species visible in the grouped picker and mark species already on the trip.
+- Add a trash control to every active species card with confirmation for recorded catches.
+- Place a compact, link-only weather comparison card at the bottom of Forecast.
+
 ## 3.1.2
 
 - Select exact fishing coordinates with a fixed map crosshair, optional nearby place naming and a Favorites shortcut.
