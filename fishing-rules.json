@@ -541,7 +541,16 @@
           "reuse": "https://www.fws.gov/media/black-crappie-7"
         },
         {
-          "label": "White crappie"
+          "label": "White crappie",
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Pomoxis_annularis_453185302.jpg/330px-Pomoxis_annularis_453185302.jpg",
+          "alt": "White crappie (Pomoxis annularis)",
+          "credit": "Photo: Fishes of Texas team",
+          "source": "https://commons.wikimedia.org/wiki/File:Pomoxis_annularis_453185302.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Pomoxis_annularis_453185302.jpg",
+          "license": [
+            "CC BY-SA 4.0",
+            "https://creativecommons.org/licenses/by-sa/4.0/"
+          ]
         }
       ]
     }
