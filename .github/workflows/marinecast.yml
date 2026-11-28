@@ -50,7 +50,8 @@ jobs:
       - name: Stage app shell
         run: |
           mkdir site
-          cp index.html marine-motion.js marine-tiles.js sw.js manifest.webmanifest icon-192.png icon-512.png brand.jpg brand-light.jpg site/
+          cp index.html marine-motion.js marine-tiles.js marine-mpa.js mpa-boundaries.geojson sw.js manifest.webmanifest icon-192.png icon-512.png brand.jpg brand-light.jpg site/
+          cp -r vendor site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

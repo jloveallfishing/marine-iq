@@ -199,3 +199,51 @@ Direct NDFD XML, the public data bucket probe, and the OpenFreeMap style probe
 were blocked by the test environment. Provider documentation was available.
 The release keeps NWS JSON, NOAA station predictions, and the current raster
 basemap. There is no new data service, forecast ingest, or paid dependency.
+
+### Marine Protected Areas
+
+The free **MPA** tab shows California coastal and San Francisco Bay boundaries
+from the California Department of Fish and Wildlife, Marine Region GIS Lab.
+The weather map has a separate **MPA boundaries** toggle. Search matches
+protected-area names and saved fishing places locally, with explicit online
+California place searches when there is no local match. GPS searches do not
+change the selected fishing spot or write location history.
+
+The 2.8 snapshot contains all 155 records returned by the published ds582
+FeatureServer, including eight records in the San Francisco Bay study region.
+The service reports a geometry edit date of January 9, 2024. The snapshot
+was retrieved November 28, 2026. The importer checked the feature count and
+unique IDs against the service, requested WGS84 GeoJSON, and verified that the
+service edit timestamp stayed unchanged during export. The export selects
+identifying attributes and adds source metadata. Coordinates, ring structure,
+and geometry precision are retained. [CDFW FeatureServer](https://services2.arcgis.com/Uq9r85Potqm3MfRV/arcgis/rest/services/biosds582_fpu/FeatureServer/0)
+
+California Open Data lists Creative Commons Attribution and public reuse
+rights for the dataset. The bundled snapshot is attributed to CDFW in the
+app and its metadata. The catalog's publication metadata can change
+independently of the boundary service's edit date. [Dataset and license](https://publish.data.ca.gov/dataset/california-marine-protected-areas-ds582)
+
+Color categories communicate the agency's area designations and verified
+special conditions. Popups include the available regulation reference and
+official links. The eight Bay records and Point Reyes SMCA have site-specific
+summaries checked against CDFW pages. Other records show the verified
+designation, when available, and link to official rules for permitted
+activities. Gray records include complementary federal areas whose rules
+are outside these summaries. Check current rules, including seasonal
+closures, gear limits, and exceptions, before fishing.
+[CDFW MPA regulations](https://wildlife.ca.gov/Conservation/Marine/MPAs)
+
+The boundary snapshot is loaded only when opening the MPA map or enabling
+the weather overlay. Validated data are cached locally on first use for
+offline reopening. MarineCast bundles the existing Leaflet 1.9.4 renderer
+under its BSD-2-Clause license. Offline mode can draw boundaries without
+basemap tiles. Online search and live official rules need a connection.
+
+GPS distances are local planar estimates to the nearest published polygon
+edge, including holes. The map draws the reported accuracy radius. Boundary
+classification adds an approximately 33 ft margin to that radius. Foreground warnings
+are opt-in and continue across MarineCast tabs while the app is visible. Proximity uses about 500 ft plus uncertainty, and possible entry
+requires a reliable outside fix followed by two reliable inside fixes.
+Fixes older than 30 seconds or less accurate than about 328 ft suppress
+alerts. This system cannot detect every crossing or substitute for current
+rules, published coordinates, navigation charts, or a dedicated safety device.

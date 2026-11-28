@@ -1,9 +1,15 @@
-const RELEASE = '2.7.0';
-const CACHE = 'marine-iq-v27';
-const INDEX = './index.html?v=27';
-const SHELL = [INDEX, './marine-motion.js?v=27', './marine-tiles.js?v=27', './manifest.webmanifest',
+const RELEASE = '2.8.0';
+const CACHE = 'marine-iq-v28';
+const INDEX = './index.html?v=28';
+const SHELL = [INDEX, './marine-motion.js?v=28', './marine-tiles.js?v=28', './marine-mpa.js?v=28',
+  './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css',
+  './vendor/leaflet/images/marker-icon.png', './vendor/leaflet/images/marker-icon-2x.png',
+  './vendor/leaflet/images/marker-shadow.png', './vendor/leaflet/images/layers.png',
+  './vendor/leaflet/images/layers-2x.png', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './brand.jpg?v=6', './brand-light.jpg?v=11'];
 const urls = new Set(SHELL.map(path => new URL(path, self.location.href).href));
+const snapshotCache = 'marinecast-mpa-v28';
+const boundaries = new URL('./mpa-boundaries.geojson?v=28', self.location.href).href;
 const appRoot = new URL('./', self.location.href).pathname;
 const appIndex = new URL(INDEX, self.location.href).pathname;
 
@@ -22,7 +28,8 @@ self.addEventListener('install', event => event.waitUntil(installShell()));
 
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(
-    keys.filter(key => key.startsWith('marine-iq-') && key !== CACHE).map(key => caches.delete(key))
+    keys.filter(key => (key.startsWith('marine-iq-') && key !== CACHE) ||
+      (key.startsWith('marinecast-mpa-') && key !== snapshotCache)).map(key => caches.delete(key))
   )).then(() => self.clients.claim()));
 });
 
@@ -56,6 +63,11 @@ self.addEventListener('fetch', event => {
       return;
     }
     event.respondWith(navigate(request, url).catch(() => fromShell(INDEX)));
+  } else if (request.url === boundaries) {
+    event.respondWith((async () => {
+      const saved = await caches.match(request, {cacheName: snapshotCache});
+      return saved || fetch(request);
+    })());
   } else if (urls.has(request.url)) {
     event.respondWith(fromShell(request).then(response => response || fetch(request)));
   }

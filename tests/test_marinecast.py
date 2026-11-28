@@ -8,7 +8,6 @@ from pathlib import Path
 import threading
 import unittest
 from urllib.parse import parse_qs, urlparse
-from urllib.request import urlopen
 
 from playwright.sync_api import expect, sync_playwright
 
@@ -29,19 +28,19 @@ SLOW_PROVIDER = r"""
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/offline-check":
+        if self.path == "/offline-check" or getattr(self.server, "offline_app", False):
             # Simulate a failed origin connection in the worker itself.
             self.close_connection = True
             self.connection.shutdown(socket.SHUT_RDWR)
             return
         legacy = getattr(self.server, "legacy_shell", False)
         stale_navigation = getattr(self.server, "stale_navigation", False)
-        if (legacy and self.path in ("/", "/index.html?v=26", "/sw.js")) or (stale_navigation and self.path == "/"):
+        if (legacy and self.path in ("/", "/index.html?v=27", "/sw.js")) or (stale_navigation and self.path == "/"):
             worker = self.path == "/sw.js"
             file = ROOT / ("sw.js" if worker else "index.html")
-            content = (file.read_bytes().replace(b"Version 2.7", b"Version 2.6")
-                       .replace(b"2.7.0", b"2.6.0").replace(b"marine-iq-v27", b"marine-iq-v26")
-                       .replace(b"index.html?v=27", b"index.html?v=26"))
+            content = (file.read_bytes().replace(b"Version 2.8", b"Version 2.7")
+                       .replace(b"2.8.0", b"2.7.0").replace(b"marine-iq-v28", b"marine-iq-v27")
+                       .replace(b"index.html?v=28", b"index.html?v=27"))
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript" if worker else "text/html")
             self.send_header("Content-Length", str(len(content)))
@@ -58,10 +57,9 @@ class Handler(SimpleHTTPRequestHandler):
 class MarineCastTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.leaflet = {}
-        for name, content_type in (("leaflet.js", "text/javascript"), ("leaflet.css", "text/css")):
-            with urlopen("https://unpkg.com/leaflet@1.9.4/dist/" + name, timeout=20) as response:
-                cls.leaflet[name] = (response.read(), content_type)
+        vendor = Path(__file__).resolve().parents[1] / "vendor" / "leaflet"
+        cls.leaflet = {name: ((vendor / name).read_bytes(), content_type)
+                       for name, content_type in (("leaflet.js", "text/javascript"), ("leaflet.css", "text/css"))}
         handler = functools.partial(Handler, directory=str(ROOT))
         cls.server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
         threading.Thread(target=cls.server.serve_forever, daemon=True).start()
@@ -395,7 +393,7 @@ class MarineCastTests(unittest.TestCase):
         page.route("https://**/*", self.mock_provider)
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        self.assertIn("Version 2.6", page.locator("#page-home > p").first.text_content())
+        self.assertIn("Version 2.7", page.locator("#page-home > p").first.text_content())
         page.evaluate("""() => {
             window.openPageFixture = true;
             window.upgradeActivated = false;
@@ -410,8 +408,8 @@ class MarineCastTests(unittest.TestCase):
         }""")
         self.assertTrue(page.evaluate("""async () => {
             for (let i = 0; i < 120; i++) {
-                const response = await caches.match('./index.html?v=27', {cacheName: 'marine-iq-v27'});
-                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.7')) {
+                const response = await caches.match('./index.html?v=28', {cacheName: 'marine-iq-v28'});
+                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.8')) {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -419,13 +417,13 @@ class MarineCastTests(unittest.TestCase):
             return false;
         }"""))
         self.assertTrue(page.evaluate("window.openPageFixture"))
-        self.assertIn("Version 2.6", page.locator("#page-home > p").first.text_content())
-        self.assertTrue(page.goto(self.url + "offline-check").ok)
         self.assertIn("Version 2.7", page.locator("#page-home > p").first.text_content())
+        self.assertTrue(page.goto(self.url + "offline-check").ok)
+        self.assertIn("Version 2.8", page.locator("#page-home > p").first.text_content())
         expect(page.locator("body")).to_have_class("light")
         self.server.stale_navigation = True
         page.goto(self.url)
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.7.0")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.8.0")
 
     def test_manual_update_applies_active_shell_at_permanent_url(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
@@ -443,9 +441,9 @@ class MarineCastTests(unittest.TestCase):
         self.server.legacy_shell = False
         self.server.stale_navigation = True
         page.get_by_role("button", name="Check for Updates").click()
-        expect(page.locator("#updateStatus")).to_contain_text("2.7.0 is ready", timeout=16000)
+        expect(page.locator("#updateStatus")).to_contain_text("2.8.0 is ready", timeout=16000)
         page.get_by_role("button", name="Reload to update").click()
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.7.0")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.8.0")
         expect(page).to_have_url(self.url + "#settings")
         for key, value in saved.items():
             self.assertEqual(page.evaluate("key => localStorage.getItem(key)", key), value)
@@ -546,6 +544,129 @@ class MarineCastTests(unittest.TestCase):
         }""")
         self.assertTrue(retained)
 
+    def open_mpa(self):
+        self.page.goto(self.url + "#mpa")
+        expect(self.page.get_by_role("heading", name="Marine Protected Areas")).to_be_visible()
+        expect(self.page.locator("#mpaStatus")).to_have_text("155 mapped areas from the CDFW snapshot.")
+
+    def test_mpa_official_polygons_search_legend_and_weather_overlay(self):
+        self.open_mpa()
+        expect(self.page.locator("#mpaSourceDate")).to_contain_text("Jan 9, 2024")
+        expect(self.page.locator(".mpa-legend li")).to_have_count(4)
+        self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"))
+        self.assertGreaterEqual(self.page.locator("#mpaLocate").bounding_box()["height"], 44)
+        self.page.wait_for_function("""() => {
+            const canvas = document.querySelector('#mpaMap .leaflet-overlay-pane canvas');
+            return canvas && canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height)
+                .data.some((value,i)=>i%4===3&&value>0);
+        }""")
+        self.page.get_by_role("button", name="San Francisco Bay", exact=True).click()
+        self.page.locator("#mpaQuery").fill("Crown")
+        self.page.locator("#mpaSearchButton").click()
+        self.page.get_by_role("button", name="Robert W. Crown State Marine Conservation Area").click()
+        popup = self.page.locator("#mpaMap .leaflet-popup-content")
+        expect(popup).to_contain_text("finfish by hook and line")
+        expect(popup.get_by_role("link", name="Official area information")).to_have_attribute(
+            "href", re.compile("San-Francisco-Bay"))
+        self.assertFalse(any(host == "photon.komoot.io" for host, _, _ in self.requests))
+        self.page.get_by_role("navigation", name="Main navigation").get_by_role("link", name="Map", exact=True).click()
+        self.page.locator("#weatherMPA").check()
+        expect(self.page.locator("#map .leaflet-overlay-pane path[stroke='#bf293b']").first).to_be_attached()
+        self.page.locator("#weatherMPA").uncheck()
+        expect(self.page.locator("#map .leaflet-overlay-pane path[stroke='#bf293b']")).to_have_count(0)
+
+    def test_mpa_geometry_holes_distance_and_gps_quality(self):
+        self.page.goto(self.url)
+        result = self.page.evaluate("""() => {
+            const closed = pts => [...pts,pts[0]];
+            const exterior = closed([[-122.01,37.8],[-122,37.8],[-122,37.81],[-122.01,37.81]]);
+            const hole = closed([[-122.007,37.803],[-122.003,37.803],[-122.003,37.807],[-122.007,37.807]]);
+            const index = MarineMPA.buildIndex({type:'FeatureCollection',features:[
+                {properties:{OBJECTID:1,Type:'SMR',NAME:'Fixture reserve'},geometry:{type:'Polygon',coordinates:[exterior,hole]}}
+            ]});
+            const point = (x,y,accuracy) => MarineMPA.nearestBoundaries(index,x,y,accuracy).nearby[0];
+            const coords = {latitude:37.8,longitude:-122,accuracy:180};
+            const now = Date.now();
+            return {
+                inside:point(-122.005,37.801,5).relation,
+                hole:point(-122.005,37.805,5).relation,
+                uncertain:point(-122.005,37.7999,20).relation,
+                meters:point(-122.005,37.799,5).distance,
+                poor:MarineMPA.readFix({coords,timestamp:now},now).reliable,
+                stale:MarineMPA.readFix({coords,timestamp:now-31000},now)
+            };
+        }""")
+        self.assertEqual((result["inside"], result["hole"], result["uncertain"]),
+                         ("inside", "outside", "uncertain"))
+        self.assertAlmostEqual(result["meters"], 111.2, places=1)
+        self.assertFalse(result["poor"])
+        self.assertIsNone(result["stale"])
+
+    def test_mpa_gps_warns_after_two_inside_fixes_and_stops_in_background(self):
+        self.page.add_init_script("""(() => {
+            window.gpsCleared = 0;
+            Object.defineProperty(navigator,'geolocation',{configurable:true,value:{
+                watchPosition(success){window.mpaWatch=success;return 7;},
+                clearWatch(){window.gpsCleared++;delete window.mpaWatch;},
+                getCurrentPosition(success){success({
+                    coords:{latitude:38.02,longitude:-122.928,accuracy:180},timestamp:Date.now()-18000
+                });}
+            }});
+        })()""")
+        self.open_mpa()
+        self.page.locator("#mpaAlerts").check()
+        self.page.locator("#mpaLocate").click()
+        expect(self.page.locator("#mpaWarning")).to_contain_text("accuracy is too low")
+        expect(self.page.locator("#mpaPosition")).to_contain_text("GPS accuracy")
+        expect(self.page.locator("#mpaNearby li")).to_have_count(3)
+        expect(self.page.locator("#mpaNearby").first).to_contain_text("to boundary")
+
+        def send(latitude, longitude, accuracy, ago):
+            self.page.evaluate("""args => window.mpaWatch({
+                coords:{latitude:args[0],longitude:args[1],accuracy:args[2]},
+                timestamp:Date.now()-args[3]
+            })""", [latitude, longitude, accuracy, ago])
+
+        # The CDFW snapshot contains this verified point in Point Reyes State Marine Reserve.
+        send(38.03, -122.915, 10, 15000)
+        expect(self.page.locator("#mpaWarning")).to_contain_text("Near a mapped boundary")
+        send(38.03, -122.915, 80, 12000)
+        expect(self.page.locator("#mpaWarning")).to_contain_text("uncertainty could overlap")
+        send(38.02, -123.2, 10, 9000)
+        send(38.02, -122.928, 10, 6000)
+        expect(self.page.locator("#mpaPosition")).to_contain_text("Point Reyes State Marine Reserve")
+        expect(self.page.locator("#mpaWarning")).not_to_contain_text("Possible boundary entry")
+        send(38.02, -122.928, 10, 3000)
+        expect(self.page.locator("#mpaWarning")).to_contain_text("Possible boundary entry")
+        self.page.get_by_role("navigation", name="Main navigation").get_by_role("link", name="Home", exact=True).click()
+        expect(self.page.locator("#mpaAppAlert")).to_contain_text("Possible boundary entry")
+        self.assertTrue(self.page.evaluate("Boolean(window.mpaWatch)"))
+        self.page.evaluate("""() => {
+            Object.defineProperty(document,'hidden',{configurable:true,value:true});
+            document.dispatchEvent(new Event('visibilitychange'));
+        }""")
+        self.page.wait_for_function("window.gpsCleared > 0 && !window.mpaWatch")
+        expect(self.page.locator("#mpaAppAlert")).to_be_hidden()
+
+    def test_mpa_boundaries_and_renderer_open_after_origin_failure(self):
+        context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
+        self.addCleanup(context.close)
+        self.addCleanup(setattr, self.server, "offline_app", False)
+        page = context.new_page()
+        page.route("https://**/*", self.mock_provider)
+        page.goto(self.url)
+        page.wait_for_function("navigator.serviceWorker.controller !== null")
+        self.assertFalse(page.evaluate("""async () => Boolean(
+            await caches.match('./mpa-boundaries.geojson?v=28', {cacheName:'marinecast-mpa-v28'}))"""))
+        page.evaluate("location.hash = 'mpa'")
+        expect(page.locator("#mpaStatus")).to_contain_text("155 mapped areas")
+        self.assertTrue(page.evaluate("""async () => Boolean(
+            await caches.match('./mpa-boundaries.geojson?v=28', {cacheName:'marinecast-mpa-v28'}))"""))
+        self.server.offline_app = True
+        self.assertTrue(page.goto(self.url + "offline-check#mpa").ok)
+        expect(page.locator("#mpaStatus")).to_contain_text("155 mapped areas")
+        expect(page.locator("#mpaMap .leaflet-overlay-pane canvas")).to_be_attached()
+
     def test_service_worker_caches_versioned_shell(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
         self.addCleanup(context.close)
@@ -554,9 +675,9 @@ class MarineCastTests(unittest.TestCase):
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         self.assertTrue(page.evaluate("""async () => {
-            const cache = await caches.open('marine-iq-v27');
-            return Boolean(await cache.match('./marine-motion.js?v=27')) &&
-                Boolean(await cache.match('./marine-tiles.js?v=27'));
+            const cache = await caches.open('marine-iq-v28');
+            return Boolean(await cache.match('./marine-motion.js?v=28')) &&
+                Boolean(await cache.match('./marine-tiles.js?v=28'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
         response = page.goto(self.url + "offline-check")
