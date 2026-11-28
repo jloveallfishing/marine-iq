@@ -29,6 +29,14 @@ select **GitHub Actions** in **Settings → Pages** and set the repository Actio
 variable `MARINECAST_PAGES_MODE` to `actions`. Require both browser status checks
 before merging if repository branch rules are available.
 
+### Automatic app updates
+
+On a secure origin, the app checks for service worker updates at startup, while
+open, and when it comes back to the foreground. A release activates after the
+new shell is cached. Open forms are left intact. The updated interface loads
+on the next navigation or launch. An installed app can still open its cached
+shell when offline.
+
 ### Rollback
 
 Revert the release PR in a new PR and merge it after both browser checks pass.
@@ -44,7 +52,15 @@ the same production URL to preserve storage and installed app identity.
 ### Map data
 
 The wind overlays use [NWS grid forecasts](https://www.weather.gov/documentation/services-web-api).
-NWS makes its API data open and free to use. The map updates its sample area after panning or zooming. The wind flow and speed
+NWS makes its API data open and free to use. The map retains valid overlays while panning and zooming, then checks for
+missing coverage after movement settles. It samples a bounded perimeter around
+the visible map. Forecasts are cached in memory by grid point or station and
+Pacific date, with cached readings for each available time. Wind, wind heatmap,
+and gust layers share the NWS data. Provider rate-limit responses trigger a
+cooldown. Cached wind readings become stale after 10 minutes and are dropped
+after an hour. Cached station predictions become stale after 30 minutes and are
+dropped after 24 hours. A failed refresh also flags retained readings as stale.
+Popups show the original valid time and the fetch time for stale readings. The wind flow and speed
 shading interpolate only within cells where all four surrounding samples have the
 required values for the selected Pacific forecast time. The point labels show
 source samples. Wide views show a limited region around the center, and areas
@@ -58,6 +74,15 @@ The **Animate flow** control pauses wind and current motion. The map respects
 reduced-motion settings and suspends animation when offscreen or in a background
 tab. NOAA current streaks indicate only the supplied direction near the station.
 The nearest-event markers show their prediction time in the station popup.
+
+### Map performance benchmark
+
+Run `python tests/benchmark_map.py` for an iPhone 13 viewport with 180 ms of
+simulated latency per NWS request. To compare against another checkout, set
+`MARINECAST_BENCH_ROOT` to its path. The script reports time to the first marker
+inside the map viewport and the number of provider requests for each movement.
+The fixture maps all NWS sample points to a shared grid response to exercise
+deduplication. Actual timing depends on the device, network, and grid coverage.
 
 ### Model and satellite source investigation
 

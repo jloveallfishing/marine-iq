@@ -3,6 +3,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 import re
+import socket
 from pathlib import Path
 import threading
 import unittest
@@ -14,9 +15,27 @@ from playwright.sync_api import expect, sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 DAY = "2026-07-15"
 STATION = {"id": "TEST", "name": "Test station", "lat": 37.928, "lng": -122.4}
+SLOW_PROVIDER = r"""
+    const originalFetch = window.fetch;
+    window.fetch = async (url, ...options) => {
+        if (window.slowMapProvider !== false &&
+            /api.weather.gov\/(points|gridpoints)\//.test(String(url))) {
+            await new Promise(resolve => setTimeout(resolve, 180));
+        }
+        return originalFetch(url, ...options);
+    };
+"""
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/offline-check":
+            # Simulate a failed origin connection in the worker itself.
+            self.close_connection = True
+            self.connection.shutdown(socket.SHUT_RDWR)
+            return
+        super().do_GET()
+
     def log_message(self, *args):
         pass
 
@@ -42,13 +61,15 @@ class MarineCastTests(unittest.TestCase):
 
     def setUp(self):
         self.context = self.browser.new_context(
-            **self.playwright.devices["iPhone 13"], reduced_motion="reduce"
+            **self.playwright.devices["iPhone 13"], reduced_motion="reduce", service_workers="block"
         )
         self.addCleanup(self.context.close)
         self.page = self.context.new_page()
         self.requests = []
         self.event_only = False
         self.current_bearing = 90
+        self.map_response_status = 200
+        self.rate_limit_points = False
         self.page.route("https://**/*", self.mock_provider)
 
     def mock_provider(self, route):
@@ -64,11 +85,17 @@ class MarineCastTests(unittest.TestCase):
         if host == "tile.openstreetmap.org":
             return route.abort()
         if host == "api.weather.gov" and path.startswith("/points/"):
+            if self.rate_limit_points:
+                return route.fulfill(status=429, headers={
+                    "Retry-After": "120", "Access-Control-Expose-Headers": "Retry-After"
+                }, json={})
             fixture = "test" if re.fullmatch(r"/points/-?\d+\.\d{4},-?\d+\.\d{4}", path) else "trip"
             return route.fulfill(json={"properties": {
                 "forecastGridData": "https://api.weather.gov/gridpoints/" + fixture
             }})
         if host == "api.weather.gov" and path.startswith("/gridpoints/"):
+            if path == "/gridpoints/test" and self.map_response_status != 200:
+                return route.fulfill(status=self.map_response_status, json={})
             def field(unit, first, second):
                 return {"uom": unit, "values": [
                     {"validTime": DAY + "T07:00:00Z/PT1H", "value": first},
@@ -79,7 +106,7 @@ class MarineCastTests(unittest.TestCase):
                 "windDirection": field("wmoUnit:degree_(angle)", 90, None),
                 "windGust": field("wmoUnit:km_h-1", None, 40),
             }})
-        if host == "api.tidesandcurrents.noaa.gov" and params.get("type") == ["currentpredictions"]:
+        if host == "api.tidesandcurrents.noaa.gov" and params.get("type") in (["currentpredictions"], ["tidepredictions"]):
             return route.fulfill(json={"stations": [STATION]})
         if host == "api.tidesandcurrents.noaa.gov" and params.get("product") == ["currents_predictions"]:
             if self.event_only:
@@ -91,6 +118,8 @@ class MarineCastTests(unittest.TestCase):
                 {"Time": DAY + " 07:00:00", "Velocity_Major": 2, "meanFloodDir": self.current_bearing},
                 {"Time": DAY + " 08:00:00", "Velocity_Major": -1, "meanEbbDir": 270},
             ]}})
+        if host == "api.tidesandcurrents.noaa.gov" and params.get("product") == ["predictions"]:
+            return route.fulfill(json={"predictions": [{"t": DAY + " 07:00", "v": "1.4"}]})
         if host == "api.weather.gov" and path == "/alerts/active":
             return route.fulfill(json={"features": []})
         return route.fulfill(status=503, json={})
@@ -102,6 +131,7 @@ class MarineCastTests(unittest.TestCase):
         self.page.evaluate("location.hash = 'locations'")
         expect(self.page.locator("#page-map")).to_be_visible()
         expect(self.page.locator("#marineStatus")).to_contain_text("loaded points")
+        expect(self.page.locator("#marineRefresh")).to_be_enabled()
 
     def set_hour(self, hour):
         self.page.locator("#marineTime").evaluate(
@@ -158,14 +188,131 @@ class MarineCastTests(unittest.TestCase):
         self.assertGreaterEqual(len(initial), 20)
         grids = [path for _, path, _ in self.requests if path == "/gridpoints/test"]
         self.assertEqual(len(grids), 1)
-        self.page.evaluate("map.panTo([34, -119], {animate: false})")
-        self.page.wait_for_function("document.querySelector('#marineStatus').textContent.includes('loaded points')")
+        with self.page.expect_request(re.compile(r"/points/34\.")):
+            self.page.evaluate("map.panTo([34, -119], {animate: false})")
+        expect(self.page.locator("#marineRefresh")).to_be_enabled()
         after_pan = points()
         self.assertTrue(any(path.startswith("/points/34.") for path in after_pan - initial))
         self.page.evaluate("map.setZoom(11, {animate: false})")
-        self.page.wait_for_function("document.querySelector('#marineStatus').textContent.includes('loaded points')")
+        self.page.wait_for_timeout(220)
+        expect(self.page.locator("#marineRefresh")).to_be_enabled()
         self.assertGreater(len(points()), len(after_pan))
-        self.assertLessEqual(len(points() - after_pan), 24)
+        self.assertLessEqual(len(points() - after_pan), 40)
+
+    def test_slow_cached_pan_zoom_and_layer_switch(self):
+        self.page.add_init_script(SLOW_PROVIDER)
+        self.open_map()
+        self.page.locator("#marineLayer").select_option("Wind heatmap")
+        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        before = len(self.requests)
+        retained = self.page.evaluate("""() => {
+            for (const dx of [32, -32, 32, -32]) {
+                map.panBy([dx, 0], {animate: false});
+                if (!document.querySelector('.marine-pin')) return false;
+            }
+            return true;
+        }""")
+        self.assertTrue(retained)
+        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        self.page.wait_for_timeout(260)
+        self.assertFalse(any(path.startswith(("/points/", "/gridpoints/"))
+                             for _, path, _ in self.requests[before:]))
+        self.page.locator("#marineLayer").select_option("Gusts")
+        self.set_hour(1)
+        expect(self.page.locator(".marine-pin").first).to_contain_text("25 mph")
+        self.assertFalse(any(path.startswith(("/points/", "/gridpoints/"))
+                             for _, path, _ in self.requests[before:]))
+        self.page.locator("#marineLayer").select_option("Wind")
+        self.set_hour(0)
+        self.page.emulate_media(reduced_motion="no-preference")
+        self.page.locator("#map").scroll_into_view_if_needed()
+        self.page.wait_for_function(self.canvas_has_color)
+        self.page.evaluate("map.setZoom(10, {animate: false})")
+        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        expect(self.page.locator(".marine-pin").first).to_be_attached()
+
+    def test_slow_new_area_loads_progressively_and_deduplicates(self):
+        self.page.add_init_script(SLOW_PROVIDER)
+        self.open_map()
+        offset = len(self.requests)
+        with self.page.expect_request(re.compile(r"/points/36\.")):
+            self.page.evaluate("""() => {
+                map.panTo([36.7, -122.2], {animate: false});
+                map.panTo([36.6, -122.1], {animate: false});
+                map.panTo([36.5, -122.1], {animate: false});
+            }""")
+        self.page.wait_for_function("""() => {
+            const status = document.querySelector('#marineStatus').textContent;
+            return status.includes('loaded points') && status.includes('Loading additional coverage');
+        }""")
+        self.assertTrue(self.page.locator("#marineRefresh").is_disabled())
+        expect(self.page.locator("#marineRefresh")).to_be_enabled(timeout=10000)
+        requests = [path for _, path, _ in self.requests[offset:] if path.startswith("/points/")]
+        self.assertGreater(len(requests), 3)
+        self.assertEqual(len(requests), len(set(requests)))
+        self.assertTrue(all(float(path.split("/")[-1].split(",")[0]) < 37.5
+                            for path in requests))
+
+    def test_rate_limit_suspends_new_provider_requests(self):
+        self.open_map()
+        self.rate_limit_points = True
+        offset = len(self.requests)
+        with self.page.expect_request(re.compile(r"/points/34\.")):
+            self.page.evaluate("map.panTo([34, -119], {animate: false})")
+        expect(self.page.locator("#marineRefresh")).to_be_enabled()
+        expect(self.page.locator("#marineStatus")).to_contain_text("could not be refreshed")
+        first = [path for _, path, _ in self.requests[offset:] if path.startswith("/points/")]
+        self.assertGreaterEqual(len(first), 1)
+        self.assertLessEqual(len(first), 3)
+        self.page.evaluate("map.panTo([33, -118], {animate: false})")
+        self.page.wait_for_timeout(350)
+        requests = [path for _, path, _ in self.requests[offset:] if path.startswith("/points/")]
+        self.assertEqual(requests, first)
+
+    def test_stale_holdover_and_unavailable_new_hour(self):
+        self.page.add_init_script(SLOW_PROVIDER)
+        self.open_map()
+        self.map_response_status = 503
+        self.page.evaluate("window.originalNow = Date.now; Date.now = () => originalNow() + 11 * 60000")
+        self.page.locator("#marineRefresh").click()
+        expect(self.page.locator(".marine-pin").first).to_contain_text("12 mph")
+        expect(self.page.locator("#marineStatus")).to_contain_text("stale cached")
+        expect(self.page.locator("#marineRefresh")).to_be_enabled(timeout=15000)
+        expect(self.page.locator("#marineStatus")).to_contain_text("could not be refreshed")
+        expect(self.page.locator(".marine-pin-stale").first).to_be_attached()
+        self.set_hour(1)
+        expect(self.page.locator(".marine-pin")).to_have_count(0)
+        expect(self.page.locator("#marineStatus")).to_contain_text("unavailable")
+
+    def test_station_layers_reuse_cache_during_repeated_pans(self):
+        self.open_map()
+        for layer, label, product in (("Tides", "1.4 ft", "predictions"),
+                                      ("Currents", "2.30 mph", "currents_predictions")):
+            self.page.locator("#marineLayer").select_option(layer)
+            expect(self.page.locator(".marine-pin").first).to_contain_text(label)
+            expect(self.page.locator("#marineRefresh")).to_be_enabled()
+            offset = len(self.requests)
+            self.page.evaluate("map.panBy([25, 0], {animate: false}); map.panBy([-25, 0], {animate: false})")
+            expect(self.page.locator(".marine-pin").first).to_contain_text(label)
+            self.page.wait_for_timeout(260)
+            self.assertFalse(any(params.get("product") == [product] for _, _, params in self.requests[offset:]))
+
+    def test_service_worker_caches_versioned_shell(self):
+        context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
+        self.addCleanup(context.close)
+        page = context.new_page()
+        page.route("https://**/*", self.mock_provider)
+        page.goto(self.url)
+        page.wait_for_function("navigator.serviceWorker.controller !== null")
+        self.assertTrue(page.evaluate("""async () => {
+            const cache = await caches.open('marine-iq-v24');
+            return Boolean(await cache.match('./marine-motion.js?v=24'));
+        }"""))
+        page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
+        response = page.goto(self.url + "offline-check")
+        self.assertTrue(response.ok)
+        self.assertTrue(page.evaluate("Boolean(window.MarineMotion)"))
+        expect(page.locator("body")).to_have_class("light")
 
     def test_animation_can_pause_and_respects_reduced_motion(self):
         self.open_map()
@@ -176,9 +323,11 @@ class MarineCastTests(unittest.TestCase):
         self.page.locator("#map").scroll_into_view_if_needed()
         expect(motion).to_be_enabled()
         self.page.wait_for_function(self.canvas_has_color)
-        motion.uncheck()
+        motion.click()
+        expect(motion).to_have_attribute("aria-checked", "false")
         self.page.wait_for_function("() => !(" + self.canvas_has_color + ")()")
-        motion.check()
+        motion.click()
+        expect(motion).to_have_attribute("aria-checked", "true")
         self.page.wait_for_function(self.canvas_has_color)
         self.page.evaluate("location.hash = 'tripsetup'")
         expect(self.page.locator("#page-map")).to_be_hidden()
@@ -193,6 +342,7 @@ class MarineCastTests(unittest.TestCase):
         self.page.wait_for_function(self.canvas_has_color)
         self.current_bearing = None
         self.page.locator("#marineRefresh").click()
+        expect(self.page.locator("#marineRefresh")).to_be_enabled()
         expect(self.page.locator(".marine-pin").first).to_contain_text("2.30 mph")
         expect(self.page.locator(".marine-arrow")).to_have_count(0)
         self.assertFalse(self.page.evaluate(self.canvas_has_color))
@@ -215,7 +365,7 @@ class MarineCastTests(unittest.TestCase):
         pin = self.page.locator(".marine-pin").first
         expect(pin).to_contain_text("Event · 2.30 mph")
         self.set_hour(1)
-        expect(self.page.locator("#marineStatus")).to_contain_text("0 of 1 loaded points")
+        expect(self.page.locator("#marineStatus")).to_contain_text("0 loaded points")
         pin.click()
         expect(self.page.locator(".leaflet-popup-content")).to_contain_text("12:54 AM PT")
 

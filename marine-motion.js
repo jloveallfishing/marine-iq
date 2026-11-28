@@ -20,24 +20,24 @@ window.MarineMotion = (() => {
       const row = ys.findIndex(value => value > y) - 1;
       if (col < 0 || row < 0) return null;
       const corners = [values[row][col], values[row][col + 1], values[row + 1][col], values[row + 1][col + 1]];
-      const weights = [(xs[col + 1] - x) / (xs[col + 1] - xs[col]), (ys[row + 1] - y) / (ys[row + 1] - ys[row])];
-      const blend = items => {
-        const [wx, wy] = weights;
-        return (items[0] * wx + items[1] * (1 - wx)) * wy +
-               (items[2] * wx + items[3] * (1 - wx)) * (1 - wy);
-      };
+      const wx = (xs[col + 1] - x) / (xs[col + 1] - xs[col]);
+      const wy = (ys[row + 1] - y) / (ys[row + 1] - ys[row]);
+      const [a, b, c, d] = corners;
+      const blend = (nw, ne, sw, se) => (nw * wx + ne * (1 - wx)) * wy +
+                                        (sw * wx + se * (1 - wx)) * (1 - wy);
       if (vector) {
-        if (corners.some(corner => !corner?.vector)) return null;
-        return [blend(corners.map(corner => corner.vector[0])), blend(corners.map(corner => corner.vector[1]))];
+        if (!a?.vector || !b?.vector || !c?.vector || !d?.vector) return null;
+        return [blend(a.vector[0], b.vector[0], c.vector[0], d.vector[0]),
+                blend(a.vector[1], b.vector[1], c.vector[1], d.vector[1])];
       }
-      if (corners.some(corner => corner?.speed == null)) return null;
-      return blend(corners.map(corner => corner.speed));
+      if (a?.speed == null || b?.speed == null || c?.speed == null || d?.speed == null) return null;
+      return blend(a.speed, b.speed, c.speed, d.speed);
     };
   }
 
   function create(container) {
     const canvas = document.createElement('canvas');
-    canvas.className = 'marine-flow';
+    canvas.className = 'marine-flow leaflet-zoom-animated';
     canvas.setAttribute('aria-hidden', 'true');
     container.append(canvas);
     const context = canvas.getContext('2d');
@@ -47,12 +47,16 @@ window.MarineMotion = (() => {
       canvas.remove();
       return null;
     }
-    let width = 0, height = 0, scale = 1, frame = null, last = null, heat = false;
-    let particles = [], currents = [], sample = null;
+    let width = 0, height = 0, frame = null, last = null, active = false;
+    let particles = [], currents = [], sample = null, extent = null;
+    let view = {x: 0, y: 0, scale: 1};
 
     function paint() {
       context.clearRect(0, 0, width, height);
-      if (heat) context.drawImage(raster, 0, 0, width, height);
+      if (!extent) return;
+      const {x, y, scale} = view;
+      context.drawImage(raster, (extent.x - x) * scale, (extent.y - y) * scale,
+                        extent.width * scale, extent.height * scale);
     }
 
     function cancel() {
@@ -62,54 +66,57 @@ window.MarineMotion = (() => {
 
     function clear() {
       cancel();
-      heat = false;
+      extent = sample = null;
       particles = [];
       currents = [];
-      sample = null;
       paint();
     }
 
     function spawn(particle) {
-      particle.x = Math.random() * width;
-      particle.y = Math.random() * height;
-      particle.life = 15 + Math.random() * 40;
+      particle.x = view.x + Math.random() * width / view.scale;
+      particle.y = view.y + Math.random() * height / view.scale;
+      particle.life = 15 + Math.random() * 30;
+      particle.trail = [];
     }
 
     function animate(now) {
       frame = requestAnimationFrame(animate);
-      if (last !== null && now - last < 40) return;
+      if (last !== null && now - last < 50) return;
       last = now;
-      context.save();
-      context.globalCompositeOperation = 'destination-in';
-      context.fillStyle = 'rgba(0,0,0,.82)';
-      context.fillRect(0, 0, width, height);
-      context.restore();
+      const {x, y, scale} = view;
+      paint();
       context.beginPath();
       for (const particle of particles) {
-        const { x, y } = particle;
-        const velocity = sample(x, y, true);
-        if (!velocity || particle.life-- <= 0) {
+        const sx = (particle.x - x) * scale, sy = (particle.y - y) * scale;
+        const velocity = sample(particle.x, particle.y, true);
+        if (!velocity || particle.life-- <= 0 || sx < 0 || sx > width || sy < 0 || sy > height) {
           spawn(particle);
           continue;
         }
-        const speed = Math.hypot(...velocity);
+        const speed = Math.hypot(velocity[0], velocity[1]);
         if (speed < .2) continue;
-        const distance = Math.min(speed * .18, 5);
-        const nx = x + velocity[0] / speed * distance, ny = y + velocity[1] / speed * distance;
-        if (nx < 0 || nx >= width || ny < 0 || ny >= height || !sample(nx, ny, true)) {
+        const step = Math.min(speed * .24, 6) / (speed * scale);
+        const nx = particle.x + velocity[0] * step, ny = particle.y + velocity[1] * step;
+        if (!sample(nx, ny, true)) {
           spawn(particle);
           continue;
         }
-        context.moveTo(x, y);
-        context.lineTo(nx, ny);
+        particle.trail.push([particle.x, particle.y]);
+        if (particle.trail.length > 4) particle.trail.shift();
+        const [first, ...rest] = particle.trail;
+        context.moveTo((first[0] - x) * scale, (first[1] - y) * scale);
+        for (const [px, py] of rest) context.lineTo((px - x) * scale, (py - y) * scale);
+        context.lineTo((nx - x) * scale, (ny - y) * scale);
         particle.x = nx;
         particle.y = ny;
       }
       for (const current of currents) {
+        const sx = (current.x - x) * scale, sy = (current.y - y) * scale;
+        if (sx < -32 || sx > width + 32 || sy < -32 || sy > height + 32) continue;
         current.phase = (current.phase + Math.min(.12, .03 + current.speed * .025)) % 1;
         const offset = 8 + current.phase * 15;
-        context.moveTo(current.x + current.dx * offset, current.y + current.dy * offset);
-        context.lineTo(current.x + current.dx * (offset + 7), current.y + current.dy * (offset + 7));
+        context.moveTo(sx + current.dx * offset, sy + current.dy * offset);
+        context.lineTo(sx + current.dx * (offset + 7), sy + current.dy * (offset + 7));
       }
       context.lineWidth = 2.2;
       context.strokeStyle = 'rgba(7,24,40,.83)';
@@ -119,54 +126,64 @@ window.MarineMotion = (() => {
       context.stroke();
     }
 
-    function configure({ sample: nextSample = null, heatmap = false, stations = [] } = {}) {
-      cancel();
-      width = container.clientWidth;
-      height = container.clientHeight;
-      scale = Math.min(window.devicePixelRatio || 1, 1.5);
-      const pixelWidth = Math.ceil(width * scale), pixelHeight = Math.ceil(height * scale);
-      if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
-      if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
-      context.setTransform(scale, 0, 0, scale, 0, 0);
-      context.imageSmoothingEnabled = false;
+    function setView(nextView) {
+      view = nextView;
+      const nextWidth = container.clientWidth, nextHeight = container.clientHeight;
+      if (width !== nextWidth || height !== nextHeight) {
+        width = nextWidth;
+        height = nextHeight;
+        const density = Math.min(window.devicePixelRatio || 1, 1.25);
+        canvas.width = Math.ceil(width * density);
+        canvas.height = Math.ceil(height * density);
+        context.setTransform(density, 0, 0, density, 0, 0);
+        context.imageSmoothingEnabled = false;
+      }
+      if (extent) paint();
+    }
+
+    function configure({ sample: nextSample = null, heatmap = null, wind = false, stations = [] } = {}) {
       sample = nextSample;
-      currents = stations.filter(point => point.x >= 0 && point.x < width && point.y >= 0 && point.y < height);
-      particles = sample && !heatmap
-        ? Array.from({ length: Math.min(160, Math.ceil(width * height / 2100)) }, () => {
-            const particle = {};
-            spawn(particle);
-            return particle;
-          })
-        : [];
-      heat = heatmap && !!sample && width > 0 && height > 0;
-      if (heat) {
-        raster.width = Math.min(128, Math.ceil(width / 4));
-        raster.height = Math.min(128, Math.ceil(height / 4));
+      currents = stations;
+      extent = heatmap;
+      const count = sample && wind ? Math.min(96, Math.ceil(width * height / 2600)) : 0;
+      particles.length = Math.min(particles.length, count);
+      while (particles.length < count) {
+        const particle = {};
+        spawn(particle);
+        particles.push(particle);
+      }
+      if (extent) {
+        raster.width = Math.min(160, Math.max(1, Math.ceil(extent.width * view.scale / 5)));
+        raster.height = Math.min(128, Math.max(1, Math.ceil(extent.height * view.scale / 5)));
         const image = rasterContext.createImageData(raster.width, raster.height);
         for (let y = 0; y < raster.height; y++) {
           for (let x = 0; x < raster.width; x++) {
-            const speed = sample((x + .5) * width / raster.width, (y + .5) * height / raster.height);
-            if (speed === null) continue;
-            image.data.set([...color(speed), 162], (y * raster.width + x) * 4);
+            const speed = sample(extent.x + (x + .5) * extent.width / raster.width,
+                                 extent.y + (y + .5) * extent.height / raster.height);
+            if (speed !== null) image.data.set([...color(speed), 162], (y * raster.width + x) * 4);
           }
         }
         rasterContext.putImageData(image, 0, 0);
+        paint();
+      } else if (!particles.length && !currents.length) {
+        paint();
       }
-      paint();
+      setActive(active);
     }
 
-    function setActive(active) {
-      if (!active) {
+    function setActive(enabled) {
+      active = enabled;
+      if (!active || (!particles.length && !currents.length)) {
         if (frame !== null) {
           cancel();
           paint();
         }
-      } else if (frame === null && (particles.length || currents.length)) {
+      } else if (frame === null && width && height) {
         frame = requestAnimationFrame(animate);
       }
     }
 
-    return { clear, configure, setActive };
+    return { clear, configure, setActive, setView };
   }
 
   return { color, field, create, gradient, stops };
