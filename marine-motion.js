@@ -379,7 +379,7 @@ window.MarineMotion = (() => {
         }
         rasterContext.putImageData(image, 0, 0);
         paintHeat();
-      } else if (extent && !previousExtent) {
+      } else if (Boolean(extent) !== Boolean(previousExtent)) {
         paintHeat();
       }
       setActive(active);

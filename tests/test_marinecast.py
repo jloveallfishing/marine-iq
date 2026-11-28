@@ -793,7 +793,8 @@ class MarineCastTests(unittest.TestCase):
         self.page.wait_for_function(self.heat_has_color)
         self.set_hour(1)
         expect(self.page.locator("#marineStatus")).to_contain_text("Readings unavailable")
-        self.assertFalse(self.page.evaluate(self.heat_has_color))
+        expect(self.page.locator(".marine-heat")).to_have_css("visibility", "hidden")
+        self.page.wait_for_function("()=>!(" + self.heat_has_color + ")()")
 
     def test_close_zoom_renders_supported_static_bearings_without_motion(self):
         page = self.page
