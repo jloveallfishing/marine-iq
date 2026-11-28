@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.0.7';
+  const release = '3.0.8';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -99,9 +99,10 @@ window.MarineRules = (() => {
 
   function photo(asset, name, tip, inline = false) {
     const container = node(inline ? 'span' : 'figure','','rule-photo');
-    const unavailable = node('span',asset?.url ? 'Photo unavailable' :
+    const approved = asset?.url && asset.setting === 'out-of-water';
+    const unavailable = node('span',approved ? 'Photo unavailable' :
       [asset?.label,'Verified photo pending'].filter(Boolean).join(' · '),'rule-photo-missing');
-    if (!asset?.url) {
+    if (!approved) {
       container.append(unavailable);
       if (asset?.guide) container.append(link('ID photos',asset.guide));
       return container;
@@ -479,16 +480,18 @@ window.MarineRules = (() => {
         } else if (!data.salmon.oceanAreas[region]) {
           panel.append(node('p','Choose a California ocean region to display its rules.','warn'));
         } else panel.append(node('p',data.salmon.oceanAreas[region],'muted'));
-        const idNotes = node('p',salmonTab==='ocean'
-          ? 'Check both the lower gum line and tail. Chinook usually have dark gums and spots on both tail lobes. Coho have pale gums and usually have spots on the upper lobe only.'
-          : 'Body color changes in fresh water. Compare the gums and tail marks as well as body color.');
+        const idNotes = [
+          node('p','Chinook (King) · Dark lower gums and usually spots on both tail lobes.'),
+          node('p','Coho (Silver) · Pale lower gums and usually spots on the upper tail lobe only.')
+        ];
+        if (salmonTab==='river') idNotes.push(node('p','Body color changes in fresh water. Check the gums and tail together.'));
         const idLinks = node('ul','','rules-links');
         for (const [label,url] of data.salmon.identificationGuides) {
           const item = node('li');
           item.append(link(label,url));
           idLinks.append(item);
         }
-        panel.append(group('Salmon identification photos and tips',idNotes,idLinks));
+        panel.append(group('Salmon identification photos and tips',...idNotes,idLinks));
         for (const fish of data.species.filter(f=>salmonIds.has(f.id)&&(!favoriteOnly.checked||favorites.has(f.id)))) {
           const reach = data.salmon.rivers[riverReach];
           const inland = salmonTab==='river';
@@ -511,7 +514,7 @@ window.MarineRules = (() => {
       if (pending) return;
       cards.setAttribute('aria-busy', 'true');
       cards.textContent = 'Loading regulations…';
-      pending = fetch('./fishing-rules.json?v=307').then(response => {
+      pending = fetch('./fishing-rules.json?v=308').then(response => {
         if (!response.ok) throw Error('Rules download failed');
         return response.json();
       }).then(snapshot => {

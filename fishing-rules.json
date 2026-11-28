@@ -1,5 +1,5 @@
 {
-  "release": "3.0.7",
+  "release": "3.0.8",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -213,11 +213,13 @@
         "inseason"
       ],
       "image": {
-        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Halibut_300.jpg/330px-Halibut_300.jpg",
-        "alt": "California halibut on the seafloor",
-        "credit": "Photo: Shane Anderson / NOAA",
-        "source": "https://commons.wikimedia.org/wiki/File:Halibut_300.jpg",
-        "reuse": "https://commons.wikimedia.org/wiki/File:Halibut_300.jpg"
+        "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/3_Foot_California_halibut.jpg/330px-3_Foot_California_halibut.jpg",
+        "full": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/3_Foot_California_halibut.jpg/500px-3_Foot_California_halibut.jpg",
+        "alt": "California halibut landed in San Francisco Bay",
+        "source": "https://commons.wikimedia.org/wiki/File:3_Foot_California_halibut.jpg",
+        "reuse": "https://commons.wikimedia.org/wiki/File:3_Foot_California_halibut.jpg",
+        "credit": "Photo: Robert Hsiao",
+        "setting": "out-of-water"
       }
     },
     {
@@ -234,11 +236,13 @@
         "inseason"
       ],
       "image": {
-        "url": "https://www.fisheries.noaa.gov/s3/styles/full_width/s3/dam-migration/900x600-pacific-halibut-noaa.jpg?itok=SZPbjj-p",
-        "alt": "Pacific halibut on the seafloor",
-        "credit": "Photo: NOAA Fisheries",
-        "source": "https://www.fisheries.noaa.gov/species/pacific-halibut",
-        "reuse": "https://www.fisheries.noaa.gov/national/about-us/website-policies-and-disclaimers"
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Pacific_Halibut.JPG/330px-Pacific_Halibut.JPG",
+        "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Pacific_Halibut.JPG/960px-Pacific_Halibut.JPG",
+        "alt": "Pacific halibut taken in Cook Inlet, Alaska",
+        "source": "https://commons.wikimedia.org/wiki/File:Pacific_Halibut.JPG",
+        "reuse": "https://commons.wikimedia.org/wiki/File:Pacific_Halibut.JPG",
+        "credit": "Photo: Jlikes2Fish",
+        "setting": "out-of-water"
       },
       "groups": true
     },
@@ -260,7 +264,8 @@
         "source": "https://www.fws.gov/media/usfws-tagged-striped-bassjpg",
         "reuse": "https://www.fws.gov/media/usfws-tagged-striped-bassjpg",
         "alt": "Striped bass photographed during USFWS tagging fieldwork",
-        "credit": "Photo: USFWS"
+        "credit": "Photo: USFWS",
+        "setting": "out-of-water"
       }
     },
     {
@@ -283,7 +288,8 @@
         "alt": "White sturgeon held by a biologist during fieldwork",
         "credit": "Photo: Justin Dummit / USFWS",
         "source": "https://commons.wikimedia.org/wiki/File:White_sturgeon_%2852085116356%29.png",
-        "reuse": "https://commons.wikimedia.org/wiki/File:White_sturgeon_%2852085116356%29.png"
+        "reuse": "https://commons.wikimedia.org/wiki/File:White_sturgeon_%2852085116356%29.png",
+        "setting": "out-of-water"
       }
     },
     {
@@ -308,17 +314,13 @@
       },
       "groups": true,
       "riverImage": {
-        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Chinook_salmon_%2832849474990%29.jpg/330px-Chinook_salmon_%2832849474990%29.jpg",
-        "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Chinook_salmon_%2832849474990%29.jpg/960px-Chinook_salmon_%2832849474990%29.jpg",
-        "alt": "Male Feather River spring Chinook salmon",
+        "url": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/2021-08/brandon-pasley-with-2019-entiat-national-fish-hatchery-summer-chinook-chris-pasley.jpg?itok=xOxaEJUl",
+        "source": "https://www.fws.gov/media/catching-summer-chinook",
+        "reuse": "https://www.fws.gov/media/catching-summer-chinook",
+        "alt": "Summer Chinook held above the Columbia River near Entiat",
         "label": "River Chinook",
-        "credit": "Photo: California Department of Fish and Wildlife",
-        "source": "https://commons.wikimedia.org/wiki/File:Chinook_salmon_%2832849474990%29.jpg",
-        "reuse": "https://commons.wikimedia.org/wiki/File:Chinook_salmon_%2832849474990%29.jpg",
-        "license": [
-          "CC BY 2.0",
-          "https://creativecommons.org/licenses/by/2.0/"
-        ]
+        "credit": "Photo: Chris Pasley / USFWS",
+        "setting": "out-of-water"
       }
     },
     {
@@ -345,7 +347,8 @@
         "reuse": "https://www.fws.gov/media/jon-rather-coho-eagle-creek-nfh",
         "alt": "Adult Coho held at Eagle Creek National Fish Hatchery",
         "credit": "Photo: Jon Rather / USFWS",
-        "label": "River Coho"
+        "label": "River Coho",
+        "setting": "out-of-water"
       }
     },
     {
@@ -397,11 +400,7 @@
         "inseason"
       ],
       "image": {
-        "url": "https://www.fisheries.noaa.gov/s3/styles/full_width/s3/dam-migration/900x600-lingcod-noaa.jpg?itok=aiw_MWER",
-        "alt": "Lingcod with copper-colored spots",
-        "credit": "Photo: NOAA Fisheries",
-        "source": "https://www.fisheries.noaa.gov/species/lingcod",
-        "reuse": "https://www.fisheries.noaa.gov/national/about-us/website-policies-and-disclaimers"
+        "label": "Lingcod"
       }
     },
     {
@@ -433,15 +432,7 @@
         "inseason"
       ],
       "image": {
-        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Triakis_semifasciata_742030466.jpg/330px-Triakis_semifasciata_742030466.jpg",
-        "alt": "Leopard shark",
-        "credit": "Photo: Henrik Kibak",
-        "source": "https://commons.wikimedia.org/wiki/File:Triakis_semifasciata_742030466.jpg",
-        "reuse": "https://commons.wikimedia.org/wiki/File:Triakis_semifasciata_742030466.jpg",
-        "license": [
-          "CC BY 4.0",
-          "https://creativecommons.org/licenses/by/4.0/"
-        ]
+        "label": "Leopard shark"
       }
     },
     {
@@ -459,15 +450,7 @@
       ],
       "groups": true,
       "image": {
-        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Dungeness_crab_%28Metacarcinus_magister%29.jpg/330px-Dungeness_crab_%28Metacarcinus_magister%29.jpg",
-        "alt": "Dungeness crab",
-        "credit": "Photo: Bildflut",
-        "source": "https://commons.wikimedia.org/wiki/File:Dungeness_crab_%28Metacarcinus_magister%29.jpg",
-        "reuse": "https://commons.wikimedia.org/wiki/File:Dungeness_crab_%28Metacarcinus_magister%29.jpg",
-        "license": [
-          "CC0 1.0",
-          "https://creativecommons.org/publicdomain/zero/1.0/"
-        ]
+        "label": "Dungeness crab"
       }
     },
     {
@@ -489,7 +472,8 @@
         "credit": "Photo: Steve Martarano / USFWS",
         "source": "https://commons.wikimedia.org/wiki/File:Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg",
         "reuse": "https://commons.wikimedia.org/wiki/File:Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg",
-        "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg/960px-Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg"
+        "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg/960px-Sacramento_River_Green_Sturgeon_%2838958059022%29.jpg",
+        "setting": "out-of-water"
       }
     },
     {
@@ -1149,7 +1133,8 @@
             "credit": "Photo: Victor Simon / NOAA Fisheries",
             "source": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus_NOAA.jpg",
             "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_miniatus_NOAA.jpg",
-            "label": "Vermilion rockfish"
+            "label": "Vermilion rockfish",
+            "setting": "out-of-water"
           },
           {
             "label": "Sunset rockfish"
@@ -1170,7 +1155,8 @@
           "license": [
             "CC BY-SA 4.0",
             "https://creativecommons.org/licenses/by-sa/4.0/"
-          ]
+          ],
+          "setting": "out-of-water"
         }
       },
       {
@@ -1184,7 +1170,8 @@
           "alt": "Canary rockfish caught during a NOAA survey",
           "credit": "Photo: David Csepp / NOAA Fisheries",
           "source": "https://commons.wikimedia.org/wiki/File:Sebastes_pinniger.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_pinniger.jpg"
+          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_pinniger.jpg",
+          "setting": "out-of-water"
         }
       },
       {
@@ -1201,7 +1188,8 @@
           "license": [
             "CC BY-SA 4.0",
             "https://creativecommons.org/licenses/by-sa/4.0/"
-          ]
+          ],
+          "setting": "out-of-water"
         }
       },
       {
@@ -1209,16 +1197,7 @@
         "class": "Nearshore",
         "note": "Included in the combined limit; regional closures apply.",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Sebastes_melanops_549696293_%28cropped%29.jpg/330px-Sebastes_melanops_549696293_%28cropped%29.jpg",
-          "alt": "Black rockfish (Sebastes melanops) photographed off California",
-          "credit": "Photo: Tynen Benson (source cropped)",
-          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops_549696293_%28cropped%29.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_melanops_549696293_%28cropped%29.jpg",
-          "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Sebastes_melanops_549696293_%28cropped%29.jpg/960px-Sebastes_melanops_549696293_%28cropped%29.jpg",
-          "license": [
-            "CC BY 4.0",
-            "https://creativecommons.org/licenses/by/4.0/"
-          ]
+          "label": "Black rockfish"
         }
       },
       {
@@ -1226,15 +1205,7 @@
         "class": "Nearshore",
         "note": "Included in the combined limit; regional closures apply.",
         "image": {
-          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Blue_rockfish_%28Sebastes_mystinus%29_CIMNS.jpg/330px-Blue_rockfish_%28Sebastes_mystinus%29_CIMNS.jpg",
-          "alt": "Blue rockfish (Sebastes mystinus) in the Channel Islands National Marine Sanctuary",
-          "credit": "Photo: Claire Fackler / CINMS / NOAA",
-          "source": "https://commons.wikimedia.org/wiki/File:Blue_rockfish_(Sebastes_mystinus)_CIMNS.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Blue_rockfish_(Sebastes_mystinus)_CIMNS.jpg",
-          "license": [
-            "CC BY 2.0",
-            "https://creativecommons.org/licenses/by/2.0/"
-          ]
+          "label": "Blue rockfish"
         }
       },
       {
@@ -1242,11 +1213,17 @@
         "class": "Nearshore group",
         "note": "Included in the combined limit; regional closures apply.",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Scorpaenichthys_marmoratus.jpg/330px-Scorpaenichthys_marmoratus.jpg",
-          "alt": "Cabezon",
-          "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
-          "source": "https://commons.wikimedia.org/wiki/File:Scorpaenichthys_marmoratus.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Scorpaenichthys_marmoratus.jpg"
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Medium_sized_Cabezon_%28Scorpaenichthys_marmoratus%29.jpg/500px-Medium_sized_Cabezon_%28Scorpaenichthys_marmoratus%29.jpg",
+          "full": "https://upload.wikimedia.org/wikipedia/commons/7/79/Medium_sized_Cabezon_%28Scorpaenichthys_marmoratus%29.jpg",
+          "alt": "Cabezon caught near Pedro Point, California",
+          "source": "https://commons.wikimedia.org/wiki/File:Medium_sized_Cabezon_%28Scorpaenichthys_marmoratus%29.jpg",
+          "reuse": "https://commons.wikimedia.org/wiki/File:Medium_sized_Cabezon_%28Scorpaenichthys_marmoratus%29.jpg",
+          "credit": "Photo: Breezygamer117",
+          "license": [
+            "CC BY-SA 4.0",
+            "https://creativecommons.org/licenses/by-sa/4.0/"
+          ],
+          "setting": "out-of-water"
         },
         "favorite": "cabezon"
       },
@@ -1254,28 +1231,11 @@
         "name": "Kelp and rock greenlings",
         "class": "Nearshore group",
         "note": "Included in the combined limit; regional closures apply.",
-        "image": {
-          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Hexagrammos_decagrammus_%28male%29.jpg/330px-Hexagrammos_decagrammus_%28male%29.jpg",
-          "alt": "Male kelp greenling",
-          "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
-          "source": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg"
-        },
         "images": [
           {
-            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Hexagrammos_decagrammus_%28male%29.jpg/330px-Hexagrammos_decagrammus_%28male%29.jpg",
-            "alt": "Male kelp greenling",
-            "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
-            "source": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Hexagrammos_decagrammus_(male).jpg",
             "label": "Kelp greenling"
           },
           {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg/330px-Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg",
-            "alt": "Rock greenling",
-            "credit": "Photo: David Csepp / NOAA Fisheries",
-            "source": "https://commons.wikimedia.org/wiki/File:Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Rock_greenling_%28Hexagrammous_lagocephalus%29_Alaska%2C_2005.jpg",
             "label": "Rock greenling"
           }
         ],
@@ -1290,7 +1250,8 @@
           "alt": "Quillback rockfish (Sebastes maliger) caught in the Gulf of Alaska",
           "credit": "Photo: EDSClikes2hunt",
           "source": "https://commons.wikimedia.org/wiki/File:Quillback_Rockfish.JPG",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Quillback_Rockfish.JPG"
+          "reuse": "https://commons.wikimedia.org/wiki/File:Quillback_Rockfish.JPG",
+          "setting": "out-of-water"
         }
       },
       {
@@ -1299,27 +1260,20 @@
           "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2023-02/yelloweye%20white%20short.jpg?itok=ELIVfxm6",
           "alt": "Yelloweye rockfish",
           "credit": "Photo: Katrina Liebich/USFWS",
-          "source": "https://www.fws.gov/media/yelloweye-rockfishjpg"
+          "source": "https://www.fws.gov/media/yelloweye-rockfishjpg",
+          "setting": "out-of-water"
         }
       },
       {
         "name": "Cowcod",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Sebastes_levis.jpg/330px-Sebastes_levis.jpg",
-          "alt": "Cowcod",
-          "credit": "Photo: Rick Starr / SIMoN / MBNMS",
-          "source": "https://commons.wikimedia.org/wiki/File:Sebastes_levis.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_levis.jpg"
+          "label": "Cowcod"
         }
       },
       {
         "name": "Bronzespotted rockfish",
         "image": {
-          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Sebatses_gilli.jpg/330px-Sebatses_gilli.jpg",
-          "alt": "Bronzespotted rockfish",
-          "credit": "Photo: NOAA NMFS SWFSC ROV Team",
-          "source": "https://commons.wikimedia.org/wiki/File:Sebatses_gilli.jpg",
-          "reuse": "https://commons.wikimedia.org/wiki/File:Sebatses_gilli.jpg"
+          "label": "Bronzespotted rockfish"
         }
       }
     ],
@@ -1650,10 +1604,6 @@
         "Black versus Blue",
         "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=95080&inline="
       ],
-      "deacon": [
-        "Blue versus Deacon · ODFW identification",
-        "https://dfw.state.or.us/mrp/FishID/docs/Rockfish_ID_blk_blu_deacon.pdf"
-      ],
       "tail": [
         "Yellowtail, Olive and Widow",
         "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=213022&inline="
@@ -1670,9 +1620,13 @@
         "California Marine Species Portal",
         "https://marinespecies.wildlife.ca.gov/"
       ],
-      "deacon-paper": [
-        "Species description · Blue and Deacon",
-        "https://spo.nmfs.noaa.gov/sites/default/files/frable_0.pdf"
+      "recfin": [
+        "RecFIN individual specimen photographs",
+        "https://www.recfin.org/resources/fish-id/"
+      ],
+      "cdfw": [
+        "CDFW fish identification guides",
+        "https://wildlife.ca.gov/Fishing/Ocean/Fish-ID/Common"
       ]
     },
     "groups": {
@@ -1695,14 +1649,9 @@
         "Black",
         "Blue"
       ],
-      "deacon": [
-        "Blue",
-        "Deacon"
-      ],
       "tail": [
         "Yellowtail",
-        "Olive",
-        "Widow"
+        "Olive"
       ]
     },
     "species": {
@@ -1728,29 +1677,6 @@
       },
       "Gopher": {
         "tip": "Pink or gray blotches and irregular color along the lateral line.",
-        "images": [
-          {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg/330px-Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
-            "alt": "Gopher rockfish on a reef at Point Lobos",
-            "credit": "Photo: Lt. John Crofts / NOAA Corps",
-            "source": "https://commons.wikimedia.org/wiki/File:Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
-            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg/960px-Fish4001_-_Flickr_-_NOAA_Photo_Library.jpg",
-            "label": "Gopher rockfish",
-            "license": [
-              "CC BY 2.0",
-              "https://creativecommons.org/licenses/by/2.0/"
-            ]
-          },
-          {
-            "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/Sebastes_carnatus_%28juvenile%29.jpg",
-            "alt": "Juvenile gopher rockfish",
-            "credit": "Photo: Steve Lonhart / SIMoN / MBNMS",
-            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_carnatus_%28juvenile%29.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_carnatus_%28juvenile%29.jpg",
-            "label": "Juvenile gopher rockfish"
-          }
-        ],
         "scientific": "Sebastes carnatus"
       },
       "Quillback": {
@@ -1760,34 +1686,10 @@
       },
       "China": {
         "tip": "Broad yellow band along the lateral line.",
-        "images": [
-          {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/China_rockfish.jpg/250px-China_rockfish.jpg",
-            "alt": "China rockfish showing the yellow side band",
-            "credit": "Photo: Gpbodi",
-            "source": "https://commons.wikimedia.org/wiki/File:China_rockfish.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:China_rockfish.jpg",
-            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/China_rockfish.jpg/500px-China_rockfish.jpg"
-          }
-        ],
         "scientific": "Sebastes nebulosus"
       },
       "Black-and-Yellow": {
         "tip": "Scattered yellow blotches. No continuous yellow band.",
-        "images": [
-          {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Black_and_yellow_rockfish_%2816607872560%29.jpg/330px-Black_and_yellow_rockfish_%2816607872560%29.jpg",
-            "alt": "Black-and-yellow rockfish documented by the California Department of Fish and Wildlife",
-            "credit": "Photo: California Department of Fish and Wildlife",
-            "source": "https://commons.wikimedia.org/wiki/File:Black_and_yellow_rockfish_%2816607872560%29.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Black_and_yellow_rockfish_%2816607872560%29.jpg",
-            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Black_and_yellow_rockfish_%2816607872560%29.jpg/960px-Black_and_yellow_rockfish_%2816607872560%29.jpg",
-            "license": [
-              "CC BY 2.0",
-              "https://creativecommons.org/licenses/by/2.0/"
-            ]
-          }
-        ],
         "scientific": "Sebastes chrysomelas"
       },
       "Black": {
@@ -1800,49 +1702,13 @@
         "groundfish": "Blue rockfish",
         "scientific": "Sebastes mystinus"
       },
-      "Deacon": {
-        "tip": "Uniform sides and a lower jaw that projects when closed.",
-        "scientific": "Sebastes diaconus"
-      },
       "Yellowtail": {
-        "tip": "Brown flecks along the sides and a yellow tail.",
-        "images": [
-          {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Sebastes_flavidus_582767978.jpg/330px-Sebastes_flavidus_582767978.jpg",
-            "alt": "Yellowtail rockfish photographed off central California",
-            "credit": "Photo: Matthew Inabinett",
-            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_flavidus_582767978.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_flavidus_582767978.jpg",
-            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Sebastes_flavidus_582767978.jpg/960px-Sebastes_flavidus_582767978.jpg",
-            "license": [
-              "CC BY 4.0",
-              "https://creativecommons.org/licenses/by/4.0/"
-            ]
-          }
-        ],
+        "tip": "Brown flecks, yellow tail and eight soft anal-fin rays.",
         "scientific": "Sebastes flavidus"
       },
       "Olive": {
-        "tip": "Drab olive sides and a thicker tail base than Widow.",
-        "images": [
-          {
-            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Sebastes_serranoides_50393887.jpg/330px-Sebastes_serranoides_50393887.jpg",
-            "alt": "Olive rockfish photographed off central California",
-            "credit": "Photo: Henrik Kibak",
-            "source": "https://commons.wikimedia.org/wiki/File:Sebastes_serranoides_50393887.jpg",
-            "reuse": "https://commons.wikimedia.org/wiki/File:Sebastes_serranoides_50393887.jpg",
-            "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Sebastes_serranoides_50393887.jpg/960px-Sebastes_serranoides_50393887.jpg",
-            "license": [
-              "CC BY 4.0",
-              "https://creativecommons.org/licenses/by/4.0/"
-            ]
-          }
-        ],
+        "tip": "Drab olive sides, a longer body and nine soft anal-fin rays.",
         "scientific": "Sebastes serranoides"
-      },
-      "Widow": {
-        "tip": "Dark fin membranes and a slender tail base.",
-        "scientific": "Sebastes entomelas"
       }
     },
     "labels": {
@@ -1850,8 +1716,7 @@
       "copper": "Copper and lookalikes",
       "dark": "Quillback and lookalikes",
       "black": "Black vs. Blue",
-      "deacon": "Blue vs. Deacon",
-      "tail": "Yellowtail and lookalikes"
+      "tail": "Yellowtail vs. Olive"
     }
   }
 }

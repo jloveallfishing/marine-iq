@@ -95,6 +95,7 @@ class FishingRulesTests(unittest.TestCase):
         allowed_hosts = {"www.fws.gov", "www.fisheries.noaa.gov",
                          "thumb.wikimedia.org", "upload.wikimedia.org", "commons.wikimedia.org"}
         missing = []
+        owners = {}
         for row in rows:
             assets = list(row.get("images", [row.get("image")]))
             if "riverImage" in row:
@@ -105,6 +106,8 @@ class FishingRulesTests(unittest.TestCase):
                     if "url" not in asset:
                         missing.append(asset["label"])
                         continue
+                    self.assertEqual(asset["setting"], "out-of-water")
+                    self.assertEqual(owners.setdefault(asset["url"], row["name"]), row["name"])
                     self.assertTrue(asset["alt"])
                     self.assertTrue(asset["credit"].startswith("Photo: "))
                     for key in ("url", "source", "full", "reuse"):
@@ -116,7 +119,11 @@ class FishingRulesTests(unittest.TestCase):
                         label, url = asset["license"]
                         self.assertTrue(label)
                         self.assertEqual(urlsplit(url).hostname, "creativecommons.org")
-        self.assertCountEqual(missing, ["Ocean-phase Chinook", "Ocean-phase Coho", "Sunset rockfish"])
+        self.assertCountEqual(missing, [
+            "Ocean-phase Chinook", "Ocean-phase Coho", "Sunset rockfish", "Lingcod", "Leopard shark",
+            "Dungeness crab", "Black rockfish", "Blue rockfish", "Cowcod", "Bronzespotted rockfish",
+            "Kelp greenling", "Rock greenling",
+        ])
 
 
     def test_comparison_species_use_distinct_photo_sources(self):
@@ -130,7 +137,10 @@ class FishingRulesTests(unittest.TestCase):
             row = rows[entry["groundfish"]] if "groundfish" in entry else entry
             for image in row.get("images", [row.get("image")]):
                 if image and image.get("url"):
+                    self.assertEqual(image["setting"], "out-of-water")
                     self.assertEqual(owners.setdefault(image["source"], name), name)
         for species in comparisons["groups"].values():
             self.assertTrue(set(species) <= comparisons["species"].keys())
-        self.assertNotIn("images", comparisons["species"]["Deacon"])
+        self.assertNotIn("Deacon", comparisons["species"])
+        self.assertNotIn("Widow", comparisons["species"])
+        self.assertEqual(comparisons["groups"]["tail"], ["Yellowtail", "Olive"])
