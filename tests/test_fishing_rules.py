@@ -47,7 +47,8 @@ class FishingRulesTests(unittest.TestCase):
                     self.assertTrue(img["credit"].startswith("Photo: "))
                     for key in ("url", "source", "reuse"):
                         self.assertIn(urlsplit(img[key]).hostname, {"www.fisheries.noaa.gov", "www.fws.gov", "thumb.wikimedia.org",
-                                                                         "upload.wikimedia.org", "commons.wikimedia.org"})
+                                                                         "upload.wikimedia.org", "commons.wikimedia.org",
+                         "www.inaturalist.org", "creativecommons.org"})
                         self.assertEqual(urlsplit(img[key]).scheme, "https")
                 for entry in entries.get(item["id"], []):
                     self.assertIn(entry["kind"], {"reference", "schedule", "emergency"})
@@ -93,7 +94,8 @@ class FishingRulesTests(unittest.TestCase):
         rows = [item for item in snapshot["species"] if item["id"] not in groundfish["species"]]
         rows += groundfish["limits"] + groundfish["prohibited"]
         allowed_hosts = {"www.fws.gov", "www.fisheries.noaa.gov",
-                         "thumb.wikimedia.org", "upload.wikimedia.org", "commons.wikimedia.org"}
+                         "thumb.wikimedia.org", "upload.wikimedia.org", "commons.wikimedia.org",
+                         "www.inaturalist.org", "creativecommons.org"}
         missing = []
         owners = {}
         for row in rows:
@@ -113,6 +115,10 @@ class FishingRulesTests(unittest.TestCase):
                     for key in ("url", "source", "full", "reuse"):
                         if key in asset:
                             url = urlsplit(asset[key])
+                            if key in ("url", "full") and asset[key].startswith("./assets/rules/"):
+                                self.assertRegex(asset[key], r"^\./assets/rules/[a-z-]+\.jpg$")
+                                self.assertTrue((Path(__file__).resolve().parents[1] / url.path).is_file())
+                                continue
                             self.assertEqual(url.scheme, "https")
                             self.assertIn(url.hostname, allowed_hosts)
                     if "license" in asset:
@@ -121,8 +127,7 @@ class FishingRulesTests(unittest.TestCase):
                         self.assertEqual(urlsplit(url).hostname, "creativecommons.org")
         self.assertCountEqual(missing, [
             "Ocean-phase Chinook", "Ocean-phase Coho", "Sunset rockfish", "Lingcod", "Leopard shark",
-            "Dungeness crab", "Black rockfish", "Blue rockfish", "Cowcod", "Bronzespotted rockfish",
-            "Kelp greenling", "Rock greenling",
+            "Dungeness crab", "Black rockfish", "Cowcod", "Bronzespotted rockfish",
         ])
 
 
