@@ -15,6 +15,9 @@ def run():
     try:
         case.setUp()
         case.page.add_init_script(suite.SLOW_PROVIDER)
+        case.page.goto(case.url)
+        case.page.wait_for_timeout(200)
+        before_map = sum(host == 'tile.openstreetmap.org' for host, _, _ in case.requests)
         case.open_map()
 
         def move(expression):
@@ -57,9 +60,11 @@ def run():
             return result
 
         print(json.dumps({
+            "tile_requests_before_opening_map": before_map,
             "short_pan": move("map.panBy([65, 0], {animate: false})"),
             "return_pan": move("map.panBy([-65, 0], {animate: false})"),
             "new_area": move("map.panTo([36.5, -122.1], {animate: false})"),
+            "close_zoom": move("map.setZoom(15, {animate: false})"),
         }, indent=2))
     finally:
         case.doCleanups()

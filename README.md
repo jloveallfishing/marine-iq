@@ -31,11 +31,20 @@ before merging if repository branch rules are available.
 
 ### Automatic app updates
 
-On a secure origin, the app checks for service worker updates at startup, while
-open, and when it comes back to the foreground. A release activates after the
-new shell is cached. Open forms are left intact. The updated interface loads
-on the next navigation or launch. An installed app can still open its cached
-shell when offline.
+On a secure origin, the app checks at startup, on foreground and reconnect
+events, and periodically while visible. The service worker activates only
+after caching a shell with the matching release version. Open forms are left
+intact. In Settings, **Check for Updates** reports the active version, and
+**Reload to update** loads the verified shell while retaining the existing
+address and saved data. Normal navigation prefers the active shell if the
+same production URL returns older app HTML. Offline launches use the cached
+shell.
+
+An installed app can keep an older page while it remains open. An update
+can also wait for its assets, or an intermediary can still return older
+HTML during a rollout. These are verified browser behaviors and possible
+explanations for the reported iPhone symptom. A physical iPhone run is
+needed to identify the cause on that device.
 
 To verify on an iPhone after publishing, open the existing home-screen icon
 while online and confirm the old version is installed before the rollout. Let
@@ -132,3 +141,28 @@ imagery tiles, credentials, or new hosted services are active in this release.
 The cloud test environment could read the provider documentation but blocked
 direct catalog and tile-service endpoint requests. Version 2.5 adds no
 imagery service, credentials, or ongoing cost.
+
+### Regional data findings for 2.6
+
+- The [NWS grid API](https://www.weather.gov/documentation/services-web-api)
+  remains the production source. It permits commercial reuse and serves
+  browser-friendly point and grid JSON, with coverage gaps offshore and a
+  provider rate limit.
+- [NOAA NBM](https://registry.opendata.aws/noaa-nbm/) offers blended guidance
+  suitable for a shared regional wind field. [NOAA HRRR](https://registry.opendata.aws/noaa-hrrr-pds/)
+  is a short-range, higher-resolution comparison source in its domain. Both
+  publish publicly reusable data. A shared GRIB2 subset and cache would avoid
+  downloading model files per phone or map gesture. Processing, hosting and
+  transfer costs would depend on usage.
+- [NOAA SFBOFS](https://tidesandcurrents.noaa.gov/ofs/sfbofs/sfbofs.html) is a
+  candidate for San Francisco Bay current fields. It publishes short-term
+  modeled guidance through [NOAA data services](https://tidesandcurrents.noaa.gov/ofs/ofs_faq.html).
+  A prototype would need to handle the native mesh and land mask and label
+  model runs and valid times separately from CO-OPS station predictions.
+
+The [OpenStreetMap raster policy](https://operations.osmfoundation.org/policies/tiles/)
+allows normal visible-area requests and HTTP caching. MarineCast defers tiles
+until the map opens and retains already-loaded tiles around the viewport in
+Leaflet. It uses browser HTTP caching and sends the web referrer and attribution.
+Tile prefetch and offline tile downloads are disabled. No new provider or paid
+service is enabled.
