@@ -1,5 +1,5 @@
 window.MarineRules = (() => {
-  const release = '3.1.1';
+  const release = '3.1.2';
   const fields = {
     minimum: 'Minimum size', maximum: 'Maximum size', bag: 'Daily bag limit',
     possession: 'Possession limit', season: 'Season', depth: 'Depth restrictions',
@@ -239,7 +239,7 @@ window.MarineRules = (() => {
 
   let snapshotRequest;
   function loadSnapshot() {
-    snapshotRequest ??= fetch('./fishing-rules.json?v=3110').then(response => {
+    snapshotRequest ??= fetch('./fishing-rules.json?v=3120').then(response => {
       if (!response.ok) throw Error('Rules download failed');
       return response.json();
     }).then(snapshot => {
