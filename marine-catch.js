@@ -75,7 +75,7 @@ window.MarineCatch = (() => {
 
   function install({getLocations, formatDate, today, getLoggedCatches, saveToLog}) {
     const el = id => document.getElementById(id);
-    const panel = el('catch-page');
+    const panel = el('catch-page'), home = el('page-home');
     const setup = el('catch-setup'), location = el('catch-location'), date = el('catch-date');
     const region = el('catch-region'), method = el('catch-method'), select = el('catch-species');
     const details = el('catch-details'), category = el('catch-category');
@@ -213,14 +213,7 @@ window.MarineCatch = (() => {
       return {article,media,retained,released,limit,otherLabel,remove,image:undefined};
     }
 
-    function updateRow(view, row, daily, todayKey, active) {
-      const species = catalog.find(item=>item.id===row.id) || row;
-      const image = species.id==='chinook' && ['inland','delta'].includes(trip.region) ? species.riverImage : species.image;
-      if (view.image !== image) {
-        view.image = image;
-        view.media.replaceChildren(...(image?.url ? [photo(image,row.name,undefined)] : []));
-        view.media.hidden = !image?.url;
-      }
+    function describeLimits(species,row,daily,todayKey) {
       const {status:regStatus,bag,cap,combined} = limits(snapshot,species,trip,todayKey);
       const intake = retainedIn(daily,item=>row.groundfish ? item.groundfish===row.groundfish : item.id===row.id);
       const ambiguous = row.groundfish && row.id!=='unidentified-rockfish' &&
@@ -244,12 +237,48 @@ window.MarineCatch = (() => {
           (combinedCount>combined ? ' · Limit exceeded' : combinedCount===combined ? ' · Limit reached' : ''));
       } else if (!blocked) messages.push('Verified allowance unavailable');
       if (ambiguous && numeric && cap>0 && intake===cap) messages.push('Known catches reach the sublimit');
+      const state = blocked ? 'exceeded' :
+        ambiguous && intake<cap ? 'unknown' : numeric ? limitState(intake,cap) : limitState(combinedCount,combined);
+      return {messages,state,hasOwnWarning:blocked || numeric || !row.groundfish || ambiguous};
+    }
+
+    function renderHome(catches, daily, todayKey, retained, released, combined) {
+      if (home.hidden) return;
+      const homeSummary = el('home-catch-summary'), warnings = el('home-catch-warnings');
+      homeSummary.hidden = !trip;
+      setText(el('home-catch-action'),trip?.state==='active' ? 'Resume Catch Tracker' :
+        trip?.state==='complete' ? 'Review Completed Trip' : 'Start Tracking Catch');
+      if (!trip) return;
+      setText(el('home-catch-totals'),retained+' retained · '+released+' released');
+      const entries = [];
+      if (combined && combined.state!=='below') entries.push(combined);
+      for (const row of catches) {
+        const species = catalog.find(item=>item.id===row.id) || row;
+        const {messages,state,hasOwnWarning} = describeLimits(species,row,daily,todayKey);
+        if (messages.length && state!=='below' && (hasOwnWarning || !combined)) {
+          entries.push({state,text:row.name+' · '+messages.join(' · ')});
+        }
+      }
+      warnings.hidden = !entries.length;
+      warnings.replaceChildren(...entries.map(({state,text})=>{
+        const warning = node('li',text);
+        warning.dataset.state = state;
+        return warning;
+      }));
+    }
+
+    function updateRow(view, row, daily, todayKey, active) {
+      const species = catalog.find(item=>item.id===row.id) || row;
+      const image = species.id==='chinook' && ['inland','delta'].includes(trip.region) ? species.riverImage : species.image;
+      if (view.image !== image) {
+        view.image = image;
+        view.media.replaceChildren(...(image?.url ? [photo(image,row.name,undefined)] : []));
+        view.media.hidden = !image?.url;
+      }
+      const {messages,state} = describeLimits(species,row,daily,todayKey);
       setText(view.limit,messages.join(' · '));
       view.limit.hidden = !messages.length;
-      if (messages.length) {
-        view.limit.dataset.state = blocked ? 'exceeded' :
-          ambiguous && intake<cap ? 'unknown' : numeric ? limitState(intake,cap) : limitState(combinedCount,combined);
-      }
+      if (messages.length) view.limit.dataset.state = state;
       view.retained.update(row.retained,active);
       view.released.update(row.released,active);
       setText(view.otherLabel,'Released · '+row.released);
@@ -298,6 +327,7 @@ window.MarineCatch = (() => {
       setText(totals,retained+' retained · '+released+' released this trip');
       const groundfish = catches.find(row=>row.groundfish);
       combinedNote.hidden = !groundfish;
+      let combinedWarning;
       if (groundfish) {
         const combined = retainedIn(daily,row=>row.groundfish);
         const cap = limits(snapshot,groundfish,trip,todayKey).combined;
@@ -307,7 +337,9 @@ window.MarineCatch = (() => {
           : 'Combined groundfish · '+combined+' retained · Verified allowance unavailable'+
             (!trip.region || !trip.method ? ' · Set waters and method in Trip details' : ''));
         combinedNote.dataset.state = limitState(combined,cap);
+        combinedWarning = {state:combinedNote.dataset.state,text:combinedNote.textContent};
       }
+      renderHome(catches,daily,todayKey,retained,released,combinedWarning);
       for (const [id,view] of rows) {
         if (catches.some(row=>row.id===id)) continue;
         view.article.remove();
@@ -366,7 +398,7 @@ window.MarineCatch = (() => {
     };
 
     async function refresh() {
-      if (panel.hidden) return;
+      if (panel.hidden && (home.hidden || !trip)) return;
       if (!snapshot && !busy) {
         busy = true;
         try {
@@ -382,7 +414,7 @@ window.MarineCatch = (() => {
           busy = false;
         }
       }
-      if (!panel.hidden) render();
+      if (!panel.hidden || !home.hidden) render();
     }
 
     details.addEventListener('toggle',()=>{ if (details.open && !panel.hidden) populateSetup(); });
@@ -394,14 +426,18 @@ window.MarineCatch = (() => {
       populateSetup();
       refresh();
     }).observe(panel,{attributes:true,attributeFilter:['hidden']});
+    new MutationObserver(()=>{
+      if (!home.hidden) { render(); refresh(); }
+    }).observe(home,{attributes:true,attributeFilter:['hidden']});
     window.addEventListener('online',refresh);
     window.addEventListener('storage',event=>{
-      if (event.key==='marinecastFishingLog' && !panel.hidden) render();
+      if (event.key==='marinecastFishingLog' && (!panel.hidden || !home.hidden)) render();
       if (event.key!==storageKey) return;
       try { trip = JSON.parse(event.newValue); stored = event.newValue; } catch { return; }
-      if (!panel.hidden) { populateSetup(); render(); }
+      if (!panel.hidden) populateSetup();
+      if (!panel.hidden || !home.hidden) { render(); refresh(); }
     });
-    setInterval(()=>{ if (!panel.hidden && trip) render(); },60000);
+    setInterval(()=>{ if ((!panel.hidden || !home.hidden) && trip) render(); },60000);
     refresh();
   }
 
