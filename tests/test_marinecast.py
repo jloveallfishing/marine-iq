@@ -988,9 +988,10 @@ class MarineCastTests(unittest.TestCase):
         page.get_by_role("button", name="Start trip").click()
         page.get_by_label("Target species").select_option("white-sturgeon")
         page.get_by_role("button", name="Add species").click()
-        context.set_offline(True)
+        self.addCleanup(setattr, self.server, "offline_app", False)
+        self.server.offline_app = True
         page.get_by_role("button", name="Add retained White sturgeon").click()
-        page.reload(wait_until="domcontentloaded")
+        self.assertTrue(page.goto(self.url + "offline-check#catch", wait_until="domcontentloaded").ok)
         page.get_by_role("button", name="Add retained White sturgeon").click()
         expect(page.get_by_label("White sturgeon retained count")).to_have_text("2")
         page.get_by_role("button", name="Complete trip").click()
@@ -999,7 +1000,7 @@ class MarineCastTests(unittest.TestCase):
         expect(page.get_by_role("status").filter(has_text="Trip saved to your fishing log")).to_be_visible()
         # Reproduce the retry after the log was saved but the draft cleanup did not finish.
         page.evaluate("trip=>localStorage.setItem('marinecastCatchTrip',trip)", receipt)
-        page.reload(wait_until="domcontentloaded")
+        self.assertTrue(page.goto(self.url + "offline-check?retry=1#catch", wait_until="domcontentloaded").ok)
         page.get_by_role("button", name="Save trip to fishing log").click()
         page.goto(self.url+"#log")
         expect(page.locator("#logentries")).to_contain_text("White sturgeon · 2 retained, 0 released")
