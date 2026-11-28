@@ -9,6 +9,10 @@ from urllib.parse import urlsplit
 class FishingRulesTests(unittest.TestCase):
     def test_snapshot_provenance_and_dates(self):
         snapshot = json.loads((Path(__file__).resolve().parents[1] / "fishing-rules.json").read_text())
+        self.assertIn(
+            'name="marinecast-version" content="' + snapshot["release"] + '"',
+            (Path(__file__).resolve().parents[1] / "index.html").read_text(),
+        )
         sources = snapshot["sources"]
         regions = snapshot["regions"]
         species = snapshot["species"]
@@ -31,10 +35,14 @@ class FishingRulesTests(unittest.TestCase):
                 self.assertTrue(entries[item["id"]])
                 if "image" in item:
                     img = item["image"]
-                    self.assertEqual(img["credit"], "Photo: NOAA Fisheries")
+                    self.assertTrue(img["credit"].startswith("Photo: "))
                     for key in ("url", "source", "reuse"):
-                        self.assertEqual(urlsplit(img[key]).hostname, "www.fisheries.noaa.gov")
+                        self.assertIn(urlsplit(img[key]).hostname, {"www.fisheries.noaa.gov", "www.fws.gov"})
+                        self.assertEqual(urlsplit(img[key]).scheme, "https")
                 for entry in entries[item["id"]]:
+                    self.assertIn(entry["kind"], {"reference", "schedule", "emergency"})
+                    if entry["kind"] == "emergency":
+                        self.assertTrue(entry["sources"])
                     self.assertTrue(entry["regions"])
                     self.assertTrue(set(entry["regions"]) <= regions.keys())
                     self.assertTrue(set(entry["sources"]) <= sources.keys())
@@ -43,6 +51,8 @@ class FishingRulesTests(unittest.TestCase):
                     )
                     self.assertLessEqual(start, end)
                     self.assertLessEqual(verified, review)
+                    if entry["kind"] != "reference":
+                        self.assertLessEqual((review - verified).days, 14)
                     if "effective" in entry:
                         self.assertLessEqual(date.fromisoformat(entry["effective"]), start)
                     self.assertTrue(entry["rules"])

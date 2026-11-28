@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.9.1
+
+- Keep verified standing limits available as a dated reference when a trip or review date falls outside the snapshot. Hide expired schedules and emergency orders and retain their official links.
+- Add a Sacramento–San Joaquin Delta region with striped bass, black bass and sturgeon rules. Expand standing Bay and coastal limits, and distinguish northern crab health closures from the published coastal calendar.
+- Add compact species summaries, local species favorites, rules date controls and two public-domain USFWS identification photos.
+- Show ready-to-install updates on every tab. Validate the Rules script and data release before activating the offline shell, and verify both fresh and worker-controlled launches after deployment.
+
 ## 2.9.0
 
 - Add free California fishing regulations search for 11 species and species groups, with selected trip date and location, a manual region selector, and links to official restrictions and emergency notices.
