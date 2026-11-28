@@ -1,9 +1,9 @@
-const RELEASE = '3.0.8';
-const CACHE = 'marine-iq-v308';
-const INDEX = './index.html?v=308';
-const RULES_SCRIPT = './marine-rules.js?v=308';
-const RULES_DATA = './fishing-rules.json?v=308';
-const SHELL = [INDEX, './marine-motion.js?v=302', './marine-tiles.js?v=300', './marine-mpa.js?v=300',
+const RELEASE = '3.0.9';
+const CACHE = 'marine-iq-v309';
+const INDEX = './index.html?v=309';
+const RULES_SCRIPT = './marine-rules.js?v=309';
+const RULES_DATA = './fishing-rules.json?v=309';
+const SHELL = [INDEX, './marine-motion.js?v=309', './marine-tiles.js?v=309', './marine-mpa.js?v=300',
   RULES_SCRIPT, RULES_DATA,
   './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css',
   './vendor/leaflet/images/marker-icon.png', './vendor/leaflet/images/marker-icon-2x.png',
@@ -67,13 +67,10 @@ async function navigate(request, url) {
   if (!response.ok || ![appRoot, appIndex].includes(url.pathname) ||
       !response.headers.get('Content-Type')?.includes('text/html')) return response;
   const html = await response.clone().text();
-  const published = html.match(/name="marinecast-version" content="([\d.]+)"/)?.[1] ||
-                    html.match(/Version (\d+\.\d+) ·/)?.[1];
-  if (!published) return (await fromShell(INDEX)) || response;
-  const wanted = RELEASE.split('.').map(Number), actual = published.split('.').map(Number);
-  const firstDifference = wanted.findIndex((part, i) => part !== (actual[i] || 0));
-  const older = firstDifference >= 0 && (actual[firstDifference] || 0) < wanted[firstDifference];
-  return older ? (await fromShell(INDEX)) || response : response;
+  const published = html.match(/name="marinecast-version" content="([\d.]+)"/)?.[1];
+  // A Pages edge can serve HTML from a release whose assets are still propagating.
+  // Keep navigation on the worker's validated shell until the new worker activates.
+  return published === RELEASE ? response : (await fromShell(INDEX)) || response;
 }
 self.addEventListener('fetch', event => {
   const request = event.request;

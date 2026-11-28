@@ -49,6 +49,14 @@ window.createMarineBasemap = function (L) {
         tile.style.visibility = 'visible';
         tile.append(preview);
       }
+      if (source === 'same zoom') {
+        requestAnimationFrame(() => {
+          tile.style.visibility = '';
+          delete tile.dataset.tilePreview;
+          done(null, tile);
+        });
+        return tile;
+      }
       const image = document.createElement('img');
       image.alt = '';
       image.referrerPolicy = 'strict-origin-when-cross-origin';

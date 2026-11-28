@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.9
+
+- Keep fresh NWS wind cells available across map views, reuse published coverage at close zoom and index cell lookups for continuous wind shading and particle trails.
+- Tap the map for published wind and gust readings in MPH. Show missing fields, unsupported locations and stale cache separately.
+- Restore recently decoded basemap tiles without a duplicate same-zoom request. Keep NOAA station tide and current predictions.
+- Keep installed navigation on a validated shell during Pages propagation and check release metadata in parallel with the worker.
+- Test that fish identification photos remain accessible for prohibited retention. Keep the existing photo assets, credits and regulations.
+
 ## 3.0.8
 
 - Remove underwater and unconfirmed-setting photos from Rules. Require an out-of-water review for every displayed Rules photo.

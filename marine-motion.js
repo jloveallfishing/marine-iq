@@ -103,22 +103,44 @@ window.MarineMotion = (() => {
     return {x,y,width,height,boundary};
   }
 
+  // Published cells are fixed in world coordinates, even when the map moves.
   function cellField(cells) {
-    const sample = (x,y,vector=false) => {
-      for (const {shape,speed,velocity} of cells) {
-        if (vector && velocity === null) continue;
+    const size = 16;
+    const buckets = new Map();
+    for (const cell of cells) {
+      const {x,y,width,height} = cell.shape;
+      for (let row = Math.floor(y/size); row <= Math.floor((y+height)/size); row++) {
+        for (let col = Math.floor(x/size); col <= Math.floor((x+width)/size); col++) {
+          const key = col + ',' + row;
+          if (!buckets.has(key)) buckets.set(key, []);
+          buckets.get(key).push(cell);
+        }
+      }
+    }
+    const lookup = (x,y,accept) => {
+      const bucket = buckets.get(Math.floor(x/size) + ',' + Math.floor(y/size));
+      if (!bucket) return null;
+      for (const cell of bucket) {
+        if (accept && !accept(cell)) continue;
+        const {shape} = cell;
         if (x < shape.x || y < shape.y || x > shape.x+shape.width || y > shape.y+shape.height) continue;
         let inside = false;
         for (let i=1; i<shape.boundary.length; i++) {
           const [ax,ay]=shape.boundary[i-1], [bx,by]=shape.boundary[i];
           if ((ay>y)!==(by>y) && x<(bx-ax)*(y-ay)/(by-ay)+ax) inside=!inside;
         }
-        if (inside) return vector ? velocity : speed;
+        if (inside) return cell;
       }
       return null;
     };
-    sample.heat=cells.map(cell=>cell.shape);
-    sample.flow=cells.filter(cell=>cell.velocity!==null).map(cell=>cell.shape);
+    const directional = cell => cell.velocity !== null;
+    const sample = (x,y,vector=false) => {
+      const cell = lookup(x,y,vector ? directional : null);
+      return (vector ? cell?.velocity : cell?.speed) ?? null;
+    };
+    sample.lookup = lookup;
+    sample.heat = cells.map(cell=>cell.shape);
+    sample.flow = cells.filter(directional).map(cell=>cell.shape);
     return sample;
   }
 
@@ -219,6 +241,10 @@ window.MarineMotion = (() => {
     function cancel() {
       if (frame !== null) cancelAnimationFrame(frame);
       frame = last = null;
+    }
+
+    function resetTrails() {
+      for (const particle of particles) particle.trailCount = 0;
     }
 
     function clear() {
@@ -407,7 +433,7 @@ window.MarineMotion = (() => {
       heatCanvas.style.opacity = String(opacity);
     }
 
-    return { clear, configure, setActive, setView, setOpacity };
+    return { clear, configure, resetTrails, setActive, setView, setOpacity };
   }
 
   return { color, field, publishedCell, cellField, create, gradient, stops };
