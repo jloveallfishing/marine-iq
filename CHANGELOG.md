@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.8
+
+- Remove underwater and unconfirmed-setting photos from Rules. Require an out-of-water review for every displayed Rules photo.
+- Add licensed, out-of-water California halibut, Pacific halibut and Cabezon photos. Use a documented freshwater Chinook field photo and link RecFIN and CDFW identification resources.
+- Remove Blue vs. Deacon and narrow the tail comparison to Yellowtail vs. Olive. Keep Compare Species inside Rockfish and retain the salmon tabs, gum and tail cues, and California rules.
+- Record unresolved commercial reuse permissions and missing specimen photos.
+
 ## 3.0.7
 
 - Enlarge the nested rockfish comparison previews and label species with scientific names.
