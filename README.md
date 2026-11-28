@@ -262,3 +262,6 @@ To publish a snapshot revision, update its release, the page and script version,
 ## Private beta
 
 See the [beta checklist and source audit](docs/PRIVATE-BETA.md) for device tests, the regulatory monitoring process and commercial prerequisites.
+
+
+The groundfish details in 3.0.1 use the November 28, 2026 verification snapshot. Review the CDFW summary, regional advisories and federal sections 660.360 and 660.72 before extending the review date. The regional guide is conditional on the selected method. It never infers a legal boundary from a depth sounder reading or authorizes retention based on a general bag limit. When the date or applicable region cannot be verified, the app withholds current sublimits and season details. Keep photo attribution and the source media record when updating identification assets. The yelloweye is credited to USFWS, and the cropped NOAA Photo Library quillback is served from its public-domain Wikimedia record.

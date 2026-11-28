@@ -1,5 +1,5 @@
 {
-  "release": "3.0.0",
+  "release": "3.0.1",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -126,6 +126,30 @@
     "crabSeason": [
       "CDFW Central Coast · Dungeness season and limits",
       "https://wildlife.ca.gov/Fishing/Ocean/Regulations/Fishing-Map/Central"
+    ],
+    "groundfishBoundaries": [
+      "Federal Rockfish Conservation Area waypoints · 50 CFR § 660.72",
+      "https://www.ecfr.gov/current/title-50/chapter-VI/part-660/subpart-C/section-660.72"
+    ],
+    "rockfishID": [
+      "CDFW yelloweye, vermilion and canary identification guide",
+      "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=138378&inline="
+    ],
+    "copperID": [
+      "CDFW copper, gopher and canary identification guide",
+      "https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=197164&inline="
+    ],
+    "brannan": [
+      "California State Parks · Brannan Island and adjacent waterways",
+      "https://www.parks.ca.gov/?page_id=487"
+    ],
+    "noaaRockfishID": [
+      "NOAA field guide to Pacific rockfishes",
+      "https://apps-afsc.fisheries.noaa.gov/Publications/AFSC-TM/NOAA-TM-AFSC-117.pdf"
+    ],
+    "noaaBocaccioID": [
+      "NOAA Fisheries · Bocaccio identification",
+      "https://www.fisheries.noaa.gov/species/bocaccio"
     ]
   },
   "species": [
@@ -160,7 +184,8 @@
         "credit": "Photo: NOAA Fisheries",
         "source": "https://www.fisheries.noaa.gov/species/pacific-halibut",
         "reuse": "https://www.fisheries.noaa.gov/national/about-us/website-policies-and-disclaimers"
-      }
+      },
+      "groups": true
     },
     {
       "id": "striped-bass",
@@ -194,7 +219,8 @@
         "card",
         "general",
         "inland"
-      ]
+      ],
+      "groups": true
     },
     {
       "id": "chinook",
@@ -216,7 +242,8 @@
         "credit": "Photo: Ryan Hagerty/USFWS",
         "source": "https://www.fws.gov/media/chinook",
         "reuse": "https://www.fws.gov/media/chinook"
-      }
+      },
+      "groups": true
     },
     {
       "id": "rockfish",
@@ -229,14 +256,25 @@
         "yelloweye",
         "quillback",
         "cowcod",
-        "bronzespotted"
+        "bronzespotted",
+        "bocaccio",
+        "black rockfish",
+        "blue rockfish",
+        "greenling",
+        "canary",
+        "copper",
+        "sunset rockfish"
       ],
       "sources": [
         "groundfish",
         "general",
         "federalGroundfish",
-        "inseason"
-      ]
+        "inseason",
+        "groundfishBoundaries",
+        "rockfishID",
+        "copperID"
+      ],
+      "groups": true
     },
     {
       "id": "lingcod",
@@ -272,7 +310,8 @@
         "general",
         "federalGroundfish",
         "inseason"
-      ]
+      ],
+      "groups": true
     },
     {
       "id": "leopard-shark",
@@ -300,7 +339,8 @@
         "crab",
         "whale",
         "inseason"
-      ]
+      ],
+      "groups": true
     },
     {
       "id": "green-sturgeon",
@@ -313,7 +353,8 @@
         "general",
         "sturgeon",
         "inland"
-      ]
+      ],
+      "groups": true
     },
     {
       "id": "black-bass",
@@ -334,6 +375,36 @@
         "source": "https://www.fws.gov/media/adult-largemouth-bass",
         "reuse": "https://www.fws.gov/media/adult-largemouth-bass"
       }
+    },
+    {
+      "id": "greenling",
+      "name": "Kelp and rock greenlings",
+      "scientific": "Hexagrammos spp.",
+      "aliases": [
+        "greenling",
+        "kelp greenling",
+        "rock greenling"
+      ],
+      "sources": [
+        "groundfish",
+        "federalGroundfish",
+        "inseason"
+      ],
+      "groups": true
+    },
+    {
+      "id": "sunfish-crappie",
+      "name": "Sunfish and crappie",
+      "aliases": [
+        "bluegill",
+        "redear",
+        "black crappie",
+        "white crappie"
+      ],
+      "sources": [
+        "freshwater",
+        "brannan"
+      ]
     }
   ],
   "entries": {
@@ -524,14 +595,16 @@
         "reviewBy": "2026-12-31",
         "sources": [
           "freshwater",
-          "possession"
+          "possession",
+          "brannan"
         ],
         "rules": {
           "minimum": "18 inches total length",
           "bag": "2 fish",
           "possession": "2 fish under the ordinary limit",
           "season": "Year-round under § 5.75, subject to local closures.",
-          "special": "Delta gear rules apply under § 2.10(c). Striped bass hybrids count toward the limit."
+          "special": "Delta gear rules apply under § 2.10(c). Striped bass hybrids count toward the limit.",
+          "methods": "In the Delta, § 2.10(c) limits hook gaps to 1 inch for single hooks or ¾ inch for multiple hooks. Check waterbody and species-specific restrictions."
         },
         "kind": "reference",
         "from": "2026-11-28"
@@ -675,34 +748,14 @@
           "south",
           "bay"
         ],
-        "through": "2026-12-05",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
-        "sources": [],
-        "rules": {
-          "season": "Check the current regional table for shore and boat season dates.",
-          "depth": "Check the regional boundary lines, depth restrictions and transit rules.",
-          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits."
-        },
-        "from": "2026-11-28",
-        "kind": "schedule"
-      },
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
         "through": "2026-12-31",
         "verified": "2026-11-28",
         "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "minimum": "No minimum",
-          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table."
+          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table.",
+          "methods": "When angling, one line with no more than two hooks."
         },
         "from": "2026-11-28",
         "kind": "reference"
@@ -838,34 +891,14 @@
           "south",
           "bay"
         ],
-        "through": "2026-12-05",
-        "verified": "2026-11-28",
-        "reviewBy": "2026-12-05",
-        "sources": [],
-        "rules": {
-          "season": "Check the current regional table for shore and boat season dates.",
-          "depth": "Check the regional boundary lines, depth restrictions and transit rules.",
-          "methods": "When angling for or holding regulated groundfish aboard, check the applicable one-line and two-hook limits."
-        },
-        "from": "2026-11-28",
-        "kind": "schedule"
-      },
-      {
-        "regions": [
-          "north",
-          "mendocino",
-          "sf",
-          "central",
-          "south",
-          "bay"
-        ],
         "through": "2026-12-31",
         "verified": "2026-11-28",
         "reviewBy": "2026-12-31",
         "sources": [],
         "rules": {
           "minimum": "No minimum",
-          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table."
+          "possession": "Combined rockfish, cabezon and greenling limit applies, subject to species and area restrictions. See the official table.",
+          "methods": "When angling, one line with no more than two hooks."
         },
         "from": "2026-11-28",
         "kind": "reference"
@@ -956,7 +989,7 @@
         ],
         "rules": {
           "season": "Published 2026–27 calendar: November 7 to July 30 in Del Norte, Humboldt and Mendocino counties, and November 7 to June 30 elsewhere. See the health-closure and gear notices before fishing.",
-          "methods": "In open portions of trap-restricted zones, check the official order for allowable hoop nets, loop traps and hand take."
+          "methods": "In open waters under the recreational trap restriction, use hoop nets, loop traps or hand take. Verify the current order for the exact fishing zone."
         },
         "from": "2026-11-28",
         "kind": "schedule"
@@ -1064,7 +1097,152 @@
         "kind": "reference",
         "from": "2026-11-28"
       }
+    ],
+    "greenling": [
+      {
+        "kind": "reference",
+        "regions": [
+          "north",
+          "mendocino",
+          "sf",
+          "central",
+          "south",
+          "bay"
+        ],
+        "rules": {
+          "minimum": "No minimum in CDFW’s 2026 groundfish summary",
+          "bag": "Counts toward the 10-fish combined rockfish, cabezon and greenling limit",
+          "methods": "When angling, one line with no more than two hooks."
+        },
+        "sources": [
+          "groundfish"
+        ],
+        "from": "2026-11-28",
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31"
+      }
+    ],
+    "sunfish-crappie": [
+      {
+        "kind": "reference",
+        "regions": [
+          "delta"
+        ],
+        "rules": {
+          "minimum": "No minimum size under the Delta baseline",
+          "bag": "25 sunfish and crappie combined",
+          "possession": "25 combined under the ordinary possession rule",
+          "season": "Published year-round baseline, subject to district and waterbody closures (§§ 5.82, 7.40 and 7.50)."
+        },
+        "sources": [
+          "freshwater",
+          "possession"
+        ],
+        "from": "2026-11-28",
+        "through": "2026-12-31",
+        "verified": "2026-11-28",
+        "reviewBy": "2026-12-31"
+      }
     ]
   },
-  "verified": "2026-11-28"
+  "verified": "2026-11-28",
+  "groundfish": {
+    "verified": "2026-11-28",
+    "from": "2026-11-28",
+    "through": "2026-12-31",
+    "reviewBy": "2026-12-05",
+    "regions": [
+      "north",
+      "mendocino",
+      "sf",
+      "central",
+      "south",
+      "bay"
+    ],
+    "species": [
+      "rockfish",
+      "cabezon",
+      "greenling"
+    ],
+    "areas": {
+      "north": "California–Oregon border to Cape Mendocino (40°10′ N)",
+      "mendocino": "Cape Mendocino to Point Arena (38°57.5′ N)",
+      "sf": "Point Arena to Pigeon Point (37°11′ N)",
+      "central": "Pigeon Point to Point Conception (34°27′ N)",
+      "south": "Point Conception to the U.S.–Mexico border"
+    },
+    "limits": [
+      {
+        "name": "Vermilion and sunset rockfish",
+        "class": "Shelf",
+        "north": 4,
+        "other": 2,
+        "note": "Combined across the two species. Compare coloring and anatomy with CDFW’s identification guide."
+      },
+      {
+        "name": "Copper rockfish",
+        "class": "Nearshore",
+        "limit": 1,
+        "note": "Use the copper–gopher–canary comparison guide."
+      },
+      {
+        "name": "Canary rockfish",
+        "class": "Shelf",
+        "limit": 2,
+        "note": "Use the yelloweye–vermilion–canary comparison guide."
+      },
+      {
+        "name": "Bocaccio",
+        "class": "Shelf",
+        "note": "Included in the combined limit. A long jaw extends to or beyond the eye socket; young fish may show small brown spots."
+      },
+      {
+        "name": "Black rockfish",
+        "class": "Nearshore",
+        "note": "Included in the combined limit; regional closures apply."
+      },
+      {
+        "name": "Blue rockfish",
+        "class": "Nearshore",
+        "note": "Included in the combined limit; regional closures apply."
+      },
+      {
+        "name": "Cabezon",
+        "class": "Nearshore group",
+        "note": "Included in the combined limit; regional closures apply."
+      },
+      {
+        "name": "Kelp and rock greenlings",
+        "class": "Nearshore group",
+        "note": "Included in the combined limit; regional closures apply."
+      }
+    ],
+    "prohibited": [
+      {
+        "name": "Quillback rockfish",
+        "image": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Sanc1759_-_Flickr_-_NOAA_Photo_Library_%28cropped%29.jpg/330px-Sanc1759_-_Flickr_-_NOAA_Photo_Library_%28cropped%29.jpg",
+          "alt": "Quillback rockfish at Cordell Bank",
+          "credit": "Photo: NOAA Photo Library (cropped, via Wikimedia Commons)",
+          "source": "https://commons.wikimedia.org/wiki/File:Sanc1759_-_Flickr_-_NOAA_Photo_Library_(cropped).jpg"
+        }
+      },
+      {
+        "name": "Yelloweye rockfish",
+        "image": {
+          "url": "https://www.fws.gov/sites/default/files/styles/max_650x650/public/2023-02/yelloweye%20white%20short.jpg?itok=ELIVfxm6",
+          "alt": "Yelloweye rockfish",
+          "credit": "Photo: Katrina Liebich/USFWS",
+          "source": "https://www.fws.gov/media/yelloweye-rockfishjpg"
+        }
+      },
+      {
+        "name": "Cowcod"
+      },
+      {
+        "name": "Bronzespotted rockfish"
+      }
+    ]
+  }
 }

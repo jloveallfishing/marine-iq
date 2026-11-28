@@ -1,6 +1,6 @@
 /* Regional NWS forecasts are interpolated only inside a cell with four valid corners. */
 window.MarineMotion = (() => {
-  const palette = [[32, 102, 173], [21, 158, 143], [242, 206, 71], [225, 91, 55], [142, 52, 153]];
+  const palette = [[36, 111, 196], [24, 173, 154], [239, 210, 71], [237, 105, 61], [172, 63, 177]];
   const stops = [0, 10, 20, 30, 40];
   const rgb = color => 'rgb(' + color.join(',') + ')';
   const gradient = 'linear-gradient(90deg,' + palette.map(rgb).join(',') + ')';
@@ -88,17 +88,54 @@ window.MarineMotion = (() => {
     heatCanvas.style.visibility = 'hidden';
     container.insertBefore(heatCanvas, canvas);
     const heatContext = heatCanvas.getContext('2d');
+    const bearingCanvas = document.createElement('canvas');
+    bearingCanvas.className = 'marine-bearing leaflet-zoom-animated';
+    bearingCanvas.setAttribute('aria-hidden', 'true');
+    container.insertBefore(bearingCanvas, canvas);
+    const bearingContext = bearingCanvas.getContext('2d');
     const raster = document.createElement('canvas');
     const rasterContext = raster.getContext('2d');
-    if (!context || !rasterContext || !heatContext) {
+    if (!context || !rasterContext || !heatContext || !bearingContext) {
       canvas.remove();
       heatCanvas.remove();
+      bearingCanvas.remove();
       return null;
     }
     let width = 0, height = 0, frame = null, last = null, active = false;
     let flowCells = [], spawnCells = null, rasterKey = '';
     let particles = [], currents = [], sample = null, extent = null;
-    let opacity = .64, cameraAt = 0;
+    let opacity = .64, cameraAt = 0, bearingSample = null, bearingTimer = null;
+    function paintBearings() {
+      bearingContext.clearRect(0, 0, width, height);
+      bearingCanvas.style.visibility = bearingSample ? '' : 'hidden';
+      if (!bearingSample) return;
+      const {x, y, scale} = view;
+      const step = Math.max(37, Math.sqrt(width * height / 90));
+      bearingContext.lineCap = 'round';
+      for (let py = step/2; py < height; py += step) for (let px = step/2; px < width; px += step) {
+        const wx = x + px/scale, wy = y + py/scale;
+        const vector = bearingSample(wx, wy, true), speed = bearingSample(wx, wy, false);
+        if (!vector || speed === null || speed < 1) continue;
+        const direction = Math.atan2(vector[1],vector[0]);
+        const length = Math.min(15, 7+speed*.27);
+        bearingContext.save();
+        bearingContext.translate(px,py);
+        bearingContext.rotate(direction);
+        bearingContext.beginPath();
+        bearingContext.moveTo(-length/2,0);
+        bearingContext.lineTo(length/2,0);
+        bearingContext.lineTo(length/2-4,-3.5);
+        bearingContext.moveTo(length/2,0);
+        bearingContext.lineTo(length/2-4,3.5);
+        bearingContext.lineWidth=4;
+        bearingContext.strokeStyle='#092032';
+        bearingContext.stroke();
+        bearingContext.lineWidth=2.1;
+        bearingContext.strokeStyle=rgb(color(speed));
+        bearingContext.stroke();
+        bearingContext.restore();
+      }
+    }
     let view = {x: 0, y: 0, scale: 1};
 
     function paintHeat() {
@@ -127,7 +164,9 @@ window.MarineMotion = (() => {
 
     function clear() {
       cancel();
-      extent = sample = null;
+      extent = sample = bearingSample = null;
+      clearTimeout(bearingTimer);
+      paintBearings();
       canvas.style.visibility = 'hidden';
       heatCanvas.style.visibility = 'hidden';
       flowCells = [];
@@ -239,12 +278,21 @@ window.MarineMotion = (() => {
         heatCanvas.width = canvas.width;
         heatCanvas.height = canvas.height;
         heatContext.setTransform(density, 0, 0, density, 0, 0);
+        bearingCanvas.width=canvas.width;
+        bearingCanvas.height=canvas.height;
+        bearingContext.setTransform(density,0,0,density,0,0);
       }
       if (extent && (changed || resized)) paintHeat();
+      if (bearingSample && (changed || resized)) {
+        clearTimeout(bearingTimer);
+        bearingTimer=setTimeout(paintBearings,50);
+      }
     }
 
-    function configure({ sample: nextSample = null, heatmap = null, wind = false, stations = [], shapes = [] } = {}) {
+    function configure({ sample: nextSample = null, heatmap = null, bearings = null, wind = false, stations = [], shapes = [] } = {}) {
       sample = nextSample;
+      bearingSample = bearings;
+      paintBearings();
       const phases = new Map(currents.map(station => [station.id, station.phase]));
       currents = stations.map(station => ({ ...station, phase: phases.get(station.id) ?? 0 }));
       const previousExtent = extent;
@@ -253,7 +301,7 @@ window.MarineMotion = (() => {
       heatCanvas.style.visibility = extent ? '' : 'hidden';
       flowCells = shapes;
       spawnCells = null;
-      const count = sample && wind && flowCells.length ? Math.min(72, Math.ceil(width * height / 2800)) : 0;
+      const count = sample && wind && flowCells.length ? Math.min(88, Math.ceil(width * height / 2450)) : 0;
       particles.length = Math.min(particles.length, count);
       while (particles.length < count) {
         const particle = {x: 0, y: 0, life: 0, trail: new Float64Array(12), trailCount: 0, trailNext: 0};
