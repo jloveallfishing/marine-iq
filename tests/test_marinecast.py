@@ -3,6 +3,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 import re
+import socket
 from pathlib import Path
 import threading
 import unittest
@@ -27,6 +28,14 @@ SLOW_PROVIDER = r"""
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/offline-check":
+            # Simulate a failed origin connection in the worker itself.
+            self.close_connection = True
+            self.connection.shutdown(socket.SHUT_RDWR)
+            return
+        super().do_GET()
+
     def log_message(self, *args):
         pass
 
@@ -300,8 +309,8 @@ class MarineCastTests(unittest.TestCase):
             return Boolean(await cache.match('./marine-motion.js?v=24'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
-        context.set_offline(True)
-        page.reload()
+        response = page.goto(self.url + "offline-check")
+        self.assertTrue(response.ok)
         self.assertTrue(page.evaluate("Boolean(window.MarineMotion)"))
         expect(page.locator("body")).to_have_class("light")
 
