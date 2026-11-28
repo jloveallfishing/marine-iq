@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.1.4
+
+- Size the Forecast comparison icons independently from full-width charts and align the text beside the weather icon.
+- Add a Home Catch Tracker card with live trip counts, rule warnings and a shortcut to resume or review the existing trip.
+
 ## 3.1.3
 
 - Keep all supported species visible in the grouped picker and mark species already on the trip.
