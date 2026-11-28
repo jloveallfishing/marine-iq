@@ -37,6 +37,14 @@ new shell is cached. Open forms are left intact. The updated interface loads
 on the next navigation or launch. An installed app can still open its cached
 shell when offline.
 
+To verify on an iPhone after publishing, open the existing home-screen icon
+while online and confirm the old version is installed before the rollout. Let
+the app check for updates, then relaunch it from the same icon. Confirm the
+new version on Home and check a previously saved spot and fishing-log entry.
+For the offline check, disconnect after the update and relaunch once more.
+The automated test covers worker activation and offline navigation in browser
+engines. It does not exercise the iOS home-screen lifecycle.
+
 ### Rollback
 
 Revert the release PR in a new PR and merge it after both browser checks pass.
@@ -70,6 +78,12 @@ supplies station-based tide and current predictions. Official NWS advisories sta
 freely accessible. The existing basemap uses OpenStreetMap with attribution and
 is subject to its [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
 
+Wind, heatmap, and gust labels are spaced by zoom level. The map gives open
+popups and fresh samples priority when labels compete for room. The original
+forecast samples still drive the overlays. The date picker uses the same
+Pacific date as the trip planner. Adjust **Heatmap opacity** to reveal more
+basemap detail. It changes shading only and saves the setting on this device.
+
 The **Animate flow** control pauses wind and current motion. The map respects
 reduced-motion settings and suspends animation when offscreen or in a background
 tab. NOAA current streaks indicate only the supplied direction near the station.
@@ -97,3 +111,24 @@ deduplication. Actual timing depends on the device, network, and grid coverage.
 NOAA’s public model data can be reused commercially. Hosting, processing and
 redistribution costs depend on the implementation and traffic. No model ingest,
 imagery tiles, credentials, or new hosted services are active in this release.
+
+#### Satellite imagery findings for 2.5
+
+- **Copernicus Sentinel-2** is the stronger coastal-detail candidate. The open
+  data can be reused commercially. Sentinel Hub service access has separate
+  quotas. A limited regional mosaic from dated scenes would avoid sending
+  every map gesture to a processing API. Check cloud cover, shoreline detail,
+  and attribution on the chosen product. [Sentinel data terms](https://dataspace.copernicus.eu/terms-and-conditions) ·
+  [Sentinel Hub quotas and access](https://dataspace.copernicus.eu/ecosystem/services/sentinel-hub)
+- **USGS Landsat** provides a public-domain fallback. Source scenes are free
+  through USGS access tools. Commercial cloud access can incur infrastructure
+  charges even though the data are free. [USGS public-domain guidance](https://www.usgs.gov/faqs/are-landsat-data-cloud-still-considered-be-within-public-domain) ·
+  [USGS data access](https://www.usgs.gov/landsat-missions/landsat-data-access)
+- **NASA GIBS** offers Leaflet-compatible Web Mercator tiles for regional
+  context. Select a commercially reusable NASA product, credit GIBS, and limit
+  display to the layer's native resolution. [GIBS attribution](https://nasa-gibs.github.io/gibs-api-docs/) ·
+  [Web Mercator tile documentation](https://nasa-gibs.github.io/gibs-api-docs/map-library-usage/)
+
+The cloud test environment could read the provider documentation but blocked
+direct catalog and tile-service endpoint requests. Version 2.5 adds no
+imagery service, credentials, or ongoing cost.

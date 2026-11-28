@@ -27,6 +27,7 @@ def run():
                 function frame(now) {
                     const bounds = container.getBoundingClientRect();
                     const visible = [...container.querySelectorAll('.marine-pin')].some(pin => {
+                        if (getComputedStyle(pin).visibility === 'hidden') return false;
                         const box = pin.getBoundingClientRect();
                         return box.right > bounds.left && box.left < bounds.right &&
                                box.bottom > bounds.top && box.top < bounds.bottom;

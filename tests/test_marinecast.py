@@ -34,6 +34,19 @@ class Handler(SimpleHTTPRequestHandler):
             self.close_connection = True
             self.connection.shutdown(socket.SHUT_RDWR)
             return
+        if getattr(self.server, "legacy_shell", False) and self.path in ("/", "/index.html?v=24", "/sw.js"):
+            worker = self.path == "/sw.js"
+            file = ROOT / ("sw.js" if worker else "index.html")
+            content = file.read_bytes().replace(b"marine-iq-v25", b"marine-iq-v24").replace(b"index.html?v=25", b"index.html?v=24") if worker else (
+                file.read_bytes().replace(b"Version 2.5", b"Version 2.4")
+            )
+            self.send_response(200)
+            self.send_header("Content-Type", "text/javascript" if worker else "text/html")
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(content)
+            return
         super().do_GET()
 
     def log_message(self, *args):
@@ -297,6 +310,109 @@ class MarineCastTests(unittest.TestCase):
             self.page.wait_for_timeout(260)
             self.assertFalse(any(params.get("product") == [product] for _, _, params in self.requests[offset:]))
 
+    def test_wind_labels_do_not_overlap_at_multiple_zooms(self):
+        self.open_map()
+        measure = """() => {
+            const bounds = document.querySelector('#map').getBoundingClientRect();
+            const boxes = [...document.querySelectorAll('.marine-wind-pin b')]
+                .filter(label => getComputedStyle(label).visibility === 'visible')
+                .map(label => label.getBoundingClientRect())
+                .filter(box => box.right > bounds.left && box.left < bounds.right &&
+                               box.bottom > bounds.top && box.top < bounds.bottom);
+            const overlaps = boxes.some((a, i) => boxes.slice(i + 1).some(b =>
+                a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom));
+            return {count: boxes.length, overlaps,
+                    shown: [...document.querySelectorAll('.marine-wind-pin b')].filter(
+                        label => getComputedStyle(label).visibility === 'visible').length};
+        }"""
+        normal = self.page.evaluate(measure)
+        self.assertGreater(normal["count"], 2)
+        self.assertFalse(normal["overlaps"])
+        self.page.evaluate("map.setZoom(8, {animate: false})")
+        wide = self.page.evaluate(measure)
+        self.assertGreater(wide["count"], 0)
+        self.assertLess(wide["shown"], normal["shown"])
+        self.assertFalse(wide["overlaps"])
+        self.page.evaluate("map.setZoom(10, {animate: false})")
+        self.page.wait_for_timeout(300)
+        expect(self.page.locator("#marineRefresh")).to_be_enabled()
+        self.assertFalse(self.page.evaluate(measure)["overlaps"])
+
+    def test_heatmap_opacity_is_local_and_persists(self):
+        self.open_map()
+        self.page.locator("#marineLayer").select_option("Wind heatmap")
+        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        offset = len(self.requests)
+        self.page.locator("#marineOpacity").evaluate("""input => {
+            input.value = 0;
+            input.dispatchEvent(new Event('input'));
+            input.dispatchEvent(new Event('change'));
+        }""")
+        expect(self.page.locator("#marineOpacityValue")).to_have_text("0%")
+        expect(self.page.locator(".marine-flow")).to_have_css("opacity", "0")
+        self.page.locator("#marineLayer").select_option("Wind")
+        expect(self.page.locator(".marine-flow")).to_have_css("opacity", "1")
+        self.assertFalse(any(path.startswith(("/points/", "/gridpoints/"))
+                             for _, path, _ in self.requests[offset:]))
+        self.page.reload()
+        self.page.locator("#marineLayer").select_option("Wind heatmap")
+        expect(self.page.locator("#marineOpacity")).to_have_value("0")
+
+    def test_map_date_shares_trip_date_and_invalidates_old_readings(self):
+        self.open_map()
+        picker = self.page.get_by_role("combobox", name="Date (PT)", exact=True)
+        expect(picker).to_have_value(DAY)
+        valid_day = self.page.locator("#day").get_attribute("min")
+        picker.select_option(valid_day)
+        expect(self.page.locator("#day")).to_have_value(valid_day)
+        expect(self.page.locator(".marine-pin")).to_have_count(0)
+        expect(self.page.locator("#marineStatus")).to_contain_text("unavailable")
+        self.page.evaluate("""day => {
+            const input = document.querySelector('#day');
+            input.value = day;
+            input.dispatchEvent(new Event('change', {bubbles:true}));
+        }""", DAY)
+        expect(picker).to_have_value(DAY)
+        expect(self.page.locator(".marine-pin").first).to_contain_text("12 mph")
+
+    def test_foreground_service_worker_upgrade_preserves_open_page_and_storage(self):
+        context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
+        self.addCleanup(context.close)
+        self.server.legacy_shell = True
+        self.addCleanup(setattr, self.server, "legacy_shell", False)
+        page = context.new_page()
+        page.route("https://**/*", self.mock_provider)
+        page.goto(self.url)
+        page.wait_for_function("navigator.serviceWorker.controller !== null")
+        self.assertIn("Version 2.4", page.locator("#page-home > p").first.text_content())
+        page.evaluate("""() => {
+            window.openPageFixture = true;
+            window.upgradeActivated = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => { window.upgradeActivated = true; });
+            localStorage.setItem('marinecastAppearance', 'light');
+        }""")
+        self.server.legacy_shell = False
+        page.evaluate("""() => {
+            const now = Date.now.bind(Date);
+            Date.now = () => now() + 6 * 60000;
+            document.dispatchEvent(new Event('visibilitychange'));
+        }""")
+        self.assertTrue(page.evaluate("""async () => {
+            for (let i = 0; i < 120; i++) {
+                const response = await caches.match('./index.html?v=25', {cacheName: 'marine-iq-v25'});
+                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.5')) {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            return false;
+        }"""))
+        self.assertTrue(page.evaluate("window.openPageFixture"))
+        self.assertIn("Version 2.4", page.locator("#page-home > p").first.text_content())
+        self.assertTrue(page.goto(self.url + "offline-check").ok)
+        self.assertIn("Version 2.5", page.locator("#page-home > p").first.text_content())
+        expect(page.locator("body")).to_have_class("light")
+
     def test_service_worker_caches_versioned_shell(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
         self.addCleanup(context.close)
@@ -305,8 +421,8 @@ class MarineCastTests(unittest.TestCase):
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         self.assertTrue(page.evaluate("""async () => {
-            const cache = await caches.open('marine-iq-v24');
-            return Boolean(await cache.match('./marine-motion.js?v=24'));
+            const cache = await caches.open('marine-iq-v25');
+            return Boolean(await cache.match('./marine-motion.js?v=25'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
         response = page.goto(self.url + "offline-check")
@@ -325,13 +441,13 @@ class MarineCastTests(unittest.TestCase):
         self.page.wait_for_function(self.canvas_has_color)
         motion.click()
         expect(motion).to_have_attribute("aria-checked", "false")
-        self.page.wait_for_function("() => !(" + self.canvas_has_color + ")()")
+        expect(self.page.locator(".marine-flow")).to_have_css("visibility", "hidden")
         motion.click()
         expect(motion).to_have_attribute("aria-checked", "true")
         self.page.wait_for_function(self.canvas_has_color)
         self.page.evaluate("location.hash = 'tripsetup'")
         expect(self.page.locator("#page-map")).to_be_hidden()
-        self.page.wait_for_function("() => !(" + self.canvas_has_color + ")()")
+        expect(self.page.locator(".marine-flow")).to_have_css("visibility", "hidden")
 
     def test_directional_current_animation_requires_a_bearing(self):
         self.open_map()
