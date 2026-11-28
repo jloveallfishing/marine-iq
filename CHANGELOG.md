@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.6.0
+
+- Defer basemap tile requests until the map opens and retain nearby loaded tiles through movement and zoom transitions.
+- Reuse in-flight provider calls and size forecast coverage against the viewport, with a minimum sample spacing at close zooms.
+- Smooth and clip heatmap shading to supported cells, and improve wind trails and directional current streaks while retaining motion controls and label spacing.
+- Give each forecast graph one selected Pacific time, aligned color-matched values, and independent midnight-to-midnight controls. Plot the next midnight when a source supplies a reading.
+- Add Check for Updates and an opt-in reload, keep the permanent URL, and verify version consistency before activating the offline shell.
+- Document regional forecast sources and browser update verification. Existing fishing data, preferences, branding, and free advisories carry forward.
+
 ## 2.5.0
 
 - Space wind and gust markers by zoom level to prevent overlapping speed labels.

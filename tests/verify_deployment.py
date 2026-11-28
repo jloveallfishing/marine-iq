@@ -9,9 +9,9 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     ("index.html", ""),
-    ("index.html", "index.html?v=25"),
+    ("index.html", "index.html?v=26"),
     ("sw.js", "sw.js"),
-    ("marine-motion.js", "marine-motion.js?v=25"),
+    ("marine-motion.js", "marine-motion.js?v=26"),
     ("manifest.webmanifest", "manifest.webmanifest"),
     ("icon-192.png", "icon-192.png"),
     ("icon-512.png", "icon-512.png"),

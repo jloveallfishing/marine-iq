@@ -34,12 +34,14 @@ class Handler(SimpleHTTPRequestHandler):
             self.close_connection = True
             self.connection.shutdown(socket.SHUT_RDWR)
             return
-        if getattr(self.server, "legacy_shell", False) and self.path in ("/", "/index.html?v=24", "/sw.js"):
+        legacy = getattr(self.server, "legacy_shell", False)
+        stale_navigation = getattr(self.server, "stale_navigation", False)
+        if (legacy and self.path in ("/", "/index.html?v=25", "/sw.js")) or (stale_navigation and self.path == "/"):
             worker = self.path == "/sw.js"
             file = ROOT / ("sw.js" if worker else "index.html")
-            content = file.read_bytes().replace(b"marine-iq-v25", b"marine-iq-v24").replace(b"index.html?v=25", b"index.html?v=24") if worker else (
-                file.read_bytes().replace(b"Version 2.5", b"Version 2.4")
-            )
+            content = (file.read_bytes().replace(b"Version 2.6", b"Version 2.5")
+                       .replace(b"2.6.0", b"2.5.0").replace(b"marine-iq-v26", b"marine-iq-v25")
+                       .replace(b"index.html?v=26", b"index.html?v=25"))
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript" if worker else "text/html")
             self.send_header("Content-Length", str(len(content)))
@@ -83,6 +85,7 @@ class MarineCastTests(unittest.TestCase):
         self.current_bearing = 90
         self.map_response_status = 200
         self.rate_limit_points = False
+        self.show_tiles = False
         self.page.route("https://**/*", self.mock_provider)
 
     def mock_provider(self, route):
@@ -96,6 +99,9 @@ class MarineCastTests(unittest.TestCase):
                 return route.fulfill(body=asset[0], content_type=asset[1], headers={"Access-Control-Allow-Origin": "*"})
             return route.abort()
         if host == "tile.openstreetmap.org":
+            if self.show_tiles:
+                return route.fulfill(body=(ROOT / "icon-192.png").read_bytes(), content_type="image/png",
+                                     headers={"Cache-Control": "public, max-age=604800"})
             return route.abort()
         if host == "api.weather.gov" and path.startswith("/points/"):
             if self.rate_limit_points:
@@ -113,6 +119,7 @@ class MarineCastTests(unittest.TestCase):
                 return {"uom": unit, "values": [
                     {"validTime": DAY + "T07:00:00Z/PT1H", "value": first},
                     {"validTime": DAY + "T08:00:00Z/PT1H", "value": second},
+                    {"validTime": "2026-07-16T07:00:00Z/PT1H", "value": first},
                 ]}
             return route.fulfill(json={"properties": {
                 "windSpeed": field("wmoUnit:km_h-1", 20, None),
@@ -380,11 +387,12 @@ class MarineCastTests(unittest.TestCase):
         self.addCleanup(context.close)
         self.server.legacy_shell = True
         self.addCleanup(setattr, self.server, "legacy_shell", False)
+        self.addCleanup(setattr, self.server, "stale_navigation", False)
         page = context.new_page()
         page.route("https://**/*", self.mock_provider)
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        self.assertIn("Version 2.4", page.locator("#page-home > p").first.text_content())
+        self.assertIn("Version 2.5", page.locator("#page-home > p").first.text_content())
         page.evaluate("""() => {
             window.openPageFixture = true;
             window.upgradeActivated = false;
@@ -399,8 +407,8 @@ class MarineCastTests(unittest.TestCase):
         }""")
         self.assertTrue(page.evaluate("""async () => {
             for (let i = 0; i < 120; i++) {
-                const response = await caches.match('./index.html?v=25', {cacheName: 'marine-iq-v25'});
-                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.5')) {
+                const response = await caches.match('./index.html?v=26', {cacheName: 'marine-iq-v26'});
+                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.6')) {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -408,10 +416,80 @@ class MarineCastTests(unittest.TestCase):
             return false;
         }"""))
         self.assertTrue(page.evaluate("window.openPageFixture"))
-        self.assertIn("Version 2.4", page.locator("#page-home > p").first.text_content())
-        self.assertTrue(page.goto(self.url + "offline-check").ok)
         self.assertIn("Version 2.5", page.locator("#page-home > p").first.text_content())
+        self.assertTrue(page.goto(self.url + "offline-check").ok)
+        self.assertIn("Version 2.6", page.locator("#page-home > p").first.text_content())
         expect(page.locator("body")).to_have_class("light")
+        self.server.stale_navigation = True
+        page.goto(self.url)
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.6.0")
+
+    def test_manual_update_applies_active_shell_at_permanent_url(self):
+        context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
+        self.addCleanup(context.close)
+        self.server.legacy_shell = True
+        self.addCleanup(setattr, self.server, "legacy_shell", False)
+        self.addCleanup(setattr, self.server, "stale_navigation", False)
+        page = context.new_page()
+        page.route("https://**/*", self.mock_provider)
+        page.goto(self.url + "#settings")
+        page.wait_for_function("navigator.serviceWorker.controller !== null")
+        saved = {"marinecastFishingLog": "[]", "marineIQfavorites": "[1]",
+                 "marinecastCustomSpots": '[["Test Harbor",37.9,-122.4,""]]', "marinecastAppearance": "light"}
+        page.evaluate("saved => Object.entries(saved).forEach(([k,v]) => localStorage.setItem(k,v))", saved)
+        self.server.legacy_shell = False
+        self.server.stale_navigation = True
+        page.get_by_role("button", name="Check for Updates").click()
+        expect(page.locator("#updateStatus")).to_contain_text("2.6.0 is ready", timeout=16000)
+        page.get_by_role("button", name="Reload to update").click()
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.6.0")
+        expect(page).to_have_url(self.url + "#settings")
+        for key, value in saved.items():
+            self.assertEqual(page.evaluate("key => localStorage.getItem(key)", key), value)
+        page.get_by_role("button", name="Check for Updates").click()
+        expect(page.locator("#updateStatus")).to_contain_text("up to date", timeout=16000)
+
+    def test_forecast_readouts_align_color_and_keep_independent_midnight_sliders(self):
+        self.open_map()
+        self.page.evaluate("location.hash='timeline'")
+        wind = self.page.locator('#combined .chartwrap[data-dual="true"]')
+        slider = wind.locator("input")
+        expect(slider).to_have_attribute("max", "1440")
+        slider.evaluate("""input => {
+            input.value = '0';
+            input.dispatchEvent(new Event('input', {bubbles: true}));
+        }""")
+        expect(wind.locator(".chart-selected-time")).to_have_text("12:00 AM PT")
+        expect(wind.locator(".chart-reading").nth(0)).to_have_text("Wind12 mph")
+        expect(wind.locator(".chart-reading").nth(1)).to_have_text("GustUnavailable")
+        expect(wind.locator("strong").first).to_have_css("text-align", "right")
+        slider.evaluate("""input => {
+            input.value = '1440';
+            input.dispatchEvent(new Event('input', {bubbles: true}));
+        }""")
+        expect(wind.locator(".chart-selected-time")).to_have_text("12:00 AM (next day) PT")
+        expect(wind.locator("strong").first).to_have_text("12 mph")
+        other = self.page.locator("#combined .chartslider").nth(1)
+        expect(other).not_to_have_value("1440")
+        for theme in ("dark", "light"):
+            self.page.evaluate("theme => document.body.classList.toggle('light', theme === 'light')", theme)
+            self.assertTrue(wind.evaluate("""chart => {
+                const reading = chart.querySelector('.chart-reading');
+                const sample = chart.querySelector('circle[fill="var(--chart-primary)"]');
+                return getComputedStyle(reading).color === getComputedStyle(sample).fill;
+            }"""))
+
+    def test_tiles_start_only_when_map_opens_and_keep_visible_at_zoom_start(self):
+        self.show_tiles = True
+        self.page.goto(self.url)
+        self.assertFalse(any(host == "tile.openstreetmap.org" for host, _, _ in self.requests))
+        self.page.evaluate("location.hash='locations'")
+        expect(self.page.locator(".leaflet-tile-loaded").first).to_be_attached()
+        retained = self.page.evaluate("""() => {
+            map.setZoom(10);
+            return Boolean(document.querySelector('.leaflet-tile-loaded'));
+        }""")
+        self.assertTrue(retained)
 
     def test_service_worker_caches_versioned_shell(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
@@ -421,8 +499,8 @@ class MarineCastTests(unittest.TestCase):
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         self.assertTrue(page.evaluate("""async () => {
-            const cache = await caches.open('marine-iq-v25');
-            return Boolean(await cache.match('./marine-motion.js?v=25'));
+            const cache = await caches.open('marine-iq-v26');
+            return Boolean(await cache.match('./marine-motion.js?v=26'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
         response = page.goto(self.url + "offline-check")

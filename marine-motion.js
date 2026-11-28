@@ -1,6 +1,6 @@
 /* Regional NWS forecasts are interpolated only inside a cell with four valid corners. */
 window.MarineMotion = (() => {
-  const palette = [[23, 105, 160], [37, 169, 144], [247, 201, 70], [228, 92, 50], [114, 37, 134]];
+  const palette = [[32, 102, 173], [21, 158, 143], [242, 206, 71], [225, 91, 55], [142, 52, 153]];
   const stops = [0, 10, 20, 30, 40];
   const rgb = color => 'rgb(' + color.join(',') + ')';
   const gradient = 'linear-gradient(90deg,' + palette.map(rgb).join(',') + ')';
@@ -49,15 +49,23 @@ window.MarineMotion = (() => {
     }
     let width = 0, height = 0, frame = null, last = null, active = false;
     let particles = [], currents = [], sample = null, extent = null;
-    let opacity = .64;
+    let opacity = .64, cameraAt = 0;
     let view = {x: 0, y: 0, scale: 1};
 
     function paint() {
       context.clearRect(0, 0, width, height);
       if (!extent) return;
       const {x, y, scale} = view;
+      context.save();
+      context.beginPath();
+      for (const cell of extent.cells) {
+        context.rect((cell.x - x) * scale, (cell.y - y) * scale, cell.width * scale, cell.height * scale);
+      }
+      context.clip();
+      context.imageSmoothingEnabled = true;
       context.drawImage(raster, (extent.x - x) * scale, (extent.y - y) * scale,
                         extent.width * scale, extent.height * scale);
+      context.restore();
     }
 
     function cancel() {
@@ -84,7 +92,8 @@ window.MarineMotion = (() => {
 
     function animate(now) {
       frame = requestAnimationFrame(animate);
-      if (last !== null && now - last < 50) return;
+      if (last !== null && now - last < (now - cameraAt < 120 ? 49 : 32)) return;
+      const elapsed = last === null ? 1 : Math.min(1.5, (now - last) / 40);
       last = now;
       const {x, y, scale} = view;
       paint();
@@ -98,7 +107,7 @@ window.MarineMotion = (() => {
         }
         const speed = Math.hypot(velocity[0], velocity[1]);
         if (speed < .2) continue;
-        const step = Math.min(Math.max(speed * .28, .8), 7) / (speed * scale);
+        const step = elapsed * Math.min(Math.max(speed * .28, .8), 7) / (speed * scale);
         const nx = particle.x + velocity[0] * step, ny = particle.y + velocity[1] * step;
         if (!sample(nx, ny, true)) {
           spawn(particle);
@@ -106,9 +115,11 @@ window.MarineMotion = (() => {
         }
         particle.trail.push([particle.x, particle.y]);
         if (particle.trail.length > 6) particle.trail.shift();
-        const [first, ...rest] = particle.trail;
-        context.moveTo((first[0] - x) * scale, (first[1] - y) * scale);
-        for (const [px, py] of rest) context.lineTo((px - x) * scale, (py - y) * scale);
+        const trail = particle.trail;
+        context.moveTo((trail[0][0] - x) * scale, (trail[0][1] - y) * scale);
+        for (let i = 1; i < trail.length; i++) {
+          context.lineTo((trail[i][0] - x) * scale, (trail[i][1] - y) * scale);
+        }
         context.lineTo((nx - x) * scale, (ny - y) * scale);
         particle.x = nx;
         particle.y = ny;
@@ -116,10 +127,12 @@ window.MarineMotion = (() => {
       for (const current of currents) {
         const sx = (current.x - x) * scale, sy = (current.y - y) * scale;
         if (sx < -32 || sx > width + 32 || sy < -32 || sy > height + 32) continue;
-        current.phase = (current.phase + Math.min(.12, .03 + current.speed * .025)) % 1;
-        const offset = 8 + current.phase * 15;
-        context.moveTo(sx + current.dx * offset, sy + current.dy * offset);
-        context.lineTo(sx + current.dx * (offset + 7), sy + current.dy * (offset + 7));
+        current.phase = (current.phase + elapsed * Math.min(.12, .03 + current.speed * .025)) % 1;
+        for (const phase of [current.phase, (current.phase + .5) % 1]) {
+          const offset = 9 + phase * 24, length = 3 + 7 * Math.sin(Math.PI * phase);
+          context.moveTo(sx + current.dx * offset, sy + current.dy * offset);
+          context.lineTo(sx + current.dx * (offset + length), sy + current.dy * (offset + length));
+        }
       }
       context.lineCap = 'round';
       context.lineJoin = 'round';
@@ -132,6 +145,7 @@ window.MarineMotion = (() => {
     }
 
     function setView(nextView) {
+      if (nextView.x !== view.x || nextView.y !== view.y || nextView.scale !== view.scale) cameraAt = performance.now();
       view = nextView;
       const nextWidth = container.clientWidth, nextHeight = container.clientHeight;
       if (width !== nextWidth || height !== nextHeight) {
@@ -148,7 +162,8 @@ window.MarineMotion = (() => {
 
     function configure({ sample: nextSample = null, heatmap = null, wind = false, stations = [] } = {}) {
       sample = nextSample;
-      currents = stations;
+      const phases = new Map(currents.map(station => [station.id, station.phase]));
+      currents = stations.map(station => ({ ...station, phase: phases.get(station.id) ?? 0 }));
       extent = heatmap;
       canvas.style.opacity = extent ? String(opacity) : '';
       const count = sample && wind ? Math.min(96, Math.ceil(width * height / 2600)) : 0;
