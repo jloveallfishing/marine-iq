@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSETS = (
     ("index.html", ""),
     ("sw.js", "sw.js"),
-    ("marine-motion.js", "marine-motion.js"),
+    ("marine-motion.js", "marine-motion.js?v=24"),
     ("manifest.webmanifest", "manifest.webmanifest"),
     ("icon-192.png", "icon-192.png"),
     ("icon-512.png", "icon-512.png"),

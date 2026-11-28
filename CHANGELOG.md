@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.4.0
+
+- Keep valid wind, tide, and current overlays in place during map movement and refreshes. Update new coverage progressively and keep the particle layer anchored to the map as it moves.
+- Cache dated forecasts by grid point or station, with time selection from the cached series. Prefetch a bounded perimeter, deduplicate requests, and back off when a provider rate-limits requests.
+- Label stale cached predictions with their fetch time and show unavailable states when the requested time has no reading.
+- Replace the animation checkbox with a compact switch, lower canvas rendering limits, and check automatically for versioned app-shell updates.
+
 ## 2.3.0
 
 - Added continuous wind particles and a smooth MPH wind heatmap using bounded interpolation of NWS forecast samples. Missing inputs leave gaps. Gust sample symbols and the forecast timeline remain available.
