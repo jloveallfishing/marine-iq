@@ -1,5 +1,5 @@
 {
-  "release": "3.0.10",
+  "release": "3.0.11",
   "regions": {
     "bay": {
       "label": "Bay · San Francisco Bay District",
@@ -283,12 +283,11 @@
       ],
       "groups": true,
       "image": {
-        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/White_sturgeon_%2852085116356%29.png/330px-White_sturgeon_%2852085116356%29.png",
-        "full": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/White_sturgeon_%2852085116356%29.png/960px-White_sturgeon_%2852085116356%29.png",
-        "alt": "White sturgeon held by a biologist during fieldwork",
-        "credit": "Photo: Justin Dummit / USFWS",
-        "source": "https://commons.wikimedia.org/wiki/File:White_sturgeon_%2852085116356%29.png",
-        "reuse": "https://commons.wikimedia.org/wiki/File:White_sturgeon_%2852085116356%29.png",
+        "label": "White sturgeon",
+        "url": "./assets/rules/white-sturgeon-thumb.jpg",
+        "full": "./assets/rules/white-sturgeon.jpg",
+        "alt": "Full-length white sturgeon with visible scutes and barbels",
+        "credit": "Photo: JLoveallFishing",
         "setting": "out-of-water"
       }
     },
@@ -309,8 +308,12 @@
         "oceanSalmonCA"
       ],
       "image": {
-        "label": "Ocean-phase Chinook",
-        "guide": "https://www.fws.gov/sites/default/files/documents/07_Salmon%20Identification%20Chart.pdf"
+        "label": "Ocean Chinook (King Salmon)",
+        "url": "./assets/rules/ocean-chinook-thumb.jpg",
+        "full": "./assets/rules/ocean-chinook.jpg",
+        "alt": "Full-length ocean Chinook (King Salmon) showing its silver body and tail",
+        "credit": "Photo: JLoveallFishing",
+        "setting": "out-of-water"
       },
       "groups": true,
       "riverImage": {
@@ -432,7 +435,12 @@
         "inseason"
       ],
       "image": {
-        "label": "Leopard shark"
+        "label": "Leopard shark",
+        "url": "./assets/rules/leopard-shark-thumb.jpg",
+        "full": "./assets/rules/leopard-shark.jpg",
+        "alt": "Full-length leopard shark with dark saddle markings",
+        "credit": "Photo: JLoveallFishing",
+        "setting": "out-of-water"
       }
     },
     {

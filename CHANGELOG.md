@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.11
+
+- Add JLoveallFishing’s approved Leopard shark, ocean Chinook and White sturgeon photos with full-fish enlargement and no embedded EXIF or GPS metadata.
+
 ## 3.0.10
 
 - Add five cleared Rules identification photos for Blue and Gopher rockfish, Kelp and Rock greenlings, and Bocaccio. Keep source, creator, license and edits accessible in the photo viewer.

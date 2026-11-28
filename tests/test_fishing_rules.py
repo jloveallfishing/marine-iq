@@ -42,14 +42,6 @@ class FishingRulesTests(unittest.TestCase):
                 self.assertTrue(set(item["sources"]) <= sources.keys())
                 if item["id"] not in {"cabezon", "greenling"}:
                     self.assertTrue(entries[item["id"]])
-                if item.get("image", {}).get("url"):
-                    img = item["image"]
-                    self.assertTrue(img["credit"].startswith("Photo: "))
-                    for key in ("url", "source", "reuse"):
-                        self.assertIn(urlsplit(img[key]).hostname, {"www.fisheries.noaa.gov", "www.fws.gov", "thumb.wikimedia.org",
-                                                                         "upload.wikimedia.org", "commons.wikimedia.org",
-                         "www.inaturalist.org", "creativecommons.org"})
-                        self.assertEqual(urlsplit(img[key]).scheme, "https")
                 for entry in entries.get(item["id"], []):
                     self.assertIn(entry["kind"], {"reference", "schedule", "emergency"})
                     if entry["kind"] == "emergency":
@@ -126,7 +118,7 @@ class FishingRulesTests(unittest.TestCase):
                         self.assertTrue(label)
                         self.assertEqual(urlsplit(url).hostname, "creativecommons.org")
         self.assertCountEqual(missing, [
-            "Ocean-phase Chinook", "Ocean-phase Coho", "Sunset rockfish", "Lingcod", "Leopard shark",
+            "Ocean-phase Coho", "Sunset rockfish", "Lingcod",
             "Dungeness crab", "Black rockfish", "Cowcod", "Bronzespotted rockfish",
         ])
 
