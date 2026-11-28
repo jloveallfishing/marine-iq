@@ -36,12 +36,12 @@ class Handler(SimpleHTTPRequestHandler):
             return
         legacy = getattr(self.server, "legacy_shell", False)
         stale_navigation = getattr(self.server, "stale_navigation", False)
-        if (legacy and self.path in ("/", "/index.html?v=25", "/sw.js")) or (stale_navigation and self.path == "/"):
+        if (legacy and self.path in ("/", "/index.html?v=26", "/sw.js")) or (stale_navigation and self.path == "/"):
             worker = self.path == "/sw.js"
             file = ROOT / ("sw.js" if worker else "index.html")
-            content = (file.read_bytes().replace(b"Version 2.6", b"Version 2.5")
-                       .replace(b"2.6.0", b"2.5.0").replace(b"marine-iq-v26", b"marine-iq-v25")
-                       .replace(b"index.html?v=26", b"index.html?v=25"))
+            content = (file.read_bytes().replace(b"Version 2.7", b"Version 2.6")
+                       .replace(b"2.7.0", b"2.6.0").replace(b"marine-iq-v27", b"marine-iq-v26")
+                       .replace(b"index.html?v=27", b"index.html?v=26"))
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript" if worker else "text/html")
             self.send_header("Content-Length", str(len(content)))
@@ -86,6 +86,7 @@ class MarineCastTests(unittest.TestCase):
         self.map_response_status = 200
         self.rate_limit_points = False
         self.show_tiles = False
+        self.failed_tile_zoom = None
         self.page.route("https://**/*", self.mock_provider)
 
     def mock_provider(self, route):
@@ -99,7 +100,7 @@ class MarineCastTests(unittest.TestCase):
                 return route.fulfill(body=asset[0], content_type=asset[1], headers={"Access-Control-Allow-Origin": "*"})
             return route.abort()
         if host == "tile.openstreetmap.org":
-            if self.show_tiles:
+            if self.show_tiles and not path.startswith(f"/{self.failed_tile_zoom}/"):
                 return route.fulfill(body=(ROOT / "icon-192.png").read_bytes(), content_type="image/png",
                                      headers={"Cache-Control": "public, max-age=604800"})
             return route.abort()
@@ -160,10 +161,12 @@ class MarineCastTests(unittest.TestCase):
         )
 
     canvas_has_color = """() => {
-        const canvas = document.querySelector('.marine-flow');
+        const canvas = document.querySelector('.marine-flow:not(.marine-heat)');
         return canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height)
             .data.some((value, i) => i % 4 === 3 && value > 0);
     }"""
+
+    heat_has_color = canvas_has_color.replace('.marine-flow:not(.marine-heat)', '.marine-heat')
 
     def test_wind_layers_and_playback(self):
         self.open_map()
@@ -172,10 +175,10 @@ class MarineCastTests(unittest.TestCase):
         self.assertGreater(pins.count(), 8)
         expect(self.page.locator(".marine-moving").first).to_have_css("animation-name", "none")
         self.page.locator("#marineLayer").select_option("Wind heatmap")
-        expect(self.page.locator("#marineStatus")).to_contain_text("interpolated between complete cells")
+        expect(self.page.locator("#marineStatus")).to_contain_text("interpolated only between available samples")
         expect(self.page.locator("#marineLegend")).to_contain_text("Wind speed (MPH)")
         expect(self.page.locator("#marineLegend")).to_contain_text("40+")
-        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        self.assertTrue(self.page.evaluate(self.heat_has_color))
         expect(self.page.locator("#marineMotion")).to_be_disabled()
         expect(pins.first).to_contain_text("12 mph")
         self.page.locator("#marineLayer").select_option("Gusts")
@@ -196,9 +199,9 @@ class MarineCastTests(unittest.TestCase):
                 [{speed: 0, vector: [0, 0]}, {speed: 10, vector: [10, 0]}, null],
                 [{speed: 10, vector: [0, 10]}, {speed: 20, vector: [10, 10]}, {speed: 30, vector: null}]
             ], ([lat, lon]) => ({x: lon, y: 1 - lat}));
-            return [sample(.5, .5), sample(.5, .5, true), sample(1.5, .5), sample(-1, .5)];
+            return [sample(.5, .5), sample(.5, .5, true), sample(1.25, .75), sample(1.75, .25), sample(-1, .5)];
         }""")
-        self.assertEqual(observed, [10, [5, 5], None, None])
+        self.assertEqual(observed, [10, [5, 5], 20, None, None])
 
     def test_pan_and_zoom_load_new_points(self):
         self.open_map()
@@ -223,7 +226,7 @@ class MarineCastTests(unittest.TestCase):
         self.page.add_init_script(SLOW_PROVIDER)
         self.open_map()
         self.page.locator("#marineLayer").select_option("Wind heatmap")
-        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        self.assertTrue(self.page.evaluate(self.heat_has_color))
         before = len(self.requests)
         retained = self.page.evaluate("""() => {
             for (const dx of [32, -32, 32, -32]) {
@@ -233,7 +236,7 @@ class MarineCastTests(unittest.TestCase):
             return true;
         }""")
         self.assertTrue(retained)
-        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        self.assertTrue(self.page.evaluate(self.heat_has_color))
         self.page.wait_for_timeout(260)
         self.assertFalse(any(path.startswith(("/points/", "/gridpoints/"))
                              for _, path, _ in self.requests[before:]))
@@ -348,7 +351,7 @@ class MarineCastTests(unittest.TestCase):
     def test_heatmap_opacity_is_local_and_persists(self):
         self.open_map()
         self.page.locator("#marineLayer").select_option("Wind heatmap")
-        self.assertTrue(self.page.evaluate(self.canvas_has_color))
+        self.assertTrue(self.page.evaluate(self.heat_has_color))
         offset = len(self.requests)
         self.page.locator("#marineOpacity").evaluate("""input => {
             input.value = 0;
@@ -356,9 +359,9 @@ class MarineCastTests(unittest.TestCase):
             input.dispatchEvent(new Event('change'));
         }""")
         expect(self.page.locator("#marineOpacityValue")).to_have_text("0%")
-        expect(self.page.locator(".marine-flow")).to_have_css("opacity", "0")
+        expect(self.page.locator(".marine-heat")).to_have_css("opacity", "0")
         self.page.locator("#marineLayer").select_option("Wind")
-        expect(self.page.locator(".marine-flow")).to_have_css("opacity", "1")
+        expect(self.page.locator(".marine-flow:not(.marine-heat)")).to_have_css("opacity", "1")
         self.assertFalse(any(path.startswith(("/points/", "/gridpoints/"))
                              for _, path, _ in self.requests[offset:]))
         self.page.reload()
@@ -392,7 +395,7 @@ class MarineCastTests(unittest.TestCase):
         page.route("https://**/*", self.mock_provider)
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        self.assertIn("Version 2.5", page.locator("#page-home > p").first.text_content())
+        self.assertIn("Version 2.6", page.locator("#page-home > p").first.text_content())
         page.evaluate("""() => {
             window.openPageFixture = true;
             window.upgradeActivated = false;
@@ -407,8 +410,8 @@ class MarineCastTests(unittest.TestCase):
         }""")
         self.assertTrue(page.evaluate("""async () => {
             for (let i = 0; i < 120; i++) {
-                const response = await caches.match('./index.html?v=26', {cacheName: 'marine-iq-v26'});
-                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.6')) {
+                const response = await caches.match('./index.html?v=27', {cacheName: 'marine-iq-v27'});
+                if (window.upgradeActivated && response && (await response.text()).includes('Version 2.7')) {
                     return true;
                 }
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -416,13 +419,13 @@ class MarineCastTests(unittest.TestCase):
             return false;
         }"""))
         self.assertTrue(page.evaluate("window.openPageFixture"))
-        self.assertIn("Version 2.5", page.locator("#page-home > p").first.text_content())
-        self.assertTrue(page.goto(self.url + "offline-check").ok)
         self.assertIn("Version 2.6", page.locator("#page-home > p").first.text_content())
+        self.assertTrue(page.goto(self.url + "offline-check").ok)
+        self.assertIn("Version 2.7", page.locator("#page-home > p").first.text_content())
         expect(page.locator("body")).to_have_class("light")
         self.server.stale_navigation = True
         page.goto(self.url)
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.6.0")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.7.0")
 
     def test_manual_update_applies_active_shell_at_permanent_url(self):
         context = self.browser.new_context(**self.playwright.devices["iPhone 13"])
@@ -440,9 +443,9 @@ class MarineCastTests(unittest.TestCase):
         self.server.legacy_shell = False
         self.server.stale_navigation = True
         page.get_by_role("button", name="Check for Updates").click()
-        expect(page.locator("#updateStatus")).to_contain_text("2.6.0 is ready", timeout=16000)
+        expect(page.locator("#updateStatus")).to_contain_text("2.7.0 is ready", timeout=16000)
         page.get_by_role("button", name="Reload to update").click()
-        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.6.0")
+        expect(page.locator('meta[name="marinecast-version"]')).to_have_attribute("content", "2.7.0")
         expect(page).to_have_url(self.url + "#settings")
         for key, value in saved.items():
             self.assertEqual(page.evaluate("key => localStorage.getItem(key)", key), value)
@@ -479,6 +482,58 @@ class MarineCastTests(unittest.TestCase):
                 return getComputedStyle(reading).color === getComputedStyle(sample).fill;
             }"""))
 
+    def test_tile_preview_keeps_failed_zoom_covered(self):
+        self.show_tiles = True
+        self.open_map()
+        expect(self.page.locator(".leaflet-tile-loaded").first).to_be_attached()
+        self.failed_tile_zoom = 10
+        with self.page.expect_request(re.compile(r"tile.openstreetmap.org/10/")):
+            self.page.evaluate("map.setZoom(10, {animate:false})")
+        tile = self.page.locator('[data-tile-zoom="10"][data-tile-preview="parent"]').first
+        expect(tile).to_be_visible()
+        self.page.wait_for_timeout(280)
+        expect(tile.locator("canvas")).to_be_visible()
+        self.failed_tile_zoom = None
+        self.page.evaluate("map.setZoom(11, {animate:false})")
+        expect(self.page.locator('[data-tile-zoom="11"].leaflet-tile-loaded').first).to_be_attached()
+
+    def test_cached_pan_reuses_heatmap_raster(self):
+        self.page.add_init_script("""(() => {
+            window.heatRasters = 0;
+            const original = CanvasRenderingContext2D.prototype.putImageData;
+            CanvasRenderingContext2D.prototype.putImageData = function(...args) {
+                window.heatRasters++;
+                return original.apply(this, args);
+            };
+        })()""")
+        self.open_map()
+        self.page.locator("#marineHeatToggle").click()
+        self.page.wait_for_function(self.heat_has_color)
+        count = self.page.evaluate("window.heatRasters")
+        self.assertGreater(count, 0)
+        self.page.evaluate("map.panBy([18, 0], {animate:false})")
+        self.page.wait_for_timeout(350)
+        self.assertEqual(self.page.evaluate("window.heatRasters"), count)
+        self.assertTrue(self.page.evaluate(self.heat_has_color))
+
+    def test_wind_controls_are_independent_and_do_not_fetch(self):
+        self.open_map()
+        self.page.emulate_media(reduced_motion="no-preference")
+        self.page.locator("#map").scroll_into_view_if_needed()
+        self.page.wait_for_function(self.canvas_has_color)
+        offset = len(self.requests)
+        self.page.locator("#marineHeatToggle").click()
+        expect(self.page.locator("#marineHeatToggle")).to_have_attribute("aria-checked", "true")
+        self.page.wait_for_function(self.heat_has_color)
+        expect(self.page.locator(".marine-flow:not(.marine-heat)")).to_have_css("visibility", "visible")
+        self.page.locator("#marineLabelToggle").click()
+        expect(self.page.locator(".marine-wind-pin b").first).to_be_hidden()
+        self.page.locator("#marineMotion").click()
+        expect(self.page.locator(".marine-flow:not(.marine-heat)")).to_have_css("visibility", "hidden")
+        expect(self.page.locator(".marine-heat")).to_have_css("visibility", "visible")
+        self.assertFalse(any(path.startswith(("/points/", "/gridpoints/"))
+                             for _, path, _ in self.requests[offset:]))
+
     def test_tiles_start_only_when_map_opens_and_keep_visible_at_zoom_start(self):
         self.show_tiles = True
         self.page.goto(self.url)
@@ -499,13 +554,14 @@ class MarineCastTests(unittest.TestCase):
         page.goto(self.url)
         page.wait_for_function("navigator.serviceWorker.controller !== null")
         self.assertTrue(page.evaluate("""async () => {
-            const cache = await caches.open('marine-iq-v26');
-            return Boolean(await cache.match('./marine-motion.js?v=26'));
+            const cache = await caches.open('marine-iq-v27');
+            return Boolean(await cache.match('./marine-motion.js?v=27')) &&
+                Boolean(await cache.match('./marine-tiles.js?v=27'));
         }"""))
         page.evaluate("localStorage.setItem('marinecastAppearance', 'light')")
         response = page.goto(self.url + "offline-check")
         self.assertTrue(response.ok)
-        self.assertTrue(page.evaluate("Boolean(window.MarineMotion)"))
+        self.assertTrue(page.evaluate("Boolean(window.MarineMotion && window.createMarineBasemap)"))
         expect(page.locator("body")).to_have_class("light")
 
     def test_animation_can_pause_and_respects_reduced_motion(self):
@@ -519,13 +575,13 @@ class MarineCastTests(unittest.TestCase):
         self.page.wait_for_function(self.canvas_has_color)
         motion.click()
         expect(motion).to_have_attribute("aria-checked", "false")
-        expect(self.page.locator(".marine-flow")).to_have_css("visibility", "hidden")
+        expect(self.page.locator(".marine-flow:not(.marine-heat)")).to_have_css("visibility", "hidden")
         motion.click()
         expect(motion).to_have_attribute("aria-checked", "true")
         self.page.wait_for_function(self.canvas_has_color)
         self.page.evaluate("location.hash = 'tripsetup'")
         expect(self.page.locator("#page-map")).to_be_hidden()
-        expect(self.page.locator(".marine-flow")).to_have_css("visibility", "hidden")
+        expect(self.page.locator(".marine-flow:not(.marine-heat)")).to_have_css("visibility", "hidden")
 
     def test_directional_current_animation_requires_a_bearing(self):
         self.open_map()

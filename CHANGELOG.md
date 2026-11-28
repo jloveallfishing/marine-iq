@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.7.0
+
+- Show aligned previews from already-loaded basemap tiles while replacements load or fail. Keep normal browser HTTP caching and visible-area requests.
+- Prioritize central wind samples, parse each forecast grid response once per date, and preserve available coverage with support-limited coastal triangles.
+- Seed wind particles in supported cells, keep heatmap shading on its own cached canvas, and retain overlapping coverage during movement.
+- Add independent, remembered wind particle, wind label, and heatmap controls. Preserve separate current animation and collision-free labels.
+- Document NOAA GFS, HRRR, and NDFD batching options and the OpenFreeMap commercial basemap candidate. No new provider is active.
+
 ## 2.6.0
 
 - Defer basemap tile requests until the map opens and retain nearby loaded tiles through movement and zoom transitions.
